@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import init_db
-from routers import users
+from routers import user, game, player
 
 app = FastAPI()
 
@@ -8,7 +8,8 @@ app = FastAPI()
 init_db()
 
 # Incluir rutas
-app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(user.router, prefix="/user", tags=["User"])
+app.include_router(game.router, prefix="/game", tags=["Game"])
 
 @app.get("/")
 def read_root():
