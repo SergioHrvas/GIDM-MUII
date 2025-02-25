@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal, init_db
-from crud.game import get_game, create_game
+from crud.game import get_game, create_game, do_move_game
 from schemas.game import GameCreate, GameResponse
+from schemas.move import Move
 
 router = APIRouter()
 
@@ -24,3 +25,9 @@ def get_game_by_id(game_id: int, db: Session = Depends(get_db)):
     if game is None:
         raise HTTPException(status_code=404, detail="Game not found")
     return game
+
+@router.post("/{game_id}/move")
+def do_move(game_id: int, player_id, move: Move, db: Session = Depends(get_db)):
+    do_move_game(game_id, player_id, move, db)
+
+    return {"game_id": game_id, "move": move}
