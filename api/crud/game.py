@@ -5,6 +5,7 @@ from models.deck import Deck
 from schemas.game import GameCreate
 from datetime import datetime
 from schemas.move import Move
+import numpy as np
 
 def create_game(game: GameCreate, db: Session):
     db_game = Game(
@@ -12,16 +13,25 @@ def create_game(game: GameCreate, db: Session):
         winner=0,
         turns=0,
         turn=0,
+        num_turn=0,
         date=datetime.now()  
     )
     db.add(db_game)
     db.commit()
     db.refresh(db_game)
     
+    players = []
     # Creamos players
     for i in range(game.players):  
         db_player = Player(name="", game_id=db_game.id)
         db.add(db_player)
+        db.commit()
+        db.refresh(db_player) 
+        players.append(db_player)
+
+    np.random.shuffle(players)
+    db_game.turns = [player.id for player in players]
+    db_game.turn = db_game.turns[0]
 
     # Creamos el mazo
     db_deck = Deck(deck_cards="[]", discard_cards="[]")
@@ -40,7 +50,7 @@ def create_game(game: GameCreate, db: Session):
 def get_game(game_id: int, db: Session):
     return db.query(Game).filter(Game.id == game_id).first()
 
-def do_move_game(game_id: int, player_id, move: Move, db: Session):
+def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
     # Obtenemos el juego
     game = db.query(Game).filter(Game.id == game_id).first()
 
@@ -49,9 +59,11 @@ def do_move_game(game_id: int, player_id, move: Move, db: Session):
 
     # Obtenemos el jugador
     player = db.query(Player).filter(Player.id == game.turn).first()
+    print(game.turn)
 
-    # if(player_id != player):
-    #     return "Errror"
+    if player_id != player.id:
+        print("a")
+        return "Error"
 
 
     # Hacemos el movimiento
@@ -83,9 +95,14 @@ def do_move_game(game_id: int, player_id, move: Move, db: Session):
         move.player_to_change.body_cards = body
     """
 
-    game.turns += 1
+    game.num_turns+=1
+    num_turns = len(game.turns)
+    print(f"Número de turnos: {num_turns}")
 
+    #VER
+    game.turn = game.turns[game.num_turns % num_turns]
 
+    print(game.turn)
 
     db.commit()
     db.refresh(game)

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from status import StatusEnum
+from schemas.status import StatusEnum
 from typing import Optional
 
 class GameBase(BaseModel):

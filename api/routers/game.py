@@ -27,7 +27,7 @@ def get_game_by_id(game_id: int, db: Session = Depends(get_db)):
     return game
 
 @router.post("/{game_id}/move")
-def do_move(game_id: int, player_id, move: Move, db: Session = Depends(get_db)):
+def do_move(game_id: int, player_id: int, move: Move, db: Session = Depends(get_db)):
     do_move_game(game_id, player_id, move, db)
 
     return {"game_id": game_id, "move": move}
