@@ -17,3 +17,5 @@ class Game(Base):
     date = Column(DateTime)
     deck_id = Column(Integer, ForeignKey("decks.id"), unique=True)
     deck = relationship("Deck", back_populates="game", uselist=False)
+
+    players = relationship("Player", back_populates="game", cascade="all, delete-orphan")

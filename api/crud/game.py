@@ -2,10 +2,13 @@ from sqlalchemy.orm import Session
 from models.game import Game
 from models.player import Player
 from models.deck import Deck
+from models.card import Card
 from schemas.game import GameCreate
 from datetime import datetime
 from schemas.move import Move
 import numpy as np
+from crud.playercard import remove_card_from_player, discard_cards
+from crud.organ import add_organ_to_player
 
 def create_game(game: GameCreate, db: Session):
     db_game = Game(
@@ -13,7 +16,7 @@ def create_game(game: GameCreate, db: Session):
         winner=0,
         turns=0,
         turn=0,
-        num_turn=0,
+        num_turns=0,
         date=datetime.now()  
     )
     db.add(db_game)
@@ -60,53 +63,60 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
     # Obtenemos el jugador
     player = db.query(Player).filter(Player.id == game.turn).first()
     print(game.turn)
-
+    
     if player_id != player.id:
-        print("a")
         return "Error"
 
+    card = db.query(Card).filter(Card.id == move.card).first()
 
-    # Hacemos el movimiento
-    if move.action == "add_body":
-        print(move)
-        print(player)
-        # player.body_cards.append(move.card)
-        # player.hand_cards.remove(move.card)
+    if move.action == "discard":
+        # Borramos las cartas
+        discard_cards(db, player_id)
 
-    """
-    elif move.action == "discard":
-        player.hand_cards.remove(move.discards)
-        deck.discard_cards.append(move.discards)
-    elif move.action == "virus":
-        player.hand_cards.remove(move.virus)
-        move.player_to_virus.body_cards.append(move.virus)
-    elif move.action == "health":
-        player.hand_cards.remove(move.health)
-        move.player_to_health.body_cards.append(move.health)
-    elif move.action == "steal":
-        player.hand_cards.remove(move.steal)
-        card = move.player_to_steal.body_cards.get(move.steal)
-        move.player_to_steal.body_cards.remove(move.steal)
-        player.body_cards.append(card)
-    elif move.action == "change_body":
-        player.hand_cards.remove(move.change_body)
-        body = player.body_cards
-        player.body_cards = move.player_to_change.body_cards
-        move.player_to_change.body_cards = body
-    """
+        # Añadimos tres nuevas cartas del mazo
+        ## PENDIENTE
 
-    game.num_turns+=1
-    num_turns = len(game.turns)
-    print(f"Número de turnos: {num_turns}")
+    elif move.action == "card":
+        # Hacemos el movimiento
+        if card.tipo == "organ":
+            print("ORGAAAAAAAAN")
+            remove_card_from_player(db, player_id, move.card)
+            add_organ_to_player(db, player_id, card.organ_type)
 
-    #VER
-    game.turn = game.turns[game.num_turns % num_turns]
+        """
+        elif move.action == "discard":
+            player.hand_cards.remove(move.discards)
+            deck.discard_cards.append(move.discards)
+        elif move.action == "virus":
+            player.hand_cards.remove(move.virus)
+            move.player_to_virus.body_cards.append(move.virus)
+        elif move.action == "health":
+            player.hand_cards.remove(move.health)
+            move.player_to_health.body_cards.append(move.health)
+        elif move.action == "steal":
+            player.hand_cards.remove(move.steal)
+            card = move.player_to_steal.body_cards.get(move.steal)
+            move.player_to_steal.body_cards.remove(move.steal)
+            player.body_cards.append(card)
+        elif move.action == "change_body":
+            player.hand_cards.remove(move.change_body)
+            body = player.body_cards
+            player.body_cards = move.player_to_change.body_cards
+            move.player_to_change.body_cards = body
 
-    print(game.turn)
 
-    db.commit()
-    db.refresh(game)
+        game.num_turns+=1
+        num_turns = len(game.turns)
+        print(f"Número de turnos: {num_turns}")
 
-    if player:
-        db.refresh(player)
+        #VER
+        game.turn = game.turns[game.num_turns % num_turns]
+
+        print(game.turn)
+
+        db.commit()
+        db.refresh(game)
+
+        if player:
+            db.refresh(player)    """
     return game

@@ -10,5 +10,3 @@ def create_player(player: PlayerCreate, db: Session = Depends(get_db)):
     return db_player  # Se convierte automáticamente en PlayerResponse
 
     
-
-    
