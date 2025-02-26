@@ -8,7 +8,7 @@ from datetime import datetime
 from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_cards
-from crud.organ import add_organ_to_player
+from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ
 
 def create_game(game: GameCreate, db: Session):
     db_game = Game(
@@ -79,20 +79,49 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
     elif move.action == "card":
         # Hacemos el movimiento
         if card.tipo == "organ":
-            print("ORGAAAAAAAAN")
-            remove_card_from_player(db, player_id, move.card)
-            add_organ_to_player(db, player_id, card.organ_type)
+            has_organ = player_has_organ(db, player_id, card.organ_type)
 
+            if has_organ == false:
+                add_organ_to_player(db, player_id, card.organ_type)
+                remove_card_from_player(db, player_id, move.card)
+
+        if card.tipo == "virus":
+            has_organ = player_has_organ(db, player_id, card.organ_type)
+            
+            if has_organ == true:
+                add_virus_to_organ(db, player_id, card.organ_type)
+                remove_card_from_player(db, move.player_to, move.card)
+
+        elif card.tipo == "cure":
+            has_organ = player_has_organ(db, player_id, card.organ_type)
+            
+            if has_organ == true:
+                add_cure_to_organ(db, player_id, card.organ_type)
+                remove_card_from_player(db, player_id, move.card)
+        
+
+        elif card.tipo == "action":
+            if card.name == "Steal Card":
+                can_steal = player_can_steal(db, player_id, move.player_to, card.organ_type)
+            
+                if can_steal == true:
+                    steal_card(db, player_id, move.player_to, card.organ_type)
+                    remove_card_from_player(db, player_id, move.card)  
+
+            elif card.name == "Infect Player":
+                pass
+            elif card.name == "Change Body":
+                pass
+            elif card.name == "Exchange Card":
+                pass
+            elif card.name == "Discard Cards":
+                pass
         """
         elif move.action == "discard":
             player.hand_cards.remove(move.discards)
             deck.discard_cards.append(move.discards)
-        elif move.action == "virus":
-            player.hand_cards.remove(move.virus)
-            move.player_to_virus.body_cards.append(move.virus)
-        elif move.action == "health":
-            player.hand_cards.remove(move.health)
-            move.player_to_health.body_cards.append(move.health)
+
+
         elif move.action == "steal":
             player.hand_cards.remove(move.steal)
             card = move.player_to_steal.body_cards.get(move.steal)
