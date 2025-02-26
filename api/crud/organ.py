@@ -16,7 +16,9 @@ def remove_organ_from_player(db: Session, player_id: int, tipo: str):
 def add_organ_to_player(db: Session, player_id, tipo: str):
     db_organ = Organ(
         player_id = player_id,
-        tipo = tipo
+        tipo = tipo,
+        virus = False,
+        cure = 0
     )
 
     if db_organ:
@@ -31,9 +33,9 @@ def player_has_organ(db: Session, player_id, tipo: str):
     db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
 
     if db_organ:
-        return true
+        return True
     else:
-        return false
+        return False
 
 
 def player_can_steal(db: Session, player_id, player_to, tipo: str):
@@ -43,15 +45,15 @@ def player_can_steal(db: Session, player_id, player_to, tipo: str):
     db_organ2 = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == tipo).first()
 
     if db_organ:
-        return false
+        return False
     else:
         if db_organ2:
-            return true
+            return True
         else:
-            return false
+            return False
 
 
-def add_virus_to_organ(db: Session, player_id, tipo: str):
+def add_virus_to_organ(db: Session, player_id: int, tipo: str):
     # Buscar el registro de organ
     db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
 
@@ -63,11 +65,11 @@ def add_virus_to_organ(db: Session, player_id, tipo: str):
             db.commit()
             db.refresh(db_organ)
         elif db_organ.cure == 0:
-            if db_organ.virus == false:
-                db_organ.virus = true
+            if db_organ.virus == False:
+                db_organ.virus = True
                 db.commit()
                 db.refresh(db_organ)
-            elif db_organ.virus == true:
+            elif db_organ.virus == True:
                 #Eliminamos el órgano
                 db.delete(db_organ)
             else:
@@ -77,14 +79,14 @@ def add_virus_to_organ(db: Session, player_id, tipo: str):
     else:
         print("Error al encontrar el órgano")
     
-def add_cure_to_organ(db: Session, player_id, tipo: str):
+def add_cure_to_organ(db: Session, player_id: int, tipo: str):
     # Buscar el registro de organ
     db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
 
     if(db_organ):
-        if db_organ.virus == true:
-            db_organ.virus = false
-        elif db_organ.virus == false:
+        if db_organ.virus == True:
+            db_organ.virus = False
+        elif db_organ.virus == False:
             if ( db_organ.cure == 0 ) or ( db_organ.cure == 1 ):
                 db_organ.cure += 1
                 db.commit()

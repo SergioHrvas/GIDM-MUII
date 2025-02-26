@@ -8,7 +8,7 @@ from datetime import datetime
 from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_cards
-from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ
+from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card
 
 def create_game(game: GameCreate, db: Session):
     db_game = Game(
@@ -81,21 +81,21 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         if card.tipo == "organ":
             has_organ = player_has_organ(db, player_id, card.organ_type)
 
-            if has_organ == false:
+            if has_organ == False:
                 add_organ_to_player(db, player_id, card.organ_type)
                 remove_card_from_player(db, player_id, move.card)
 
         if card.tipo == "virus":
-            has_organ = player_has_organ(db, player_id, card.organ_type)
+            has_organ = player_has_organ(db, move.player_to, card.organ_type)
             
-            if has_organ == true:
-                add_virus_to_organ(db, player_id, card.organ_type)
-                remove_card_from_player(db, move.player_to, move.card)
+            if has_organ == True:
+                add_virus_to_organ(db, move.player_to, card.organ_type)
+                remove_card_from_player(db, player_id, move.card)
 
         elif card.tipo == "cure":
             has_organ = player_has_organ(db, player_id, card.organ_type)
             
-            if has_organ == true:
+            if has_organ == True:
                 add_cure_to_organ(db, player_id, card.organ_type)
                 remove_card_from_player(db, player_id, move.card)
         
@@ -104,7 +104,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             if card.name == "Steal Card":
                 can_steal = player_can_steal(db, player_id, move.player_to, card.organ_type)
             
-                if can_steal == true:
+                if can_steal == True:
                     steal_card(db, player_id, move.player_to, card.organ_type)
                     remove_card_from_player(db, player_id, move.card)  
 
