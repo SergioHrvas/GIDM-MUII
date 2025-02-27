@@ -62,7 +62,6 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
 
     # Obtenemos el jugador
     player = db.query(Player).filter(Player.id == game.turn).first()
-    print(game.turn)
     
     if player_id != player.id:
         return "Error"
@@ -98,14 +97,12 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             if has_organ == True:
                 add_cure_to_organ(db, player_id, card.organ_type)
                 remove_card_from_player(db, player_id, move.card)
-        
 
         elif card.tipo == "action":
-            if card.name == "Steal Card":
-                can_steal = player_can_steal(db, player_id, move.player_to, card.organ_type)
-            
+            if card.name == "Steal Organ":
+                can_steal = player_can_steal(db, player_id, move.player_to, move.organ_to_steal)
                 if can_steal == True:
-                    steal_card(db, player_id, move.player_to, card.organ_type)
+                    steal_card(db, player_id, move.player_to, move.organ_to_steal)
                     remove_card_from_player(db, player_id, move.card)  
 
             elif card.name == "Infect Player":

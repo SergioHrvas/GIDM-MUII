@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from models.organ import Organ
 from models.player import Player
 from models.card import Card
+from schemas.organtype import OrganType
 
 def remove_organ_from_player(db: Session, player_id: int, tipo: str):
     # Buscar el registro de player_cards que relaciona el jugador con la carta
@@ -38,12 +39,16 @@ def player_has_organ(db: Session, player_id, tipo: str):
         return False
 
 
-def player_can_steal(db: Session, player_id, player_to, tipo: str):
+def player_can_steal(db: Session, player_id: int, player_to: int, tipo: OrganType):
+
     # Buscar el registro de organ
     db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
 
     db_organ2 = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == tipo).first()
 
+    # Si está inmunizado, no puedo robarlo
+    if db_organ2.cure == 2:
+        return False
     if db_organ:
         return False
     else:
@@ -101,7 +106,7 @@ def add_cure_to_organ(db: Session, player_id: int, tipo: str):
         print("Error al encontrar el órgano")
     
 
-def steal_card(db: Session, player_id, player_to, tipo: str):
+def steal_card(db: Session, player_id, player_to, tipo: OrganType):
     db_organ2 = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == tipo).first()
 
     if db_organ2:
