@@ -127,3 +127,34 @@ def change_body(db: Session, player_id, player_to):
     for organ in db_organs_player_to:
         organ.player_id = player_id
         db.commit()
+
+def change_organs(db: Session, player_id, type_from, player_to, type_to):
+    has_organ_player_from = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == type_to).first()
+    has_organ_player_to = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == type_from).first()
+
+    if(has_organ_player_from or has_organ_player_to):
+        return False
+    else:
+        db_organ_player_from = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == type_from).first()
+        db_organ_player_to = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == type_to).first()
+
+        if db_organ_player_from and db_organ_player_to
+            if db_organ_player_from.cure == 2:
+                return False
+            elif db_organ_player_to.cure == 2:
+                return False
+            else:
+                player = db_organ_player_from.player_id
+                db_organ_player_from.player_id = db_organ_player_to.player_id
+                db_organ_player_to.player_id = player
+                            
+                db.commit()
+                db.refresh(db_organ_player_from)
+                db.refresh(db_organ_player_to)
+                return True
+        elif
+            return False
+
+def infect_players(db: Session):
+
+

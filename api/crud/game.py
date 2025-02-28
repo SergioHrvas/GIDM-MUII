@@ -8,7 +8,7 @@ from datetime import datetime
 from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_cards
-from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body
+from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs
 
 def create_game(game: GameCreate, db: Session):
     db_game = Game(
@@ -113,25 +113,13 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 pass
 
             elif card.name == "Exchange Card":
-                pass
+                done = change_organs(db, player_id, move.organ_to_pass, move.player_to, move.organ_to_steal)
+                if done:
+                    remove_card_from_player(db, player_id, move.card)  
+
             elif card.name == "Discard Cards":
                 pass
         """
-        elif move.action == "discard":
-            player.hand_cards.remove(move.discards)
-            deck.discard_cards.append(move.discards)
-
-
-        elif move.action == "steal":
-            player.hand_cards.remove(move.steal)
-            card = move.player_to_steal.body_cards.get(move.steal)
-            move.player_to_steal.body_cards.remove(move.steal)
-            player.body_cards.append(card)
-        elif move.action == "change_body":
-            player.hand_cards.remove(move.change_body)
-            body = player.body_cards
-            player.body_cards = move.player_to_change.body_cards
-            move.player_to_change.body_cards = body
 
 
         game.num_turns+=1
