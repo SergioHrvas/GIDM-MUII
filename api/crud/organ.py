@@ -115,3 +115,15 @@ def steal_card(db: Session, player_id, player_to, tipo: OrganType):
         db.refresh(db_organ2)
     else:
         print("Error al robar carta.")
+
+def change_body(db: Session, player_id, player_to):
+    db_organs_player_from = db.query(Organ).filter(Organ.player_id == player_id).all()
+    db_organs_player_to = db.query(Organ).filter(Organ.player_id == player_to).all()
+
+    for organ in db_organs_player_from:
+        organ.player_id = player_to
+        db.commit()
+        
+    for organ in db_organs_player_to:
+        organ.player_id = player_id
+        db.commit()

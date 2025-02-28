@@ -8,7 +8,7 @@ from datetime import datetime
 from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_cards
-from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card
+from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body
 
 def create_game(game: GameCreate, db: Session):
     db_game = Game(
@@ -105,10 +105,13 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                     steal_card(db, player_id, move.player_to, move.organ_to_steal)
                     remove_card_from_player(db, player_id, move.card)  
 
+            elif card.name == "Change Body":
+                change_body(db, player_id, move.player_to)
+                remove_card_from_player(db, player_id, move.card)  
+
             elif card.name == "Infect Player":
                 pass
-            elif card.name == "Change Body":
-                pass
+
             elif card.name == "Exchange Card":
                 pass
             elif card.name == "Discard Cards":
