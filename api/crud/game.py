@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from models.game import Game
 from models.player import Player
-from models.deck import Deck
+from models.deck import DeckCard
 from models.card import Card
 from schemas.game import GameCreate
 from datetime import datetime
@@ -9,6 +9,8 @@ from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_cards
 from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs, infect_players
+from crud.deck import initialize_deck
+import random
 
 def create_game(game: GameCreate, db: Session):
     db_game = Game(
@@ -36,17 +38,12 @@ def create_game(game: GameCreate, db: Session):
     db_game.turns = [player.id for player in players]
     db_game.turn = db_game.turns[0]
 
-    # Creamos el mazo
-    db_deck = Deck(deck_cards="[]", discard_cards="[]")
-    db.add(db_deck)
-    db.commit()
-    db.refresh(db_deck)
-
-    # Asignamos el mazo al juego
-    db_game.deck_id = db_deck.id
     db.commit()
     db.refresh(db_game)
 
+    initialize_deck(db, db_game)
+
+    
     return db_game  # Se convierte automáticamente en GameResponse
 
 
@@ -58,7 +55,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
     game = db.query(Game).filter(Game.id == game_id).first()
 
     # Obtenemos el mazo
-    deck = db.query(Deck).filter(Deck.id == game.deck_id).first()
+    # deck = db.query(Deck).filter(Deck.id == game.deck_id).first()
 
     # Obtenemos el jugador
     player = db.query(Player).filter(Player.id == game.turn).first()

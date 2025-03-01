@@ -4,6 +4,7 @@ from database import Base
 from schemas.status import StatusEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
+from models.deck import DeckCard
 
 class Game(Base):
     __tablename__ = 'games'
@@ -15,7 +16,13 @@ class Game(Base):
     turns = Column(JSONB)
     winner = Column(Integer)
     date = Column(DateTime)
-    deck_id = Column(Integer, ForeignKey("decks.id"), unique=True)
-    deck = relationship("Deck", back_populates="game", uselist=False)
 
+    # Relación con DeckCard
+    deck_cards = relationship("DeckCard", back_populates="game", cascade="all, delete-orphan")
+
+    # Propiedad para acceder a las cartas con repeticiones
+    @property
+    def cards(self):
+        return [dc.card for dc in self.deck_cards]
+    
     players = relationship("Player", back_populates="game", cascade="all, delete-orphan")
