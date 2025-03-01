@@ -4,6 +4,7 @@ from models.player import Player
 from models.card import Card
 from schemas.organtype import OrganType
 
+
 def remove_organ_from_player(db: Session, player_id: int, tipo: str):
     # Buscar el registro de player_cards que relaciona el jugador con la carta
     db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
@@ -13,6 +14,7 @@ def remove_organ_from_player(db: Session, player_id: int, tipo: str):
         db.commit()  # Confirmar la transacción
     else:
         print("No se encontró el órgano para el jugador.")
+
 
 def add_organ_to_player(db: Session, player_id, tipo: str):
     db_organ = Organ(
@@ -28,6 +30,7 @@ def add_organ_to_player(db: Session, player_id, tipo: str):
         db.refresh(db_organ)
     else:
         print("No se encontró el órgano para el jugador.")
+
 
 def player_has_organ(db: Session, player_id, tipo: str):
     # Buscar el registro de organ
@@ -84,6 +87,7 @@ def add_virus_to_organ(db: Session, player_id: int, tipo: str):
     else:
         print("Error al encontrar el órgano")
     
+
 def add_cure_to_organ(db: Session, player_id: int, tipo: str):
     # Buscar el registro de organ
     db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
@@ -116,6 +120,7 @@ def steal_card(db: Session, player_id, player_to, tipo: OrganType):
     else:
         print("Error al robar carta.")
 
+
 def change_body(db: Session, player_id, player_to):
     db_organs_player_from = db.query(Organ).filter(Organ.player_id == player_id).all()
     db_organs_player_to = db.query(Organ).filter(Organ.player_id == player_to).all()
@@ -128,6 +133,7 @@ def change_body(db: Session, player_id, player_to):
         organ.player_id = player_id
         db.commit()
 
+
 def change_organs(db: Session, player_id, type_from, player_to, type_to):
     has_organ_player_from = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == type_to).first()
     has_organ_player_to = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == type_from).first()
@@ -138,7 +144,7 @@ def change_organs(db: Session, player_id, type_from, player_to, type_to):
         db_organ_player_from = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == type_from).first()
         db_organ_player_to = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == type_to).first()
 
-        if db_organ_player_from and db_organ_player_to
+        if db_organ_player_from and db_organ_player_to:
             if db_organ_player_from.cure == 2:
                 return False
             elif db_organ_player_to.cure == 2:
@@ -152,9 +158,67 @@ def change_organs(db: Session, player_id, type_from, player_to, type_to):
                 db.refresh(db_organ_player_from)
                 db.refresh(db_organ_player_to)
                 return True
-        elif
+        else:
             return False
 
-def infect_players(db: Session):
 
+def remove_virus_to_organ(db: Session, player_id, organtype):
+    organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organtype, Organ.virus == True).first()
+
+    if organ:
+        organ.virus = False;
+
+
+def can_infect(db: Session, player_id, player_to, organtype):
+    # Miro si tengo ese órgano infectado
+    my_infected_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organtype, Organ.virus == True)
+
+    if my_infected_organ:
+        # Miro si tiene el órgano para infectar
+        organ_to_infect = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == organtype, Organ.cure != 2)
+
+        if organ_to_infect:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
+
+def infect_players(db: Session, player_id, infect):
+    if infect.player1 and infect.organ1:
+        caninfect = can_infect(db, player_id, infect.player1, infect.organ1)
+
+        if caninfect:
+            add_virus_to_organ(db, infect.player1, infect.organ1)
+            remove_virus_to_organ(db, player_id, infect.organ1)
+            
+    if infect.player2 and infect.organ2:
+        caninfect = can_infect(db, player_id, infect.player2, infect.organ2)
+
+        if caninfect:
+            add_virus_to_organ(db, infect.player2, infect.organ2)
+            remove_virus_to_organ(db, player_id, infect.organ2)
+
+    if infect.player3 and infect.organ3:
+        caninfect = can_infect(db, player_id, infect.player3, infect.organ3)
+
+        if caninfect:
+            add_virus_to_organ(db, infect.player3, infect.organ3)
+            remove_virus_to_organ(db, player_id, infect.organ3)
+
+    if infect.player4 and infect.organ4:
+        caninfect = can_infect(db, player_id, infect.player4, infect.organ4)
+
+        if caninfect:
+            add_virus_to_organ(db, infect.player4, infect.organ4)
+            remove_virus_to_organ(db, player_id, infect.organ4)
+
+    if infect.player5 and infect.organ5:
+        caninfect = can_infect(db, player_id, infect.player5, infect.organ5)
+
+        if caninfect:
+            add_virus_to_organ(db, infect.player5, infect.organ5)
+            remove_virus_to_organ(db, player_id, infect.organ5)
 
