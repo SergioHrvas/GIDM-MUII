@@ -67,17 +67,25 @@ def steal_to_deck(db: Session, game: Game, player_id, num, players):
         for card in rest_card:
             db.delete(card)  # Eliminar cartas restantes del mazo
 
-            
-        #Eliminamos en deck las cartas que estan en la mano de cada jugador
+        # Eliminamos en deck las cartas que están en la mano de cada jugador
         for player in players:
+            # Obtener las cartas que tiene el jugador en la mano
             cards_player = db.query(PlayerCard).filter(PlayerCard.player_id == player.id).all()
 
-            # Eliminar las cartas del mazo que están en la mano de los jugadores
-            for card in cards_player:
-                # deck_card = db.query(DeckCard).filter(DeckCard.card_id == card.card_id, DeckCard.game_id == game.id).first()
-                # if deck_card:
-                    # db.delete(deck_card)  # Eliminar la carta del mazo
-                pass
+            for player_card in cards_player:
+                # Obtener las cartas en el mazo que coincidan con el tipo de la carta en la mano del jugador
+                deck_card = (
+                    db.query(DeckCard)
+                    .join(Card, DeckCard.card_id == Card.id)
+                    .filter(
+                        DeckCard.game_id == game.id,
+                        Card.name == player_card.card.name  # Filtrar por el mismo tipo de carta
+                    )
+                    .first()
+                )
+                
+                db.delete(deck_card)
+
             
         
         db.commit()
