@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from models.organ import Organ
 from models.game import Game
 from models.player import Player
 from models.deck import DeckCard
@@ -85,7 +86,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             has_organ = player_has_organ(db, move.player_to, card.organ_type)
             
             if has_organ == True:
-                add_virus_to_organ(db, move.player_to, card.organ_type)
+                add_virus_to_organ(db, move.infect.player1, card.organ_type, move.infect.organ1)
                 remove_card_from_player(db, player_id, move.card)
 
         elif card.tipo == "cure":
@@ -137,3 +138,16 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         if player:
             db.refresh(player)    """
     return game
+
+def review_winner(db: Session, game):
+    # Jugadores del juego
+    players = db.query(Player).filter(Player.game_id == game.id)
+
+    for player in players:
+        organs = db.query(Organ).filter(Organ.player_id == player.id, Organ.virus == False)
+        if len(organs) >= 4:
+            game.winner = player.id
+            game.status = "finished"
+            db.commit()
+            db.refresh(game)
+            pass

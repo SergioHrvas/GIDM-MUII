@@ -21,6 +21,80 @@ def initialize_deck(db: Session, game: Game):
         db (Session): Sesión de SQLAlchemy.
         game (Game): El juego al que se añadirán las cartas.
     """
+   
+    generate_basic_deck(db, game)
+
+    print(f"a: {len(game.deck_cards)}")
+    # Mezclar las cartas del mazo
+    random.shuffle(game.deck_cards)
+    
+    print(f"b: {len(game.deck_cards)}")
+    
+    db.add_all(game.deck_cards)  # Asegura que todas las cartas se mantengan en la sesión
+    
+    print(f"c: {len(game.deck_cards)}")
+    db.commit()
+    db.refresh(game)
+    print(f"c: {len(game.deck_cards)}")
+
+
+    cartitas = db.query(DeckCard).filter(DeckCard.game_id == game.id).all()
+
+    print(f"cartitas: {len(cartitas)}")
+
+    draw_cards(db, game)
+
+
+def draw_cards(db: Session, game: Game):
+    # Jugadores del juego
+    players = db.query(Player).filter(Player.game_id == game.id)
+
+    for player in players:
+        steal_to_deck(db, game, player.id, 3)
+
+
+def steal_to_deck(db: Session, game: Game, player_id, num, players):
+    # Primero miramos si quedan suficientes cartas
+
+
+    rest_card = game.deck_cards
+
+    if(len(rest_card) < num):
+        # Se volverá a generar la baraja (otro método para futuro)
+        generate_basic_deck(db, game)
+        
+        # Eliminamos las cartas que quedaban en la baraja
+        for card in rest_card:
+            db.delete(card)  # Eliminar cartas restantes del mazo
+
+            
+        #Eliminamos en deck las cartas que estan en la mano de cada jugador
+        for player in players:
+            cards_player = db.query(PlayerCard).filter(PlayerCard.player_id == player.id).all()
+
+            # Eliminar las cartas del mazo que están en la mano de los jugadores
+            for card in cards_player:
+                # deck_card = db.query(DeckCard).filter(DeckCard.card_id == card.card_id, DeckCard.game_id == game.id).first()
+                # if deck_card:
+                    # db.delete(deck_card)  # Eliminar la carta del mazo
+                pass
+            
+        
+        db.commit()
+
+    else:
+        for _ in range(num):
+            card = game.deck_cards.pop()
+            pc = PlayerCard(
+                player_id = player_id,
+                card_id = card.card_id
+            )
+            db.add(pc)
+            db.commit()
+
+
+def generate_basic_deck(db: Session, game: Game):   
+    
     # Obtener todas las cartas de la base de datos
     virus_cards = db.query(Card).filter(Card.tipo == "virus").all()
     cure_cards = db.query(Card).filter(Card.tipo == "cure").all()
@@ -59,36 +133,4 @@ def initialize_deck(db: Session, game: Game):
         elif card.name == "Discard Cards" or card.name == "Change Body":
             game.deck_cards.append(DeckCard(card=card))  # 1 copia de "Discard Cards" y "Change Body"
 
-    # Mezclar las cartas del mazo
-    random.shuffle(game.deck_cards)
-    
-    db.commit()
-
-    db.refresh(game)
-
-    draw_cards(db, game)
-
-
-def draw_cards(db: Session, game: Game):
-    # Jugadores del juego
-    players = db.query(Player).filter(Player.game_id == game.id)
-
-    for player in players:
-        steal_to_deck(db, game, player.id, 3)
-
-
-def steal_to_deck(db: Session, game: Game, player_id, num):
-    # Primero miramos si quedan suficientes cartas
-
-    rest = len(game.deck_cards)
-
-    if(rest < num):
-        # Se volverá a generar la baraja (otro método para futuro)
-        pass
-    else:
-        for _ in num:
-            card = game.deck_cards.pop()
-            pc = PlayerCard(
-                player_id = player_id,
-                card = card.id
-            )
+    pass

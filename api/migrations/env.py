@@ -8,8 +8,8 @@ from alembic import context
 from database import Base
 
 from models.game import Game
-from models.deck import Deck
 from models.user import User
+from models.deck import DeckCard
 
 from models.card import Card  # Asegúrate de importar correctamente el modelo Card
 from models.player import Player

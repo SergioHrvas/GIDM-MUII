@@ -61,9 +61,12 @@ def player_can_steal(db: Session, player_id: int, player_to: int, tipo: OrganTyp
             return False
 
 
-def add_virus_to_organ(db: Session, player_id: int, tipo: str):
+def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_infect: str):
     # Buscar el registro de organ
-    db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
+    if(card_tipo != "magic"):
+        db_organ = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == card_tipo).first()
+    else:
+        db_organ = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == organ_to_infect).first()
 
     if(db_organ):
         if db_organ.cure == 2:
