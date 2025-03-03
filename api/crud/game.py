@@ -9,7 +9,7 @@ from datetime import datetime
 from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_cards
-from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs, infect_players
+from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs, infect_players, discard_cards
 from crud.deck import initialize_deck
 import random
 
@@ -117,8 +117,8 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                     remove_card_from_player(db, player_id, move.card)  
 
             elif card.name == "Discard Cards":
-                #discard_cards(db, game_id, player_id)
-                #remove_card_from_player(db, player_id, move.card)
+                discard_cards(db, game_id, player_id)
+                remove_card_from_player(db, player_id, move.card)
                 pass
         """
 
