@@ -53,10 +53,9 @@ def draw_cards(db: Session, game: Game):
         steal_to_deck(db, game, player.id, 3)
 
 
-def steal_to_deck(db: Session, game: Game, player_id, num, players):
+def steal_to_deck(db: Session, game: Game, player_id, num):
+    
     # Primero miramos si quedan suficientes cartas
-
-
     rest_card = game.deck_cards
 
     if(len(rest_card) < num):
@@ -66,6 +65,8 @@ def steal_to_deck(db: Session, game: Game, player_id, num, players):
         # Eliminamos las cartas que quedaban en la baraja
         for card in rest_card:
             db.delete(card)  # Eliminar cartas restantes del mazo
+
+        players = db.query(Player).filter(Player.game_id == game.id).all()
 
         # Eliminamos en deck las cartas que están en la mano de cada jugador
         for player in players:

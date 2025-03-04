@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
-from api.models.playercard import PlayerCard
+from models.playercard import PlayerCard
 from models.organ import Organ
 from models.player import Player
 from models.card import Card
 from schemas.organtype import OrganType
-from crud.deck import steal_to_deck
 
 
 def remove_organ_from_player(db: Session, player_id: int, tipo: str):
@@ -226,15 +225,3 @@ def infect_players(db: Session, player_id, infect):
         if caninfect:
             add_virus_to_organ(db, infect.player5, infect.organ5)
             remove_virus_to_organ(db, player_id, infect.organ5)
-
-def discard_cards(db: Session, game, player_id):
-    # Jugador descarta cartas
-    players = db.query(Player).filter(Player.id != player_id, Player.game_id == game.id).all()
-
-    for player in players:
-        cards = db.query(PlayerCard).filter(PlayerCard.player_id == player.id).all()
-        db.delete(cards)
-        db.commit()
-
-    # Jugador roba cartas del mazo
-    steal_to_deck(db, game, player_id, 3)

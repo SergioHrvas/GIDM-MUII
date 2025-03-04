@@ -8,12 +8,14 @@ from schemas.game import GameCreate
 from datetime import datetime
 from schemas.move import Move
 import numpy as np
-from crud.playercard import remove_card_from_player, discard_cards
-from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs, infect_players, discard_cards
-from crud.deck import initialize_deck
+from crud.playercard import remove_card_from_player, discard_my_cards, discard_cards
+from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs, infect_players
+from crud.deck import initialize_deck, steal_to_deck
 import random
 
 def create_game(game: GameCreate, db: Session):
+    if(game.players <= 0):
+        return "Error"
     db_game = Game(
         status=game.status,
         winner=0,
@@ -55,9 +57,6 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
     # Obtenemos el juego
     game = db.query(Game).filter(Game.id == game_id).first()
 
-    # Obtenemos el mazo
-    # deck = db.query(Deck).filter(Deck.id == game.deck_id).first()
-
     # Obtenemos el jugador
     player = db.query(Player).filter(Player.id == game.turn).first()
     
@@ -68,10 +67,10 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
 
     if move.action == "discard":
         # Borramos las cartas
-        discard_cards(db, player_id)
+        discard_my_cards(db, player_id, move.discards)
 
-        # Añadimos tres nuevas cartas del mazo
-        ## PENDIENTE
+        # Añadimos las nuevas cartas del mazo
+        steal_to_deck(db, game, player_id, len(move.discards))
 
     elif move.action == "card":
         # Hacemos el movimiento
