@@ -1,13 +1,20 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.types import Enum as SQLAlchemyEnum
-from database import Base
-from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
+from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+import random
 
-class Deck(Base):
-    __tablename__ = 'decks'
+from database import Base
 
-    id = Column(Integer, primary_key=True)
-    deck_cards = Column(JSONB)
-    discard_cards = Column(JSONB)
-    game = relationship("Game", back_populates="deck", uselist=False) 
+
+class DeckCard(Base):
+    __tablename__ = "deck_cards"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)  # Clave primaria única
+    game_id = Column(Integer, ForeignKey("games.id"))
+    card_id = Column(Integer, ForeignKey("cards.id"))
+
+    # Relación con Game
+    game = relationship("Game", back_populates="deck_cards")
+
+    # Relación con Card
+    card = relationship("Card", back_populates="deck_cards")

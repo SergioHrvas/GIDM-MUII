@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.types import Enum as SQLAlchemyEnum
+from models.deck import DeckCard
 from database import Base
 from schemas.status import StatusEnum
 from sqlalchemy.orm import relationship
@@ -20,3 +21,6 @@ class Card(Base):
 
     # Relación inversa con PlayerCard
     player_cards = relationship("PlayerCard", back_populates="card")
+
+    # Relación inversa con DeckCard
+    deck_cards = relationship("DeckCard", back_populates="card")
