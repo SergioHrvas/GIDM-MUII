@@ -4,16 +4,8 @@ from database import SessionLocal, init_db
 from crud.game import get_game, create_game, do_move_game
 from schemas.game import GameCreate, GameResponse
 from schemas.move import Move
-
+from utils.db import get_db
 router = APIRouter()
-
-# Obtener una sesión de base de datos
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=GameResponse)
 def create_new_game(game: GameCreate, db: Session = Depends(get_db)):

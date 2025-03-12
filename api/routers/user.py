@@ -1,25 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from utils.auth import get_current_user
 from database import SessionLocal, init_db
-from crud.user import get_user, create_user
-from schemas.user import UserCreate, UserResponse
+from crud.user import get_user, create_user, login
+from schemas.user import UserBase, UserLogin, UserCreate, UserResponse, AuthResponse
+from utils.db import get_db
 
 router = APIRouter()
 
-# Obtener una sesión de base de datos
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=UserResponse)
 def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db, user)
 
 @router.get("/{user_id}", response_model=UserResponse)
-def read_user(user_id: int, db: Session = Depends(get_db)):
+def read_user(user_id: int, db: Session = Depends(get_db), current_user: UserBase = Depends(get_current_user)):
     db_user = get_user(db, user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
