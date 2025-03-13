@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun BottomNavBar(navController: NavController) {
     val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
-    val currentDestination = navController.currentDestination
     val selectedNavigationIndex = rememberSaveable { mutableIntStateOf(0) }
 
     NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
