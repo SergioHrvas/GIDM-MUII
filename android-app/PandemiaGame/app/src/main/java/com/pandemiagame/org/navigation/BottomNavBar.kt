@@ -22,6 +22,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pandemiagame.org.screen.Login
+import com.pandemiagame.org.screen.LoginComp
 
 @Composable
 fun BottomNavBar(navController: NavController) {
@@ -66,7 +68,7 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         startDestination = Screen.Home.route,
         modifier = modifier
     ) {
-        composable(Screen.Home.route) { Pantalla1() }
+        composable(Screen.Home.route) { LoginComp() }
         composable(Screen.Profile.route) { Pantalla2() }
         composable(Screen.Settings.route) { Pantalla3() }
     }
