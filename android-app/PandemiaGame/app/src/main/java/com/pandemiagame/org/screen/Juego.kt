@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +25,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +50,21 @@ class Game: ComponentActivity() {
     }
 }
 
+
 @Preview
+@Composable
+fun PreviewGame(){
+    PandemiaGameTheme(darkTheme = false){
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)) {
+            GameComp()
+        }    }
+}
+
+
+
+
 @Composable
 fun GameComp() {
     Column(
@@ -58,18 +76,48 @@ fun GameComp() {
         TheirBody()
 
         HorizontalDivider(thickness = 2.dp)
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
+            verticalArrangement = Arrangement.Center,
         ){
+            TheirBody()
 
-            MyBody()
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(text = "Pro")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+
+                horizontalArrangement = Arrangement.spacedBy(25.dp)
+
+            ){
+                Image(
+                    painter = painterResource(id = R.drawable.a),
+                    contentDescription = "Cerebro",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.width(100.dp)
+                )
+                Image(
+                    painter = painterResource(id = R.drawable.b),
+                    contentDescription = "Cerebro",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.width(100.dp)
+
+                )
+                Image(
+                    painter = painterResource(id = R.drawable.c),
+                    contentDescription = "Cerebro",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.width(100.dp)
+
+                )
             }
-        }
+            
+            Row {
+                Button(onClick = { /*TODO*/ }) {
+                    Icon(painter = painterResource(id = R.drawable.discard), contentDescription = "Discard cards")
+                }    
+            }
+            }
 
     }
 }
@@ -128,7 +176,7 @@ fun TheirBody(){
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.spacedBy(30.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.brain),
@@ -136,6 +184,7 @@ fun TheirBody(){
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.width(50.dp)
             )
+
             Image(
                 painter = painterResource(id = R.drawable.heart),
                 contentDescription = "Cerebro",
