@@ -22,7 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -34,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -69,9 +72,26 @@ fun PreviewGame(){
 fun GameComp() {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Row(
+            modifier = Modifier.padding(vertical = 10.dp)
+                .fillMaxWidth(), // Ocupar todo el ancho disponible
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End
+        ){
+            Text(
+                text="Usuario #1",
+                modifier = Modifier.padding(end = 20.dp)
+            )
+            Image(painter = painterResource(id = R.drawable.user),
+                contentDescription = "Imagen de perfil",
+                modifier = Modifier.size(40.dp).border(width = 1.dp, color= Color.Black, shape = CircleShape))
+
+        }
+
 
         TheirBody()
 
