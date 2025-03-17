@@ -28,6 +28,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -76,68 +78,105 @@ fun GameComp() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Row(
-            modifier = Modifier.padding(vertical = 10.dp)
-                .fillMaxWidth(), // Ocupar todo el ancho disponible
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
-        ){
-            Text(
-                text="Usuario #1",
-                modifier = Modifier.padding(end = 20.dp)
-            )
-            Image(painter = painterResource(id = R.drawable.user),
-                contentDescription = "Imagen de perfil",
-                modifier = Modifier.size(40.dp).border(width = 1.dp, color= Color.Black, shape = CircleShape))
+        Column (modifier = Modifier.padding(bottom = 40.dp)){
+            Row(
+                modifier = Modifier.padding(vertical = 10.dp)
+                    .fillMaxWidth(), // Ocupar todo el ancho disponible
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ){
+                Text(
+                    text="Usuario #1",
+                    modifier = Modifier.padding(end = 20.dp)
+                )
+                Image(painter = painterResource(id = R.drawable.user),
+                    contentDescription = "Imagen de perfil",
+                    modifier = Modifier.size(40.dp).border(width = 1.dp, color= Color.Black, shape = CircleShape))
 
+            }
+
+
+
+             Body(false)
         }
-
-
-        TheirBody()
-
         HorizontalDivider(thickness = 2.dp)
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 40.dp),
             verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ){
-            TheirBody()
+            Body(true)
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = 15.dp).padding(top = 30.dp),
 
-                horizontalArrangement = Arrangement.spacedBy(25.dp)
+                horizontalArrangement = Arrangement.spacedBy(15.dp)
 
             ){
                 Image(
                     painter = painterResource(id = R.drawable.a),
                     contentDescription = "Cerebro",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(100.dp)
+                    modifier = Modifier.width(110.dp)
                 )
                 Image(
                     painter = painterResource(id = R.drawable.b),
                     contentDescription = "Cerebro",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(100.dp)
+                    modifier = Modifier.width(110.dp)
 
                 )
                 Image(
                     painter = painterResource(id = R.drawable.c),
                     contentDescription = "Cerebro",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(100.dp)
+                    modifier = Modifier.width(110.dp)
 
                 )
             }
             
-            Row {
+            Row(
+                modifier = Modifier.padding(top=40.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
                 Button(onClick = { /*TODO*/ }) {
                     Icon(painter = painterResource(id = R.drawable.discard), contentDescription = "Discard cards")
-                }    
+
+                }
+                Box() {
+                    var expanded by remember { mutableStateOf(false) }
+                    val options = listOf("Opción 1", "Opción 2", "Opción 3")
+
+                    Button(onClick = { expanded = true }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.menu),
+                            contentDescription = "Discard cards"
+                        )
+
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        options.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    expanded = false
+                                    println("Seleccionaste: $option") // Aquí puedes manejar la selección
+                                }
+                            )
+                        }
+                    }
+                }
+                }
             }
-            }
+
 
     }
 }
@@ -185,7 +224,7 @@ fun MyBody(){
 
 
 @Composable
-fun TheirBody(){
+fun Body(myBody: Boolean){
     Box(
         modifier = Modifier
             .padding(14.dp)
@@ -196,33 +235,33 @@ fun TheirBody(){
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(30.dp)
+            horizontalArrangement = Arrangement.spacedBy(if(myBody) 10.dp else 30.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.brain),
                 contentDescription = "Cerebro",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(50.dp)
+                modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
             )
 
             Image(
                 painter = painterResource(id = R.drawable.heart),
                 contentDescription = "Cerebro",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(50.dp)
+                modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
             )
             Image(
                 painter = painterResource(id = R.drawable.lungs),
                 contentDescription = "Cerebro",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(50.dp)
+                modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
 
             )
             Image(
                 painter = painterResource(id = R.drawable.intestine),
                 contentDescription = "Cerebro",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(50.dp)
+                modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
 
             )
         }

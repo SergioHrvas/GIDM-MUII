@@ -29,13 +29,14 @@ import com.pandemiagame.org.navigation.BottomNavBar
 import com.pandemiagame.org.navigation.NavGraph
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
+import com.pandemiagame.org.screen.GameComp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             PandemiaGameTheme {
-                val navController = rememberNavController()
+/*                val navController = rememberNavController()
                 Scaffold(
                     bottomBar = { BottomNavBar(navController) },
                     floatingActionButton = {
@@ -47,7 +48,8 @@ class MainActivity : ComponentActivity() {
                 ) { paddingValues ->
                     NavGraph(navController, Modifier.padding(paddingValues))
 
-                }
+                }*/
+                GameComp()
 
             }
         }
