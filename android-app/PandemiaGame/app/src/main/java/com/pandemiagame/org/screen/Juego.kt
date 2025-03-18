@@ -30,10 +30,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,13 +48,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
+import com.pandemiagame.org.navigation.BottomNavBar
+import com.pandemiagame.org.navigation.CustomTopAppBar
+import com.pandemiagame.org.navigation.NavGraph
 
-class Game: ComponentActivity() {
+class GameActivity: ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             PandemiaGameTheme {
-                GameComp()
+                Scaffold(
+                    topBar = {
+                        CustomTopAppBar()
+                    },
+                    /*floatingActionButton = {
+                        LargeExample {
+                            println("FAB presionado")
+                        }
+                    },
+                    floatingActionButtonPosition = FabPosition.Center*/
+                ) { innerPadding ->
+                    GameComp(modifier = Modifier.padding(innerPadding))
+                }
             }
         }
     }
@@ -71,16 +93,17 @@ fun PreviewGame(){
 
 
 @Composable
-fun GameComp() {
+fun GameComp(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Column (modifier = Modifier.padding(bottom = 40.dp)){
             Row(
-                modifier = Modifier.padding(vertical = 10.dp)
+                modifier = Modifier
+                    .padding(vertical = 10.dp)
                     .fillMaxWidth(), // Ocupar todo el ancho disponible
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
@@ -91,7 +114,9 @@ fun GameComp() {
                 )
                 Image(painter = painterResource(id = R.drawable.user),
                     contentDescription = "Imagen de perfil",
-                    modifier = Modifier.size(40.dp).border(width = 1.dp, color= Color.Black, shape = CircleShape))
+                    modifier = Modifier
+                        .size(40.dp)
+                        .border(width = 1.dp, color = Color.Black, shape = CircleShape))
 
             }
 
@@ -112,7 +137,8 @@ fun GameComp() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 15.dp).padding(top = 30.dp),
+                    .padding(horizontal = 15.dp)
+                    .padding(top = 30.dp),
 
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
 
