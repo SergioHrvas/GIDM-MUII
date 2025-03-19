@@ -158,6 +158,25 @@ fun GameComp(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
+            Row(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth(), // Ocupar todo el ancho disponible
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ){
+                Text(
+                    text="Usuario #2",
+                    modifier = Modifier.padding(end = 20.dp)
+                )
+                Image(painter = painterResource(id = R.drawable.user),
+                    contentDescription = "Imagen de perfil",
+                    modifier = Modifier
+                        .padding(end=10.dp).size(40.dp)
+                        .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                )
+
+            }
             Body(true)
 
             Row(
