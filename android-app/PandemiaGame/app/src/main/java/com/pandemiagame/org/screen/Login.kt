@@ -5,8 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.content.MediaType.Companion.Image
-import androidx.compose.foundation.content.MediaType.Companion.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.pandemiagame.org.R
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
@@ -33,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 class Login: ComponentActivity() {
@@ -69,8 +65,7 @@ fun LoginComp() {
         Box(
             modifier = Modifier.padding(14.dp).border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(20.dp)).padding(16.dp)
         ) {
-            Column(
-            ) {
+            Column {
                 Text("Correo electrónico")        // Campo de texto para el nombre
                 TextField(
                     value = email,

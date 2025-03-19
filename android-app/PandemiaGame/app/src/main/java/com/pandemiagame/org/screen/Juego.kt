@@ -21,40 +21,28 @@ import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
-import com.pandemiagame.org.navigation.BottomNavBar
 import com.pandemiagame.org.navigation.CustomTopAppBar
-import com.pandemiagame.org.navigation.NavGraph
 
 class GameActivity: ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -100,14 +88,41 @@ fun GameComp(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Column (modifier = Modifier.padding(bottom = 40.dp)){
+        Column (modifier = Modifier.padding(bottom = 20.dp)){
             Row(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
+                    .padding(top = 10.dp)
                     .fillMaxWidth(), // Ocupar todo el ancho disponible
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ){
+                Box (modifier = Modifier.padding(start = 10.dp).weight(1F)) {
+                    var expanded by remember { mutableStateOf(false) }
+                    val options = listOf("Opción 1", "Opción 2", "Opción 3")
+
+                    Button(onClick = { expanded = true }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.menu),
+                            contentDescription = "Discard cards"
+                        )
+
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        options.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    expanded = false
+                                    println("Seleccionaste: $option") // Aquí puedes manejar la selección
+                                }
+                            )
+                        }
+                    }
+                }
                 Text(
                     text="Usuario #1",
                     modifier = Modifier.padding(end = 20.dp)
@@ -115,8 +130,9 @@ fun GameComp(modifier: Modifier = Modifier) {
                 Image(painter = painterResource(id = R.drawable.user),
                     contentDescription = "Imagen de perfil",
                     modifier = Modifier
-                        .size(40.dp)
-                        .border(width = 1.dp, color = Color.Black, shape = CircleShape))
+                        .padding(end=10.dp).size(40.dp)
+                        .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                        )
 
             }
 
@@ -124,11 +140,21 @@ fun GameComp(modifier: Modifier = Modifier) {
 
              Body(false)
         }
-        HorizontalDivider(thickness = 2.dp)
+        Box(
+            contentAlignment = Alignment.Center
+        ){
+            HorizontalDivider(thickness = 2.dp)
+
+            Image(
+                painter = painterResource(id = R.drawable.backdeck),
+                contentDescription = "Discard cards",
+                modifier = modifier.height(150.dp)
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 40.dp),
+                .padding(top = 20.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
@@ -173,81 +199,13 @@ fun GameComp(modifier: Modifier = Modifier) {
                     Icon(painter = painterResource(id = R.drawable.discard), contentDescription = "Discard cards")
 
                 }
-                Box() {
-                    var expanded by remember { mutableStateOf(false) }
-                    val options = listOf("Opción 1", "Opción 2", "Opción 3")
 
-                    Button(onClick = { expanded = true }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.menu),
-                            contentDescription = "Discard cards"
-                        )
-
-                    }
-
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        options.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    expanded = false
-                                    println("Seleccionaste: $option") // Aquí puedes manejar la selección
-                                }
-                            )
-                        }
-                    }
-                }
                 }
             }
 
 
     }
 }
-
-@Composable
-fun MyBody(){
-    Box(
-        modifier = Modifier
-            .padding(14.dp)
-            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(20.dp))
-            .padding(8.dp),
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.brain),
-                contentDescription = "Cerebro",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.width(30.dp)
-            )
-            Image(
-                painter = painterResource(id = R.drawable.heart),
-                contentDescription = "Cerebro",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.width(30.dp)
-            )
-            Image(
-                painter = painterResource(id = R.drawable.lungs),
-                contentDescription = "Cerebro",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.width(30.dp)
-
-            )
-            Image(
-                painter = painterResource(id = R.drawable.intestine),
-                contentDescription = "Cerebro",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.width(30.dp)
-
-            )
-        }
-    }
-}
-
 
 @Composable
 fun Body(myBody: Boolean){
