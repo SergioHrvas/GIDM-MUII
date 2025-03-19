@@ -87,8 +87,7 @@ fun GameComp(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Column (modifier = Modifier.padding(bottom = 20.dp)){
+        Column (modifier = Modifier.padding(bottom = 2.dp)){
             Row(
                 modifier = Modifier
                     .padding(top = 10.dp)
@@ -136,19 +135,18 @@ fun GameComp(modifier: Modifier = Modifier) {
 
             }
 
-
-
              Body(false)
         }
         Box(
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
+
         ){
             HorizontalDivider(thickness = 2.dp)
 
             Image(
                 painter = painterResource(id = R.drawable.backdeck),
                 contentDescription = "Discard cards",
-                modifier = modifier.height(150.dp)
+                modifier = Modifier.height(130.dp)
             )
         }
         Column(
@@ -182,8 +180,8 @@ fun GameComp(modifier: Modifier = Modifier) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 15.dp)
-                    .padding(top = 30.dp),
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 15.dp),
 
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
 
@@ -192,26 +190,26 @@ fun GameComp(modifier: Modifier = Modifier) {
                     painter = painterResource(id = R.drawable.a),
                     contentDescription = "Cerebro",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(110.dp)
+                    modifier = Modifier.width(114.dp)
                 )
                 Image(
                     painter = painterResource(id = R.drawable.b),
                     contentDescription = "Cerebro",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(110.dp)
+                    modifier = Modifier.width(114.dp)
 
                 )
                 Image(
                     painter = painterResource(id = R.drawable.c),
                     contentDescription = "Cerebro",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(110.dp)
+                    modifier = Modifier.width(114.dp)
 
                 )
             }
             
             Row(
-                modifier = Modifier.padding(top=40.dp),
+                modifier = Modifier.padding(top=20.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(onClick = { /*TODO*/ }) {
