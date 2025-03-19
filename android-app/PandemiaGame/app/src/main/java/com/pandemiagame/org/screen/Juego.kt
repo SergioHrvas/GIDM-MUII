@@ -3,9 +3,13 @@ package com.pandemiagame.org.screen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,13 +38,16 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.pandemiagame.org.navigation.CustomTopAppBar
 
 class GameActivity: ComponentActivity() {
@@ -82,6 +90,8 @@ fun PreviewGame(){
 
 @Composable
 fun GameComp(modifier: Modifier = Modifier) {
+    var isCardDrawn by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
@@ -95,7 +105,9 @@ fun GameComp(modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ){
-                Box (modifier = Modifier.padding(start = 10.dp).weight(1F)) {
+                Box (modifier = Modifier
+                    .padding(start = 10.dp)
+                    .weight(1F)) {
                     var expanded by remember { mutableStateOf(false) }
                     val options = listOf("Opción 1", "Opción 2", "Opción 3")
 
@@ -129,7 +141,8 @@ fun GameComp(modifier: Modifier = Modifier) {
                 Image(painter = painterResource(id = R.drawable.user),
                     contentDescription = "Imagen de perfil",
                     modifier = Modifier
-                        .padding(end=10.dp).size(40.dp)
+                        .padding(end = 10.dp)
+                        .size(40.dp)
                         .border(width = 1.dp, color = Color.Black, shape = CircleShape)
                         )
 
@@ -139,15 +152,25 @@ fun GameComp(modifier: Modifier = Modifier) {
         }
         Box(
             contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .zIndex(1f)  // Asegura que el Box con la animación esté por encima de otros elementos
+        ) {
+                HorizontalDivider(thickness = 3.dp, modifier = Modifier.fillMaxWidth())
 
-        ){
-            HorizontalDivider(thickness = 2.dp)
+                // Mazo de cartas (backdeck)
+                Image(
+                    painter = painterResource(id = R.drawable.backdeck),
+                    contentDescription = "Mazo de cartas",
+                    modifier = Modifier
+                        .height(150.dp)
+                        .clickable { isCardDrawn = true } // Disparar animación al hacer clic
+                )
 
-            Image(
-                painter = painterResource(id = R.drawable.backdeck),
-                contentDescription = "Discard cards",
-                modifier = Modifier.height(130.dp)
-            )
+                // Carta animada al robar
+                if (isCardDrawn) {
+                    DrawCardAnimation { isCardDrawn = false } // Resetea el estado cuando termina
+                }
         }
         Column(
             modifier = Modifier
@@ -170,7 +193,8 @@ fun GameComp(modifier: Modifier = Modifier) {
                 Image(painter = painterResource(id = R.drawable.user),
                     contentDescription = "Imagen de perfil",
                     modifier = Modifier
-                        .padding(end=10.dp).size(40.dp)
+                        .padding(end = 10.dp)
+                        .size(40.dp)
                         .border(width = 1.dp, color = Color.Black, shape = CircleShape)
                 )
 
@@ -207,7 +231,7 @@ fun GameComp(modifier: Modifier = Modifier) {
 
                 )
             }
-            
+
             Row(
                 modifier = Modifier.padding(top=20.dp),
                 horizontalArrangement = Arrangement.Center
@@ -266,5 +290,42 @@ fun Body(myBody: Boolean){
 
             )
         }
+    }
+}
+
+
+
+@Composable
+fun DrawCardAnimation(onAnimationEnd: () -> Unit) {
+    val startY = 0f  // Comienza desde el mazo
+    val endY = 500f  // Baja hasta el jugador (ajusta según necesidad)
+
+    val positionY = remember { Animatable(startY) }
+    val rotation = remember { Animatable(0f) }  // Empieza sin rotación
+
+    LaunchedEffect(Unit) {
+        // Primero rotamos 90 grados
+        rotation.animateTo(
+            90f,
+            animationSpec = tween(durationMillis = 400, easing = LinearOutSlowInEasing)
+        )
+
+        positionY.animateTo(
+            endY,
+            animationSpec = tween(durationMillis = 800, easing = LinearOutSlowInEasing)
+        )
+        onAnimationEnd() // Restablece el estado después de la animación
+    }
+
+    Box(
+        modifier = Modifier
+            .width(150.dp)
+            .offset(y = positionY.value.dp)
+            .rotate(rotation.value) // Aplicamos la rotación
+            .zIndex(2f)  // Asegura que la carta esté por encima de otros elementos
+    )
+    {
+        Image(        painter = painterResource(id = R.drawable.backrotated),
+            contentDescription = "",)
     }
 }
