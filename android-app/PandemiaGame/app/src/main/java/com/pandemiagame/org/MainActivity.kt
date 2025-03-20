@@ -12,11 +12,11 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.pandemiagame.org.navigation.BottomNavBar
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
+import com.pandemiagame.org.model.LoginViewModel
 import com.pandemiagame.org.model.Screen
 import com.pandemiagame.org.navigation.CustomTopAppBar
 import com.pandemiagame.org.screen.GameActivity
@@ -38,7 +39,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PandemiaGameTheme {
-                        AppNavigation()
+                AppNavigation()
                 /*val navController = rememberNavController()
 
                 Scaffold(
@@ -70,25 +71,16 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
     val currentRoute = currentRoute(navController)
-
-    // Pantallas donde NO se deben mostrar la barra
-    val screensWithoutNavBar = listOf("game")
-
-    Scaffold(
-        topBar = { CustomTopAppBar() },
-        bottomBar = { if (currentRoute !in screensWithoutNavBar) BottomNavBar(navController) }
-    ) { innerPadding ->
-        NavHost(
+    val viewModel: LoginViewModel = viewModel() // Obtener el ViewModel correctamente
+    NavHost(
             navController = navController,
             startDestination = "login",
-            modifier = Modifier.padding(innerPadding)
         ) {
-            composable("login") { LoginComp(navController) } // No tiene TopBar ni BottomBar
-            composable("home") { Pantalla1(navController) }  // Tiene ambas barras
-            composable("game") { GameComp() }  // Tiene ambas barras
+            composable("login") { LoginComp(navController, viewModel) }
+            composable("home") { Pantalla1(navController) }
+            composable("game") { GameComp() }
             composable("profile") { Pantalla2(navController) }
             composable("settings") { Pantalla3(navController) }
-        }
     }
 }
 
@@ -97,4 +89,10 @@ fun AppNavigation() {
 fun currentRoute(navController: NavController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     return navBackStackEntry?.destination?.route
+}
+
+
+
+fun ScaffoldTopBar(){
+
 }

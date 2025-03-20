@@ -41,11 +41,6 @@ fun BottomNavBar(navController: NavController) {
                     contentDescription = screen.label,
                     tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.White // Color del icono
                 ) },
-                /*label = { Text(
-                    fontSize = 30.sp,
-                    text = screen.label,
-                    color = if (isSelected) Color.White else Color.White // Color del texto
-                ) },*/
                 selected = isSelected,
                 onClick = {
                         selectedNavigationIndex.intValue = index
