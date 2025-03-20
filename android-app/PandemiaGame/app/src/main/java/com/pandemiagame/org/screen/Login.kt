@@ -40,21 +40,18 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-
-class Login: ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            PandemiaGameTheme {
-                LoginComp()
-            }
-        }
-    }
-}
+import androidx.navigation.NavController
 
 @Preview
 @Composable
-fun LoginComp() {
+fun Login () {
+            PandemiaGameTheme {
+                //LoginComp()
+            }
+}
+
+@Composable
+fun LoginComp(navController: NavController) {
     var email by remember { mutableStateOf("") }  // Estado para el email
     var password by remember { mutableStateOf("") }  // Estado para la contraseña
     Column(

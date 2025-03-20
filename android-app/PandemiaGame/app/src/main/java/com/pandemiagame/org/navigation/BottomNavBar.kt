@@ -60,16 +60,3 @@ fun BottomNavBar(navController: NavController) {
         }
     }
 }
-
-@Composable
-fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Home.route,
-        modifier = modifier
-    ) {
-        composable(Screen.Home.route) { LoginComp() }
-        composable(Screen.Profile.route) { Pantalla2() }
-        composable(Screen.Settings.route) { Pantalla3() }
-    }
-}
