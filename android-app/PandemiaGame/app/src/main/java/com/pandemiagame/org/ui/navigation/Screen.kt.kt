@@ -1,4 +1,4 @@
-package com.pandemiagame.org.model
+package com.pandemiagame.org.ui.navigation
 
 
 import androidx.compose.material.icons.Icons

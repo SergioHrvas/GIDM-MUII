@@ -1,4 +1,4 @@
-package com.pandemiagame.org.navigation
+package com.pandemiagame.org.ui.navigation
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme

@@ -1,4 +1,4 @@
-package com.pandemiagame.org.screen
+package com.pandemiagame.org.ui.screens
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -45,10 +45,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.pandemiagame.org.navigation.CustomTopAppBar
+import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 
 class GameActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,29 +1,14 @@
-package com.pandemiagame.org.navigation
+package com.pandemiagame.org.ui.navigation
 
-import android.util.Log
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavHost
-import androidx.navigation.NavHostController
-import com.pandemiagame.org.model.Screen
-import com.pandemiagame.org.screen.Pantalla1
-import com.pandemiagame.org.screen.Pantalla2
-import com.pandemiagame.org.screen.Pantalla3
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.pandemiagame.org.screen.Login
-import com.pandemiagame.org.screen.LoginComp
 
 @Composable
 fun BottomNavBar(navController: NavController) {

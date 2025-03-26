@@ -1,38 +1,23 @@
 package com.pandemiagame.org
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.pandemiagame.org.navigation.BottomNavBar
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
-import com.pandemiagame.org.model.LoginViewModel
-import com.pandemiagame.org.model.Screen
-import com.pandemiagame.org.navigation.CustomTopAppBar
-import com.pandemiagame.org.screen.GameActivity
-import com.pandemiagame.org.screen.GameComp
-import com.pandemiagame.org.screen.LoginComp
-import com.pandemiagame.org.screen.Pantalla1
-import com.pandemiagame.org.screen.Pantalla2
-import com.pandemiagame.org.screen.Pantalla3
+import com.pandemiagame.org.ui.viewmodels.LoginViewModel
+import com.pandemiagame.org.ui.screens.GameComp
+import com.pandemiagame.org.ui.screens.LoginComp
+import com.pandemiagame.org.ui.screens.Pantalla1
+import com.pandemiagame.org.ui.screens.Pantalla2
+import com.pandemiagame.org.ui.screens.Pantalla3
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
