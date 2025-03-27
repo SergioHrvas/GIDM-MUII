@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -12,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
+import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import com.pandemiagame.org.ui.screens.GameComp
 import com.pandemiagame.org.ui.screens.LoginComp
@@ -57,9 +59,15 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val currentRoute = currentRoute(navController)
     val viewModel: LoginViewModel = viewModel() // Obtener el ViewModel correctamente
+    val tm = TokenManager(LocalContext.current);
+
+    val token = tm.getToken();
+
+    val startDest = if(token.isNullOrEmpty()) "login" else "home"
+
     NavHost(
             navController = navController,
-            startDestination = "login",
+            startDestination = startDest,
         ) {
             composable("login") { LoginComp(navController, viewModel) }
             composable("home") { Pantalla1(navController) }

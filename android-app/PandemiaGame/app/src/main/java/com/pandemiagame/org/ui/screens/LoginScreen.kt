@@ -27,10 +27,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -57,10 +59,23 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
     val email :String by viewModel.email.observeAsState(initial="")  // Estado para el email
     val password :String by viewModel.password.observeAsState(initial="")  // Estado para el email  // Estado para la contraseña
     val loginEnable :Boolean by viewModel.loginEnable.observeAsState(initial=false)  // Estado para el email  // Estado para la contraseña
-
+    val token: String? by viewModel.token.observeAsState(initial = null)
+    
     val isLoading :Boolean by viewModel.isLoading.observeAsState(initial=false)  // Estado para el email  // Estado para la contraseña
 
+
+    (if (token?.isNotEmpty() == true) token else "a")?.let { Log.v(token, it) }
+    // Usa LaunchedEffect para escuchar cambios en el token y navegar solo una vez cuando el token esté disponible
+    LaunchedEffect(token) {
+        if (token != null && token?.isNotEmpty() == true) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true } // Elimina la pantalla de login de la pila de navegación
+            }
+        }
+    }
+
     val coroutine = rememberCoroutineScope()
+    val context = LocalContext.current  // Obtén el contexto actual
 
     Scaffold (
         topBar = { CustomTopAppBar() },
@@ -120,7 +135,7 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
                                 .padding(vertical = 8.dp), // Modificador opcional para ajustar el ancho
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
-                        LoginButton(loginEnable) { coroutine.launch { viewModel.onLoginSelected() } }
+                        LoginButton(loginEnable) { coroutine.launch { viewModel.onLoginSelected(context) } }
                     }
                 }
             }

@@ -1,13 +1,17 @@
 package com.pandemiagame.org.ui.viewmodels
 
+import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.Navigation.findNavController
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.LoginRequest
 import com.pandemiagame.org.data.remote.RetrofitClient
+import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -26,9 +30,8 @@ class LoginViewModel : ViewModel(){
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
 
-
-    private val _token = MutableLiveData<String>()
-    val token : LiveData<String> = _token
+    private val _token = MutableLiveData<String?>()
+    val token : LiveData<String?> = _token
 
 
     fun onLoginChange(email: String, password: String){
@@ -43,26 +46,28 @@ class LoginViewModel : ViewModel(){
 
     fun isValidPassword(password: String): Boolean = password.length > 5
 
-    fun onLoginSelected() {
+    fun onLoginSelected(ctx: Context) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = email.value?.let { password.value?.let { it1 -> login(it, it1) } }
-            //_token.value = result!!
+            val result = email.value?.let { password.value?.let { it1 -> login(it, it1, ctx) } }
+            _token.value = result;
             _isLoading.value = false
         }
+
     }
 
-    suspend fun login(email: String, password: String): String? {
+    suspend fun login(email: String, password: String, context: Context): String? {
         return withContext(Dispatchers.IO) {  // Ejecutar en hilo de fondo
             try {
-                Log.v("Login", "Intentando login con $email")
                 val response = RetrofitClient.instance.login(email, password, "password")
 
                 if (response.access_token.isNotEmpty()) {
-                    Log.v("Login Success", "Token recibido: ${response.access_token}")
+                    val tm = TokenManager(context);
+
+                    tm.saveToken(response.access_token);
+                    
                     return@withContext response.access_token
                 } else {
-                    Log.v("Login Failed", "Respuesta sin token")
                     return@withContext null
                 }
             } catch (e: Exception) {
