@@ -4,6 +4,12 @@ from enum import Enum
 from pydantic.fields import Field
 
 
+
+class CardBase(BaseModel):
+    id: int
+    name: str
+    tipo: str
+
 # Enumeración para los tipos de cartas asociadas a un órgano
 class CardType(str, Enum):
     VIRUS = "virus"
@@ -16,17 +22,8 @@ class OrganCard(BaseModel):
     virus: bool
     cure: int
 
-
-# Esquema para una carta de jugador
-class OrganCard(BaseModel):
-    tipo: str  # Nombre del órgano (corazon, pulmon, estomago, cerebro, multicolor)
-    virus: bool
-    cure: int
-
-
 class PlayerCard(BaseModel):
-    card_id: int
-
+    card: CardBase
 
 # Esquema base sin ID (para crear o actualizar un jugador)
 class PlayerBase(BaseModel):

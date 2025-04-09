@@ -44,7 +44,6 @@ class GameViewModel(private val context: Context) : ViewModel(){
 
 
                 var token = "Bearer " + tokenManager.getToken()
-
                 val response = RetrofitClient.instance.createGame(token, gameRequest)
 
                 if (response.id > 0) {
