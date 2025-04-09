@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.Navigation.findNavController
 import com.pandemiagame.org.R
-import com.pandemiagame.org.data.remote.LoginRequest
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +31,6 @@ class LoginViewModel : ViewModel(){
 
     private val _token = MutableLiveData<String?>()
     val token : LiveData<String?> = _token
-
 
     fun onLoginChange(email: String, password: String){
         _email.value = email

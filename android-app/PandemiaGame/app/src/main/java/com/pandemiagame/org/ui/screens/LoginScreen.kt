@@ -57,14 +57,12 @@ fun Login () {
 @Composable
 fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
     val email :String by viewModel.email.observeAsState(initial="")  // Estado para el email
-    val password :String by viewModel.password.observeAsState(initial="")  // Estado para el email  // Estado para la contraseña
-    val loginEnable :Boolean by viewModel.loginEnable.observeAsState(initial=false)  // Estado para el email  // Estado para la contraseña
-    val token: String? by viewModel.token.observeAsState(initial = null)
+    val password :String by viewModel.password.observeAsState(initial="")  // Estado para la password
+    val loginEnable :Boolean by viewModel.loginEnable.observeAsState(initial=false)  // Estado para el boton activado
+    val token: String? by viewModel.token.observeAsState(initial = null) // Estado para el token
     
-    val isLoading :Boolean by viewModel.isLoading.observeAsState(initial=false)  // Estado para el email  // Estado para la contraseña
+    val isLoading :Boolean by viewModel.isLoading.observeAsState(initial=false) // Estado para el cargando
 
-
-    (if (token?.isNotEmpty() == true) token else "a")?.let { Log.v(token, it) }
     // Usa LaunchedEffect para escuchar cambios en el token y navegar solo una vez cuando el token esté disponible
     LaunchedEffect(token) {
         if (token != null && token?.isNotEmpty() == true) {
@@ -147,7 +145,6 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
 fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit){
     Button(
         onClick = {
-            Log.v("a", "b");
             onLoginSelected()},
         modifier = Modifier
             .fillMaxWidth()

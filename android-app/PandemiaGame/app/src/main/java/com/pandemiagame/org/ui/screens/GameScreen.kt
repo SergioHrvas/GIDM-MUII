@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -91,160 +92,174 @@ fun PreviewGame(){
 fun GameComp(modifier: Modifier = Modifier) {
     var isCardDrawn by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Column (modifier = Modifier.padding(bottom = 2.dp)){
-            Row(
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth(), // Ocupar todo el ancho disponible
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
-            ){
-                Box (modifier = Modifier
-                    .padding(start = 10.dp)
-                    .weight(1F)) {
-                    var expanded by remember { mutableStateOf(false) }
-                    val options = listOf("Opción 1", "Opción 2", "Opción 3")
-
-                    Button(onClick = { expanded = true }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.menu),
-                            contentDescription = "Discard cards"
-                        )
-
-                    }
-
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        options.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    expanded = false
-                                    println("Seleccionaste: $option") // Aquí puedes manejar la selección
-                                }
-                            )
-                        }
-                    }
-                }
-                Text(
-                    text="Usuario #1",
-                    modifier = Modifier.padding(end = 20.dp)
-                )
-                Image(painter = painterResource(id = R.drawable.user),
-                    contentDescription = "Imagen de perfil",
-                    modifier = Modifier
-                        .padding(end = 10.dp)
-                        .size(40.dp)
-                        .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                        )
-
-            }
-
-             Body(false)
-        }
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .zIndex(1f)  // Asegura que el Box con la animación esté por encima de otros elementos
-        ) {
-                HorizontalDivider(thickness = 3.dp, modifier = Modifier.fillMaxWidth())
-
-                // Mazo de cartas (backdeck)
-                Image(
-                    painter = painterResource(id = R.drawable.backdeck),
-                    contentDescription = "Mazo de cartas",
-                    modifier = Modifier
-                        .height(150.dp)
-                        .clickable { isCardDrawn = true } // Disparar animación al hacer clic
-                )
-
-                // Carta animada al robar
-                if (isCardDrawn) {
-                    DrawCardAnimation { isCardDrawn = false } // Resetea el estado cuando termina
-                }
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Row(
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .fillMaxWidth(), // Ocupar todo el ancho disponible
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
-            ){
-                Text(
-                    text="Usuario #2",
-                    modifier = Modifier.padding(end = 20.dp)
-                )
-                Image(painter = painterResource(id = R.drawable.user),
-                    contentDescription = "Imagen de perfil",
-                    modifier = Modifier
-                        .padding(end = 10.dp)
-                        .size(40.dp)
-                        .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                )
-
-            }
-            Body(true)
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .padding(top = 15.dp),
-
-                horizontalArrangement = Arrangement.spacedBy(15.dp)
-
-            ){
-                Image(
-                    painter = painterResource(id = R.drawable.a),
-                    contentDescription = "Cerebro",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(114.dp)
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.b),
-                    contentDescription = "Cerebro",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(114.dp)
-
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.c),
-                    contentDescription = "Cerebro",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(114.dp)
-
-                )
-            }
-
-            Row(
-                modifier = Modifier.padding(top=20.dp),
-                horizontalArrangement = Arrangement.Center
+    Scaffold (
+        topBar = { CustomTopAppBar() },
+    ) { innerPading ->
+            Column(
+                modifier = modifier.fillMaxSize().padding(innerPading),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Button(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.discard), contentDescription = "Discard cards")
+                Column(modifier = Modifier.padding(bottom = 2.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .fillMaxWidth(), // Ocupar todo el ancho disponible
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 10.dp)
+                                .weight(1F)
+                        ) {
+                            var expanded by remember { mutableStateOf(false) }
+                            val options = listOf("Opción 1", "Opción 2", "Opción 3")
 
+                            Button(onClick = { expanded = true }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.menu),
+                                    contentDescription = "Discard cards"
+                                )
+
+                            }
+
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                options.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            expanded = false
+                                            println("Seleccionaste: $option") // Aquí puedes manejar la selección
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Text(
+                            text = "Usuario #1",
+                            modifier = Modifier.padding(end = 20.dp)
+                        )
+                        Image(
+                            painter = painterResource(id = R.drawable.user),
+                            contentDescription = "Imagen de perfil",
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(40.dp)
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                        )
+
+                    }
+
+                    Body(false)
+                }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .zIndex(1f)  // Asegura que el Box con la animación esté por encima de otros elementos
+                ) {
+                    HorizontalDivider(thickness = 3.dp, modifier = Modifier.fillMaxWidth())
+
+                    // Mazo de cartas (backdeck)
+                    Image(
+                        painter = painterResource(id = R.drawable.backdeck),
+                        contentDescription = "Mazo de cartas",
+                        modifier = Modifier
+                            .height(150.dp)
+                            .clickable { isCardDrawn = true } // Disparar animación al hacer clic
+                    )
+
+                    // Carta animada al robar
+                    if (isCardDrawn) {
+                        DrawCardAnimation {
+                            isCardDrawn = false
+                        } // Resetea el estado cuando termina
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .fillMaxWidth(), // Ocupar todo el ancho disponible
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = "Usuario #2",
+                            modifier = Modifier.padding(end = 20.dp)
+                        )
+                        Image(
+                            painter = painterResource(id = R.drawable.user),
+                            contentDescription = "Imagen de perfil",
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(40.dp)
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                        )
+
+                    }
+                    Body(true)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 15.dp),
+
+                        horizontalArrangement = Arrangement.spacedBy(15.dp)
+
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.a),
+                            contentDescription = "Cerebro",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.width(114.dp)
+                        )
+                        Image(
+                            painter = painterResource(id = R.drawable.b),
+                            contentDescription = "Cerebro",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.width(114.dp)
+
+                        )
+                        Image(
+                            painter = painterResource(id = R.drawable.c),
+                            contentDescription = "Cerebro",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.width(114.dp)
+
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(top = 20.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(onClick = { /*TODO*/ }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.discard),
+                                contentDescription = "Discard cards"
+                            )
+
+                        }
+
+                    }
                 }
 
-                }
+
             }
+        }
 
-
-    }
 }
 
 @Composable
