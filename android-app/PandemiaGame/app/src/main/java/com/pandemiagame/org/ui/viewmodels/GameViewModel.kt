@@ -3,6 +3,7 @@ package com.pandemiagame.org.ui.viewmodels
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import android.util.Patterns
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.LiveData
@@ -37,14 +38,22 @@ class GameViewModel(private val context: Context) : ViewModel(){
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
 
+    private val _numPlayers = MutableLiveData<Int>()
+    val numPlayers : LiveData<Int> = _numPlayers
+
+    private val _buttonEnable = MutableLiveData<Boolean>()
+    val buttonEnable : LiveData<Boolean> = _buttonEnable
+
     private val _game = MutableLiveData<GameResponse>(null)
     val game: LiveData<GameResponse> = _game
 
+    private val _gameCreationStatus = MutableLiveData<Boolean>()
+    val gameCreationStatus: LiveData<Boolean> = _gameCreationStatus
 
     private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
 
 
-    fun createGame(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun createGame(numPlayers: Int, context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
 
@@ -52,7 +61,7 @@ class GameViewModel(private val context: Context) : ViewModel(){
                 val gameRequest = GameRequest(
                     status = "pending",
                     date = getCurrentDateTimeLegacy(),
-                    players = 2
+                    players = numPlayers
                 )
 
 
@@ -62,18 +71,40 @@ class GameViewModel(private val context: Context) : ViewModel(){
                 if (response.id > 0) {
                     _game.value = response
                     Log.v("b", _game.value.toString())
-                    onSuccess()
+                    // Si la creación fue exitosa, actualizamos el estado
+                    _gameCreationStatus.value = true
                 } else {
-                    onError("Error: ${response}")
+                    Log.e("Error", response.toString())
+                    _gameCreationStatus.value = false
                 }
 
 
             } catch (e: Exception){
-                onError(e.message ?: "Error desconocido")
+                Log.e("Error", e.message ?: "Error desconocido")
+                _gameCreationStatus.value = false
+
+
             } finally {
                 _isLoading.value = false
             }
 
         }
+    }
+
+    fun isValidValue(numPlayers: Int): Boolean = (numPlayers > 1 && numPlayers < 6)
+
+
+    fun onValueChange(numPlayers: Int){
+        _numPlayers.value = numPlayers
+        _buttonEnable.value = isValidValue(numPlayers)
+    }
+
+    fun onButtonSelected(ctx: Context) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = numPlayers.value?.let { it -> createGame(it, ctx) }
+            _isLoading.value = false
+        }
+
     }
 }

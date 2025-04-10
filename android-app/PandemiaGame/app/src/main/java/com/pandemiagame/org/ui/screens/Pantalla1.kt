@@ -33,7 +33,7 @@ import com.pandemiagame.org.ui.viewmodels.GamesViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun Pantalla1(navController: NavController,  viewModel: GameViewModel) {
+fun Pantalla1(navController: NavController) {
     val tm = TokenManager(LocalContext.current);
 
 
@@ -56,15 +56,15 @@ fun Pantalla1(navController: NavController,  viewModel: GameViewModel) {
             Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(220.dp).padding(bottom = 10.dp))
 
             Button(onClick = {
-                viewModel.createGame(
-                    onSuccess = { navController.navigate("game") },
-                    onError = { error -> Log.e("Game", error) }
-                )
+                navController.navigate("create-game")
             }, modifier = Modifier.padding(bottom = 10.dp)) {
                 Text(text = "Nueva partida", fontSize = 26.sp)
             }
 
-            Button(onClick = {  },  modifier = Modifier.padding(bottom = 10.dp))  {
+            Button(onClick = {
+                navController.navigate("games")
+
+            },  modifier = Modifier.padding(bottom = 10.dp))  {
                 Text(text = "Cargar partida", fontSize = 26.sp)
             }
 

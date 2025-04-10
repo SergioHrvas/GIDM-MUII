@@ -15,12 +15,16 @@ import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.screens.GameComp
+import com.pandemiagame.org.ui.screens.GamesComp
 import com.pandemiagame.org.ui.screens.LoginComp
+import com.pandemiagame.org.ui.screens.NewGameComp
 import com.pandemiagame.org.ui.screens.Pantalla1
 import com.pandemiagame.org.ui.screens.Pantalla2
 import com.pandemiagame.org.ui.screens.Pantalla3
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
+import com.pandemiagame.org.ui.viewmodels.GamesViewModel
+import com.pandemiagame.org.ui.viewmodels.GamesViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 
 class MainActivity : ComponentActivity() {
@@ -62,9 +66,15 @@ fun AppNavigation() {
     val currentRoute = currentRoute(navController)
     val loginViewModel: LoginViewModel = viewModel() // Obtener el ViewModel correctamente
     val tm = TokenManager(LocalContext.current);
+
+
     val context = LocalContext.current
     val gameViewModel: GameViewModel = viewModel(
         factory = GameViewModelFactory(context)
+    )
+
+    val gamesViewModel: GamesViewModel = viewModel(
+        factory = GamesViewModelFactory(context)
     )
     val token = tm.getToken();
 
@@ -75,7 +85,10 @@ fun AppNavigation() {
             startDestination = startDest,
         ) {
             composable("login") { LoginComp(navController, loginViewModel) }
-            composable("home") { Pantalla1(navController, viewModel = gameViewModel) }
+            composable("home") { Pantalla1(navController)}
+            composable("games") { GamesComp(viewModel = gamesViewModel) }
+            composable("create-game") { NewGameComp(viewModel = gameViewModel, navController = navController) }
+
             composable("game") { GameComp(viewModel = gameViewModel) }
             composable("profile") { Pantalla2(navController) }
             composable("settings") { Pantalla3(navController) }

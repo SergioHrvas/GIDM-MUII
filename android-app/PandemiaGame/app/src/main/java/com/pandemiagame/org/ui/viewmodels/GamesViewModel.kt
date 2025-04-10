@@ -1,9 +1,11 @@
 package com.pandemiagame.org.ui.viewmodels
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.pandemiagame.org.data.remote.GameRequest
 import com.pandemiagame.org.data.remote.GameResponse
@@ -17,7 +19,14 @@ data class GameDto(
     val created_at: String,
 )
 
-class GamesViewModel : ViewModel() {
+class GamesViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return GamesViewModel(context) as T
+    }
+}
+
+
+class GamesViewModel(private val context: Context) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
 

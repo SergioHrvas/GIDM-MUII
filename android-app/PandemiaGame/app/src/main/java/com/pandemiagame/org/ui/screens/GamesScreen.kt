@@ -48,7 +48,10 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
+import com.pandemiagame.org.ui.viewmodels.GameViewModel
+import com.pandemiagame.org.ui.viewmodels.GamesViewModel
 
 @Preview
 @Composable
@@ -65,7 +68,7 @@ fun PreviewGames(){
 
 
 @Composable
-fun GamesComp(modifier: Modifier = Modifier) {
+fun GamesComp(modifier: Modifier = Modifier,  viewModel: GamesViewModel = viewModel()) {
 
     Scaffold (
         topBar = { CustomTopAppBar() },
