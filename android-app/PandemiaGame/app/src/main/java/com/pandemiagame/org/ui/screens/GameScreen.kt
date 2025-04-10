@@ -1,6 +1,7 @@
 package com.pandemiagame.org.ui.screens
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
@@ -41,38 +42,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
-
-class GameActivity: ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            PandemiaGameTheme {
-                Scaffold(
-                    topBar = {
-                        CustomTopAppBar()
-                    },
-                    /*floatingActionButton = {
-                        LargeExample {
-                            println("FAB presionado")
-                        }
-                    },
-                    floatingActionButtonPosition = FabPosition.Center*/
-                ) { innerPadding ->
-                    GameComp(modifier = Modifier.padding(innerPadding))
-                }
-            }
-        }
-    }
-}
-
+import com.pandemiagame.org.ui.viewmodels.GameViewModel
+import com.pandemiagame.org.ui.viewmodels.GamesViewModel
 
 @Preview
 @Composable
@@ -89,8 +72,15 @@ fun PreviewGame(){
 
 
 @Composable
-fun GameComp(modifier: Modifier = Modifier) {
+fun GameComp(modifier: Modifier = Modifier,  viewModel: GameViewModel = viewModel()) {
+    val context = LocalContext.current  // Obtén el contexto actual
+
+
     var isCardDrawn by remember { mutableStateOf(false) }
+    // Observa el LiveData y lo convierte en un State<GameResponse?>
+    val gameResponse by viewModel.game.observeAsState()
+
+    Log.v("a", gameResponse.toString())
 
     Scaffold (
         topBar = { CustomTopAppBar() },

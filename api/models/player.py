@@ -16,6 +16,10 @@ class Player(Base):
 
     name = Column(String)  # Nombre del jugador
     game_id = Column(Integer, ForeignKey('games.id', ondelete="CASCADE"))  # ID del juego al que pertenece
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+
+    # Relación con usuario
+    user = relationship("User", back_populates="players")
 
     # Relación con Game
     game = relationship("Game", back_populates="players")

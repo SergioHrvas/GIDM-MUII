@@ -7,12 +7,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.Navigation.findNavController
-import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 

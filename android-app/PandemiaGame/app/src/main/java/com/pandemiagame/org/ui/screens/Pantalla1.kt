@@ -29,16 +29,17 @@ import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.navigation.BottomNavBar
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
+import com.pandemiagame.org.ui.viewmodels.GamesViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun Pantalla1(navController: NavController) {
+fun Pantalla1(navController: NavController,  viewModel: GameViewModel) {
+    val tm = TokenManager(LocalContext.current);
 
 
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current  // Obtén el contexto actual
 
-    val gameViewModel = remember { GameViewModel(context) }
 
     Scaffold(
         topBar = { CustomTopAppBar() },
@@ -55,8 +56,7 @@ fun Pantalla1(navController: NavController) {
             Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(220.dp).padding(bottom = 10.dp))
 
             Button(onClick = {
-
-                gameViewModel.createGame(
+                viewModel.createGame(
                     onSuccess = { navController.navigate("game") },
                     onError = { error -> Log.e("Game", error) }
                 )
@@ -64,11 +64,11 @@ fun Pantalla1(navController: NavController) {
                 Text(text = "Nueva partida", fontSize = 26.sp)
             }
 
-            Button(onClick = { /*TODO*/ },  modifier = Modifier.padding(bottom = 10.dp))  {
+            Button(onClick = {  },  modifier = Modifier.padding(bottom = 10.dp))  {
                 Text(text = "Cargar partida", fontSize = 26.sp)
             }
 
-            Button(onClick = { /*TODO*/ }, modifier = Modifier.padding(bottom = 10.dp))  {
+            Button(onClick = { tm.clearToken() }, modifier = Modifier.padding(bottom = 10.dp))  {
                 Text(text = "Configuración", fontSize = 26.sp)
             }
 

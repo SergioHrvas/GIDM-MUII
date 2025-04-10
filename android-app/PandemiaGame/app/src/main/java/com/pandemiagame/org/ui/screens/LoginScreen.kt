@@ -1,6 +1,5 @@
 package com.pandemiagame.org.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -39,8 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
+import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import kotlinx.coroutines.launch
 
 @Preview

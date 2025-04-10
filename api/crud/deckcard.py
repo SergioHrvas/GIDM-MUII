@@ -4,7 +4,7 @@ from models.playercard import PlayerCard
 from models.player import Player
 from schemas.organtype import OrganType
 from models.card import Card
-from models.deck import DeckCard
+from models.deckcard import DeckCard
 
 from sqlalchemy.orm import Session
 
@@ -136,7 +136,7 @@ def generate_basic_deck(db: Session, game: Game):
         if card.name == "Infect Player":
             for _ in range(2):  # 2 copias de "Infect Player"
                 game.deck_cards.append(DeckCard(card=card))
-        elif card.name == "Steal Organ" or card.name == "Exchange Card":
+        elif card.name == "Steal Organ" or card.name == "Exchangeº Card":
             for _ in range(3):  # 3 copias de "Steal Organ" y "Exchange Card"
                 game.deck_cards.append(DeckCard(card=card))
         elif card.name == "Discard Cards" or card.name == "Change Body":

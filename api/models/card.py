@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.types import Enum as SQLAlchemyEnum
-from models.deck import DeckCard
+from models.deckcard import DeckCard
 from database import Base
 from schemas.status import StatusEnum
 from sqlalchemy.orm import relationship

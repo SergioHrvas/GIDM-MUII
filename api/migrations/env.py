@@ -9,7 +9,7 @@ from database import Base
 
 from models.game import Game
 from models.user import User
-from models.deck import DeckCard
+from models.deckcard import DeckCard
 
 from models.card import Card  # Asegúrate de importar correctamente el modelo Card
 from models.player import Player

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from models.playercard import PlayerCard
 from models.player import Player
 from models.card import Card
-from crud.deck import steal_to_deck
+from crud.deckcard import steal_to_deck
 from sqlalchemy import select, delete
 
 def remove_card_from_player(db: Session, player_id: int, card_id: int):

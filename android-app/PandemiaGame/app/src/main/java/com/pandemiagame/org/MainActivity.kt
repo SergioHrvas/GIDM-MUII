@@ -14,12 +14,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
 import com.pandemiagame.org.data.remote.utils.TokenManager
-import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import com.pandemiagame.org.ui.screens.GameComp
 import com.pandemiagame.org.ui.screens.LoginComp
 import com.pandemiagame.org.ui.screens.Pantalla1
 import com.pandemiagame.org.ui.screens.Pantalla2
 import com.pandemiagame.org.ui.screens.Pantalla3
+import com.pandemiagame.org.ui.viewmodels.GameViewModel
+import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
+import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,9 +60,12 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
     val currentRoute = currentRoute(navController)
-    val viewModel: LoginViewModel = viewModel() // Obtener el ViewModel correctamente
+    val loginViewModel: LoginViewModel = viewModel() // Obtener el ViewModel correctamente
     val tm = TokenManager(LocalContext.current);
-
+    val context = LocalContext.current
+    val gameViewModel: GameViewModel = viewModel(
+        factory = GameViewModelFactory(context)
+    )
     val token = tm.getToken();
 
     val startDest = if(token.isNullOrEmpty()) "login" else "home"
@@ -69,9 +74,9 @@ fun AppNavigation() {
             navController = navController,
             startDestination = startDest,
         ) {
-            composable("login") { LoginComp(navController, viewModel) }
-            composable("home") { Pantalla1(navController) }
-            composable("game") { GameComp() }
+            composable("login") { LoginComp(navController, loginViewModel) }
+            composable("home") { Pantalla1(navController, viewModel = gameViewModel) }
+            composable("game") { GameComp(viewModel = gameViewModel) }
             composable("profile") { Pantalla2(navController) }
             composable("settings") { Pantalla3(navController) }
     }

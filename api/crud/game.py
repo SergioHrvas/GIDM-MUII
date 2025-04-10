@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from models.organ import Organ
 from models.game import Game
 from models.player import Player
-from models.deck import DeckCard
+from models.deckcard import DeckCard
 from models.card import Card
 from schemas.game import GameCreate
 from datetime import datetime
@@ -10,10 +10,10 @@ from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_my_cards, discard_cards
 from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs, infect_players
-from crud.deck import initialize_deck, steal_to_deck
+from crud.deckcard import initialize_deck, steal_to_deck
 import random
 
-def create_game(game: GameCreate, db: Session):
+def create_game(game: GameCreate, current_user: int, db: Session):
     if(game.players <= 0):
         return "Error"
     db_game = Game(
@@ -31,7 +31,7 @@ def create_game(game: GameCreate, db: Session):
     players = []
     # Creamos players
     for i in range(game.players):  
-        db_player = Player(name="", game_id=db_game.id)
+        db_player = Player(name="", game_id=db_game.id, user_id=current_user)
         db.add(db_player)
         db.commit()
         db.refresh(db_player) 
@@ -150,3 +150,14 @@ def review_winner(db: Session, game):
             db.commit()
             db.refresh(game)
             pass
+
+
+def get_player_games(id_user: int, db:Session):
+    # Obtenemos los jugadores del usuario
+    games = db.query(Game).join(Player, Game.players).filter(Player.user_id == id_user).all()
+
+    return games
+
+
+
+

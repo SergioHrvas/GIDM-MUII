@@ -4,7 +4,7 @@ from database import Base
 from schemas.status import StatusEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
-from models.deck import DeckCard
+from models.deckcard import DeckCard
 
 class Game(Base):
     __tablename__ = 'games'
