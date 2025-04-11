@@ -1,6 +1,5 @@
 package com.pandemiagame.org.ui.screens
 
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -44,7 +43,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -63,7 +61,7 @@ fun PreviewGame(){
         }    }
 }
 
-
+Enum
 
 
 @Composable
@@ -205,12 +203,10 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End
                         ) {
-                            game.let {
-                                Text(
-                                    text = "Usuario #${it.players[otherPlayerIndice].id}",
-                                    modifier = Modifier.padding(end = 20.dp)
-                                )
-                            }
+                            Text(
+                                text = "Usuario #${game.players[otherPlayerIndice].id}",
+                                modifier = Modifier.padding(end = 20.dp)
+                            )
                             Image(
                                 painter = painterResource(id = R.drawable.user),
                                 contentDescription = "Imagen de perfil",
@@ -281,20 +277,20 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
 @Composable
 fun Body(myBody: Boolean, organs: List<Organ>){
-    var organ_place = intArrayOf(0, 0, 0, 0);
+    var organPlace = intArrayOf(0, 0, 0, 0)
 
     organs.forEach {
         if(it.tipo == "brain") {
-            organ_place[0] = 1
+            organPlace[0] = 1
         }
         else if(it.tipo == "heart"){
-            organ_place[1] = 1
+            organPlace[1] = 1
         }
         else if(it.tipo == "lunge"){
-            organ_place[2] = 1
+            organPlace[2] = 1
         }
         else if(it.tipo == "intestine"){
-            organ_place[3] = 1
+            organPlace[3] = 1
         }
     }
 
@@ -311,26 +307,26 @@ fun Body(myBody: Boolean, organs: List<Organ>){
             horizontalArrangement = Arrangement.spacedBy(if(myBody) 10.dp else 30.dp)
         ) {
             Image(
-                painter = painterResource(id = if(organ_place[0] == 1) R.drawable.brain else R.drawable.brain_disable),
+                painter = painterResource(id = if(organPlace[0] == 1) R.drawable.brain else R.drawable.brain_disable),
                 contentDescription = "Cerebro",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
             )
             Image(
-                painter = painterResource(id = if(organ_place[1] == 1) R.drawable.heart else R.drawable.heart_disable),
+                painter = painterResource(id = if(organPlace[1] == 1) R.drawable.heart else R.drawable.heart_disable),
                 contentDescription = "Corazón",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
             )
             Image(
-                painter = painterResource(id = if(organ_place[1] == 1) R.drawable.lungs else R.drawable.lunge_disable),
+                painter = painterResource(id = if(organPlace[1] == 1) R.drawable.lungs else R.drawable.lunge_disable),
                 contentDescription = "Pulmones",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
 
             )
             Image(
-                painter = painterResource(id = if(organ_place[1] == 1) R.drawable.intestine else R.drawable.intestine_disable),
+                painter = painterResource(id = if(organPlace[1] == 1) R.drawable.intestine else R.drawable.intestine_disable),
                 contentDescription = "Intestino",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
