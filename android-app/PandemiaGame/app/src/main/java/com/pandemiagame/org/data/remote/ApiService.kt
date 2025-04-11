@@ -58,6 +58,8 @@ interface ApiService {
     @POST("game")
     suspend fun createGame(@Header("Authorization") auth: String, @Body req: GameRequest): GameResponse
 
+    @GET("game/my-games")
+    suspend fun getMyGames(@Header("Authorization") auth: String): List<GameResponse>
 
     @GET("users")
     suspend fun getUsers(): List<User>

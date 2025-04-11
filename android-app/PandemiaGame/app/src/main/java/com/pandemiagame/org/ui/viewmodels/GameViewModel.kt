@@ -1,17 +1,12 @@
 package com.pandemiagame.org.ui.viewmodels
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
-import android.util.Patterns
-import androidx.annotation.RequiresApi
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.google.type.Date
 import com.pandemiagame.org.data.remote.GameRequest
 import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.RetrofitClient

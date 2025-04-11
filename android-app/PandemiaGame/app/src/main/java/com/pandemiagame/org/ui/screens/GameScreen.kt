@@ -1,9 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
-import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -34,7 +31,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -52,10 +48,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
-import com.pandemiagame.org.ui.viewmodels.GamesViewModel
 
 @Preview
 @Composable

@@ -13,7 +13,7 @@ def create_new_game(game: GameCreate, db: Session = Depends(get_db), current_use
     return create_game(game, current_user.id, db)
 
 
-@router.get("/my_games", response_model=list[GameResponse])
+@router.get("/my-games", response_model=list[GameResponse])
 def get_my_games(current_user: int = Depends(get_current_user), db: Session = Depends(get_db)):
     games = get_player_games(current_user.id, db)
     print(games)
