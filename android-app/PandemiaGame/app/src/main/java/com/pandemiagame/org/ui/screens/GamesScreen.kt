@@ -29,55 +29,76 @@ import com.pandemiagame.org.ui.viewmodels.GamesViewModel
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import android.util.Log
+import androidx.compose.ui.platform.LocalContext
+import com.pandemiagame.org.ui.viewmodels.GamesViewModelFactory
 
 @Preview
 @Composable
 fun PreviewGames(){
+    val navController = rememberNavController() // Crear un NavController falso para el preview
+
     PandemiaGameTheme(darkTheme = false){
         Box(modifier = Modifier
             .fillMaxSize()
             .background(Color.White)) {
-            GamesComp()
+            GamesComp(navController=navController)
         }    }
 }
-
 
 
 @Composable
 fun GamesComp(
     modifier: Modifier = Modifier,
-    viewModel: GamesViewModel = viewModel()
+    navController: NavController,
 ) {
+    val context = LocalContext.current
+
+    val viewModel: GamesViewModel = viewModel(
+        factory = GamesViewModelFactory(context.applicationContext)
+    )
+
     val games by viewModel.gamesList.observeAsState(emptyList())
+    val selectedGame by viewModel.navegarADetalle.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
 
-    // Llamar a getMyGames cuando se inicia el composable
-    LaunchedEffect(Unit) {
-        viewModel.getMyGames { errorMessage ->
-            println("Error: $errorMessage")
+
+    // Observar navegación
+    LaunchedEffect(selectedGame) {
+        selectedGame?.let { game ->
+            navController.navigate("game/${game.id}")
+            viewModel.navegacionCompletada()
         }
     }
+
+
 
     Scaffold(
         topBar = { CustomTopAppBar() },
     ) { innerPadding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator()
-            } else {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
                 LazyColumn {
                     items(games) { game ->
-                        GameItem(game = game)
+                        GameItem(game = game, onClick = {
+                            viewModel.seleccionarJuego(game)
+                        }
+                        )
                     }
                 }
             }
@@ -97,10 +118,12 @@ fun formatDateTimeCompat(isoDateTime: String): String {
 
 // Composable para mostrar cada item del juego
 @Composable
-fun GameItem(game: GameResponse, modifier: Modifier = Modifier) {
+fun GameItem(game: GameResponse, onClick: () -> Unit, modifier: Modifier = Modifier) {
     // Implementa cómo quieres mostrar cada juego
     // Por ejemplo:
-    Card(modifier = modifier.fillMaxWidth().padding(8.dp)) {
+    Card(modifier = modifier.fillMaxWidth().padding(8.dp), onClick = {
+        onClick()
+    }) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row (
                 horizontalArrangement = Arrangement.spacedBy(16.dp) // Espacio igual entre todos los hijos

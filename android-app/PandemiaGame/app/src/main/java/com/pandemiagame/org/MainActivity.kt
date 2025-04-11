@@ -23,9 +23,11 @@ import com.pandemiagame.org.ui.screens.Pantalla2
 import com.pandemiagame.org.ui.screens.Pantalla3
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
+import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.GamesViewModel
 import com.pandemiagame.org.ui.viewmodels.GamesViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
+import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,8 +75,9 @@ fun AppNavigation() {
         factory = GameViewModelFactory(context)
     )
 
-    val gamesViewModel: GamesViewModel = viewModel(
-        factory = GamesViewModelFactory(context)
+
+    val newGameViewModel: NewGameViewModel = viewModel(
+        factory = NewGameViewModelFactory(context)
     )
     val token = tm.getToken();
 
@@ -86,10 +89,16 @@ fun AppNavigation() {
         ) {
             composable("login") { LoginComp(navController, loginViewModel) }
             composable("home") { Pantalla1(navController)}
-            composable("games") { GamesComp(viewModel = gamesViewModel) }
-            composable("create-game") { NewGameComp(viewModel = gameViewModel, navController = navController) }
+            composable("games") { GamesComp(navController = navController) }
+            composable("create-game") { NewGameComp(viewModel = newGameViewModel, navController = navController) }
 
-            composable("game") { GameComp(viewModel = gameViewModel) }
+            composable("game/{game_id}") {
+                    backStackEntry ->
+                GameComp(
+                    viewModel = gameViewModel,
+                    gameId = backStackEntry.arguments?.getString("game_id") ?: ""
+                )
+            }
             composable("profile") { Pantalla2(navController) }
             composable("settings") { Pantalla3(navController) }
     }

@@ -66,4 +66,7 @@ interface ApiService {
 
     @POST("posts")
     suspend fun createPost(@Body post: Post): Post
+
+    @GET("game/{game_id}")
+    suspend fun getGame(@Header("Authorization") auth: String, @Path("game_id") gameId: Int): GameResponse
 }

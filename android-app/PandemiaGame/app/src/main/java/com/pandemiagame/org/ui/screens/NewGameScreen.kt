@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
+import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
 import kotlinx.coroutines.launch
 
 @Preview
@@ -56,7 +57,7 @@ fun PreviewNewGame(){
 
 
 @Composable
-fun NewGameComp(modifier: Modifier = Modifier,  viewModel: GameViewModel = viewModel(),  navController: NavController) {
+fun NewGameComp(modifier: Modifier = Modifier,  viewModel: NewGameViewModel = viewModel(),  navController: NavController) {
     val context = LocalContext.current  // Obtén el contexto actual
     val buttonEnable :Boolean by viewModel.buttonEnable.observeAsState(initial=false)  // Estado para el boton activado
     val numPlayers :Int by viewModel.numPlayers.observeAsState(initial=0)  // Estado para el email
@@ -119,7 +120,7 @@ fun NewGameComp(modifier: Modifier = Modifier,  viewModel: GameViewModel = viewM
                         if (gameCreationStatus) {
                             LaunchedEffect(gameCreationStatus) {
                                 // Aquí ya sabemos que el juego fue creado correctamente, así que navegamos
-                                navController.navigate("game")  // Nombre de la pantalla de destino
+                                navController.navigate("game/${viewModel.game.value?.id}")
                             }
                         }
                     }
