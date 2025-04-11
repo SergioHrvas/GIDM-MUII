@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pandemiagame.org.data.remote.Organ
+import com.pandemiagame.org.data.remote.models.Card
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 
@@ -60,8 +61,6 @@ fun PreviewGame(){
             GameComp()
         }    }
 }
-
-Enum
 
 
 @Composable
@@ -232,21 +231,24 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.a),
-                                contentDescription = "Cerebro",
+                                painter = painterResource(id = Card.fromDisplayName(game.players[indice].playerCards[0].card.name)?.drawable
+                                    ?: 0),
+                                contentDescription = "CARTA 1",
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier.width(114.dp)
                             )
                             Image(
-                                painter = painterResource(id = R.drawable.b),
-                                contentDescription = "Cerebro",
+                                painter = painterResource(id = Card.fromDisplayName(game.players[indice].playerCards[1].card.name)?.drawable
+                                    ?: 0),
+                                contentDescription = "CARTA 2",
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier.width(114.dp)
 
                             )
                             Image(
-                                painter = painterResource(id = R.drawable.c),
-                                contentDescription = "Cerebro",
+                                painter = painterResource(id = Card.fromDisplayName(game.players[indice].playerCards[2].card.name)?.drawable
+                                    ?: 0),
+                                contentDescription = "CARTA 3",
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier.width(114.dp)
 

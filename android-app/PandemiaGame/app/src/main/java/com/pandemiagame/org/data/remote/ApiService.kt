@@ -31,15 +31,17 @@ data class Card(
     @SerializedName("tipo") val type: String
 )
 
-// Modelo de Jugador
+data class CardWrapper(
+    @SerializedName("card") val card: Card
+)
+
 data class Player(
     @SerializedName("name") val name: String,
     @SerializedName("game_id") val gameId: Int,
     @SerializedName("id") val id: Int,
-    @SerializedName("cards") val playerCards: List<Card>,
+    @SerializedName("cards") val playerCards: List<CardWrapper>,
     @SerializedName("organs") val organs: List<Organ>
 )
-
 // Órganos del jugador (ajusta según tu implementación real)
 data class Organ(
     @SerializedName("tipo") val tipo: String,

@@ -2,7 +2,7 @@ from enum import Enum
 
 class OrganType(Enum):
     heart = "heart"
-    stomach = "stomach"
+    intestine = "intestine"
     brain = "brain"
-    liver = "liver"
+    lungs = "lungs"
     magic = "magic"

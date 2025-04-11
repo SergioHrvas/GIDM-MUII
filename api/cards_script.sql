@@ -2,23 +2,23 @@ INSERT INTO cards (name, tipo, organ_type)
 VALUES 
     -- Cartas de virus
     ('Virus Heart', 'virus',   'heart'),
-    ('Virus Stomach', 'virus', 'stomach'),
+    ('Virus Intestine', 'virus', 'intestine'),
     ('Virus Brain', 'virus',   'brain'),
-    ('Virus Liver', 'virus',   'liver'),
+    ('Virus Lungs', 'virus',   'lungs'),
     ('Virus Magic', 'virus',   'magic'),
     
     -- Cartas de cura
     ('Cure Heart', 'cure', 'heart'),
-    ('Cure Stomach', 'cure', 'stomach'),
+    ('Cure Intestine', 'cure', 'intestine'),
     ('Cure Brain', 'cure', 'brain'),
-    ('Cure Liver', 'cure', 'liver'),
+    ('Cure Lungs', 'cure', 'lungs'),
     ('Cure Magic', 'cure', 'magic'),
     
     -- Cartas de órganos
     ('Heart Organ', 'organ', 'heart'),
-    ('Stomach Organ', 'organ', 'stomach'),
+    ('Intestine Organ', 'organ', 'intestine'),
     ('Brain Organ', 'organ', 'brain'),
-    ('Liver Organ', 'organ', 'liver'),
+    ('Lungs Organ', 'organ', 'lungs'),
     ('Magic Organ', 'organ', 'magic');
 
 
