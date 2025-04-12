@@ -18,6 +18,8 @@ def remove_organ_from_player(db: Session, player_id: int, tipo: str):
 
 
 def add_organ_to_player(db: Session, player_id, tipo: str):
+    print(tipo)
+    print(player_id)
     db_organ = Organ(
         player_id = player_id,
         tipo = tipo,

@@ -20,7 +20,7 @@ enum class Card(val displayName: String, val drawable: Int) {
     // Órganos (IDs 51-55)
     ORGAN_HEART("Heart Organ", R.drawable.organ_heart),
     ORGAN_INTESTINE("Intestine Organ", R.drawable.organ_intestine),
-    ORGAN_BRAIN("Brain Organ", R.drawable.organ_lungs),
+    ORGAN_BRAIN("Brain Organ", R.drawable.organ_brain),
     ORGAN_LUNGS("Lungs Organ", R.drawable.organ_lungs),
     ORGAN_MAGIC("Magic Organ", R.drawable.magic),
 

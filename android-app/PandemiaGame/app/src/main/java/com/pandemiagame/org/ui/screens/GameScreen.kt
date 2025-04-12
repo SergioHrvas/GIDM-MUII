@@ -75,7 +75,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
     LaunchedEffect(gameId) {
         viewModel.getGame(gameId)
     }
-    var indice = 0
+    var indice by remember { mutableIntStateOf(0) }
 
     gameResponse?.let {
         for (i in 0 .. (it.players.size - 1)) {
@@ -142,7 +142,6 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     painter = painterResource(R.drawable.baseline_arrow_right_24),
                                     contentDescription = "Cambiar jugador",
                                     modifier = Modifier.clickable {
-                                        Log.v("a", "b")
                                         otherPlayerIndice = (otherPlayerIndice + 1) % (gameResponse?.players?.size ?: 2)
                                         if(otherPlayerIndice == indice){
                                             otherPlayerIndice = (otherPlayerIndice + 1) % (gameResponse?.players?.size ?: 2)
@@ -184,7 +183,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             painter = painterResource(id = R.drawable.backdeck),
                             contentDescription = "Mazo de cartas",
                             modifier = Modifier
-                                .height(150.dp)
+                                .height(110.dp)
                                 .clickable {
                                     isCardDrawn = true
                                 } // Disparar animación al hacer clic
@@ -236,7 +235,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                 .padding(horizontal = 20.dp)
                                 .padding(top = 15.dp),
 
-                            horizontalArrangement = Arrangement.spacedBy(15.dp)
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
 
                         ) {
                             Image(
@@ -244,8 +243,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     ?: 0),
                                 contentDescription = "CARTA 1",
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(114.dp).clickable{
-                                    Log.v("CARTA 0", "CARTA 0")
+                                modifier = Modifier.width(100.dp).clickable{
                                     viewModel.doMove(0)
                                 }
                             )
@@ -254,8 +252,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     ?: 0),
                                 contentDescription = "CARTA 2",
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(114.dp).clickable{
-                                    Log.v("CARTA 1", "CARTA 1")
+                                modifier = Modifier.width(100.dp).clickable{
                                     viewModel.doMove(1)
                                 }
 
@@ -265,7 +262,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     ?: 0),
                                 contentDescription = "CARTA 3",
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(114.dp)
+                                modifier = Modifier.width(100.dp).clickable{
+                                    viewModel.doMove(2)
+                                }
 
                             )
                         }
@@ -294,7 +293,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
 @Composable
 fun Body(myBody: Boolean, organs: List<Organ>){
-    var organPlace = intArrayOf(0, 0, 0, 0)
+    var organPlace by remember { mutableStateOf(intArrayOf(0, 0, 0, 0)) }
 
     organs.forEach {
         if(it.tipo == "brain") {
@@ -303,7 +302,7 @@ fun Body(myBody: Boolean, organs: List<Organ>){
         else if(it.tipo == "heart"){
             organPlace[1] = 1
         }
-        else if(it.tipo == "lunge"){
+        else if(it.tipo == "lungs"){
             organPlace[2] = 1
         }
         else if(it.tipo == "intestine"){
@@ -313,10 +312,10 @@ fun Body(myBody: Boolean, organs: List<Organ>){
 
     Box(
         modifier = Modifier
-            .padding(14.dp)
+            .padding(8.dp)
             .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(20.dp))
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(5.dp),
         contentAlignment = Alignment.Center // Centra el contenido dentro del Box
     ) {
         Row(
@@ -327,27 +326,26 @@ fun Body(myBody: Boolean, organs: List<Organ>){
                 painter = painterResource(id = if(organPlace[0] == 1) R.drawable.brain else R.drawable.brain_disable),
                 contentDescription = "Cerebro",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
+                modifier = Modifier.width(if(myBody) 60.dp else 45.dp)
             )
             Image(
                 painter = painterResource(id = if(organPlace[1] == 1) R.drawable.heart else R.drawable.heart_disable),
                 contentDescription = "Corazón",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
+                modifier = Modifier.width(if(myBody) 60.dp else 45.dp)
             )
             Image(
-                painter = painterResource(id = if(organPlace[1] == 1) R.drawable.lungs else R.drawable.lunge_disable),
+                painter = painterResource(id = if(organPlace[2] == 1) R.drawable.lungs else R.drawable.lunge_disable),
                 contentDescription = "Pulmones",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
+                modifier = Modifier.width(if(myBody) 60.dp else 45.dp)
 
             )
             Image(
-                painter = painterResource(id = if(organPlace[1] == 1) R.drawable.intestine else R.drawable.intestine_disable),
+                painter = painterResource(id = if(organPlace[3] == 1) R.drawable.intestine else R.drawable.intestine_disable),
                 contentDescription = "Intestino",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(if(myBody) 68.dp else 50.dp)
-
+                modifier = Modifier.width(if(myBody) 60.dp else 45.dp)
             )
         }
     }
