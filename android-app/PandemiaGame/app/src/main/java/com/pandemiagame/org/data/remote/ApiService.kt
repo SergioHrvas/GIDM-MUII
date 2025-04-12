@@ -49,6 +49,31 @@ data class Organ(
     @SerializedName("cure") val cure: Int
 )
 
+// Modelo de movimiento
+data class Move(
+    @SerializedName("action") val action: String,
+    @SerializedName("card") val card: Int?,
+    @SerializedName("player_to") val playerTo: Int? = null,
+    @SerializedName("discards") val discards: List<Int>? = null,
+    @SerializedName("organ_to_steal") val organToSteal: String? = null,
+    @SerializedName("organ_to_pass") val organToPass: String? = null,
+    @SerializedName("infect") val infect: InfectData? = null
+)
+
+data class InfectData(
+    @SerializedName("player1") val player1: Int,
+    @SerializedName("organ1") val organ1: String,
+    @SerializedName("player2") val player2: Int? = null,
+    @SerializedName("organ2") val organ2: String? = null,
+    @SerializedName("player3") val player3: Int? = null,
+    @SerializedName("organ3") val organ3: String? = null,
+    @SerializedName("player4") val player4: Int? = null,
+    @SerializedName("organ4") val organ4: String? = null,
+    @SerializedName("player5") val player5: Int? = null,
+    @SerializedName("organ5") val organ5: String? = null
+)
+
+
 interface ApiService {
     @FormUrlEncoded
     @POST("token")
@@ -71,4 +96,8 @@ interface ApiService {
 
     @GET("game/{game_id}")
     suspend fun getGame(@Header("Authorization") auth: String, @Path("game_id") gameId: Int): GameResponse
+
+    @POST("game/{game_id}/move")
+    suspend fun doMove(@Header("Authorization") auth: String,  @Path("game_id") gameId: Int, @Query("player_id") playerId: Int, @Body move: Move): GameResponse
+
 }

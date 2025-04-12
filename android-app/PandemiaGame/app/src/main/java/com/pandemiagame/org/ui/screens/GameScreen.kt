@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -38,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -84,8 +86,8 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         }
     }
 
-
-    val otherPlayerIndice = (indice + 1) % (gameResponse?.players?.size ?: 1)
+    // Declara el estado al inicio de tu composable
+    var otherPlayerIndice by remember { mutableIntStateOf((indice + 1) % (gameResponse?.players?.size ?: 2)) }
 
     Scaffold (
         topBar = { CustomTopAppBar() },
@@ -138,11 +140,18 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             game.players.size.let {
                                 if (it > 2) Icon(
                                     painter = painterResource(R.drawable.baseline_arrow_right_24),
-                                    contentDescription = "Cambiar jugador"
+                                    contentDescription = "Cambiar jugador",
+                                    modifier = Modifier.clickable {
+                                        Log.v("a", "b")
+                                        otherPlayerIndice = (otherPlayerIndice + 1) % (gameResponse?.players?.size ?: 2)
+                                        if(otherPlayerIndice == indice){
+                                            otherPlayerIndice = (otherPlayerIndice + 1) % (gameResponse?.players?.size ?: 2)
+                                        }
+                                    } // Disparar animación al hacer clic
                                 )
                             }
                             Text(
-                                text = "Usuario #${game.players[indice].id}",
+                                text = "Usuario #${game.players[otherPlayerIndice].id}",
                                 modifier = Modifier.padding(end = 20.dp)
                             )
                             Image(
@@ -203,7 +212,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             horizontalArrangement = Arrangement.End
                         ) {
                             Text(
-                                text = "Usuario #${game.players[otherPlayerIndice].id}",
+                                text = "Usuario #${game.players[indice].id}",
                                 modifier = Modifier.padding(end = 20.dp)
                             )
                             Image(
@@ -235,14 +244,20 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     ?: 0),
                                 contentDescription = "CARTA 1",
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(114.dp)
+                                modifier = Modifier.width(114.dp).clickable{
+                                    Log.v("CARTA 0", "CARTA 0")
+                                    viewModel.doMove(0)
+                                }
                             )
                             Image(
                                 painter = painterResource(id = Card.fromDisplayName(game.players[indice].playerCards[1].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 2",
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(114.dp)
+                                modifier = Modifier.width(114.dp).clickable{
+                                    Log.v("CARTA 1", "CARTA 1")
+                                    viewModel.doMove(1)
+                                }
 
                             )
                             Image(
