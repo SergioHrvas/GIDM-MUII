@@ -75,19 +75,28 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
     LaunchedEffect(gameId) {
         viewModel.getGame(gameId)
     }
-    var indice by remember { mutableIntStateOf(0) }
 
-    gameResponse?.let {
-        for (i in 0 .. (it.players.size - 1)) {
-            if (gameResponse!!.players[i].id == gameResponse!!.turn) {
-                indice = i
-                break
+    // Encuentra el índice del jugador actual basado en el turno
+    val currentPlayerIndex = remember(gameResponse) {
+        gameResponse?.players?.indexOfFirst { it.id == gameResponse?.turn } ?: 0
+    }
+
+
+    // Cambia esto a un estado mutable
+    var otherPlayerIndex by remember { mutableIntStateOf(0) }
+
+    // Actualiza otherPlayerIndex cuando cambia currentPlayerIndex o gameResponse
+    LaunchedEffect(currentPlayerIndex, gameResponse) {
+        gameResponse?.players?.let { players ->
+            if (players.size > 1) {
+                var nextIndex = (currentPlayerIndex + 1) % players.size
+                if (nextIndex == currentPlayerIndex) nextIndex = (nextIndex + 1) % players.size
+                otherPlayerIndex = nextIndex
+            } else {
+                otherPlayerIndex = 0
             }
         }
     }
-
-    // Declara el estado al inicio de tu composable
-    var otherPlayerIndice by remember { mutableIntStateOf((indice + 1) % (gameResponse?.players?.size ?: 2)) }
 
     Scaffold (
         topBar = { CustomTopAppBar() },
@@ -142,15 +151,15 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     painter = painterResource(R.drawable.baseline_arrow_right_24),
                                     contentDescription = "Cambiar jugador",
                                     modifier = Modifier.clickable {
-                                        otherPlayerIndice = (otherPlayerIndice + 1) % (gameResponse?.players?.size ?: 2)
-                                        if(otherPlayerIndice == indice){
-                                            otherPlayerIndice = (otherPlayerIndice + 1) % (gameResponse?.players?.size ?: 2)
+                                        otherPlayerIndex = (otherPlayerIndex + 1) % game.players.size
+                                        if(otherPlayerIndex == currentPlayerIndex) {
+                                            otherPlayerIndex = (otherPlayerIndex + 1) % game.players.size
                                         }
                                     } // Disparar animación al hacer clic
                                 )
                             }
                             Text(
-                                text = "Usuario #${game.players[otherPlayerIndice].id}",
+                                text = "Usuario #${game.players[otherPlayerIndex].id}",
                                 modifier = Modifier.padding(end = 20.dp)
                             )
                             Image(
@@ -166,9 +175,10 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         game.let { response ->
                             response.players.getOrNull(1)?.organs?.let { organs ->
-                                Body(false, organs)
+                                //Body(false, organs)
                             }
                         }
+                        Body(false, game.players[otherPlayerIndex].organs)
                     }
                     Box(
                         contentAlignment = Alignment.Center,
@@ -211,7 +221,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             horizontalArrangement = Arrangement.End
                         ) {
                             Text(
-                                text = "Usuario #${game.players[indice].id}",
+                                text = "Usuario #${game.players[currentPlayerIndex].id}",
                                 modifier = Modifier.padding(end = 20.dp)
                             )
                             Image(
@@ -225,10 +235,12 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         }
                         game.let { response ->
-                            response.players.getOrNull(indice)?.organs?.let { organs ->
-                                Body(true, organs)
+                            response.players.getOrNull(currentPlayerIndex)?.organs?.let { organs ->
+                                //Body(true, organs)
                             }
                         }
+                        Body(false, game.players[currentPlayerIndex].organs)
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -239,7 +251,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         ) {
                             Image(
-                                painter = painterResource(id = Card.fromDisplayName(game.players[indice].playerCards[0].card.name)?.drawable
+                                painter = painterResource(id = Card.fromDisplayName(game.players[currentPlayerIndex].playerCards[0].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 1",
                                 contentScale = ContentScale.Fit,
@@ -248,7 +260,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                 }
                             )
                             Image(
-                                painter = painterResource(id = Card.fromDisplayName(game.players[indice].playerCards[1].card.name)?.drawable
+                                painter = painterResource(id = Card.fromDisplayName(game.players[currentPlayerIndex].playerCards[1].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 2",
                                 contentScale = ContentScale.Fit,
@@ -258,7 +270,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                             )
                             Image(
-                                painter = painterResource(id = Card.fromDisplayName(game.players[indice].playerCards[2].card.name)?.drawable
+                                painter = painterResource(id = Card.fromDisplayName(game.players[currentPlayerIndex].playerCards[2].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 3",
                                 contentScale = ContentScale.Fit,
@@ -293,8 +305,21 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
 @Composable
 fun Body(myBody: Boolean, organs: List<Organ>){
-    var organPlace by remember { mutableStateOf(intArrayOf(0, 0, 0, 0)) }
+    // Calcula organPlace directamente basado en los organs recibidos
+    val organPlace = remember(organs) {
+        IntArray(4).apply {
+            organs.forEach { organ ->
+                when (organ.tipo) {
+                    "brain" -> this[0] = 1
+                    "heart" -> this[1] = 1
+                    "lungs" -> this[2] = 1
+                    "intestine" -> this[3] = 1
+                }
+            }
+        }
+    }
 
+    Log.v("aa", organPlace.toString())
     organs.forEach {
         if(it.tipo == "brain") {
             organPlace[0] = 1
