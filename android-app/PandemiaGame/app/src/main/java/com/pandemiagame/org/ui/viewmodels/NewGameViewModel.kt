@@ -33,8 +33,8 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
 
-    private val _numPlayers = MutableLiveData<Int>()
-    val numPlayers : LiveData<Int> = _numPlayers
+    private val _numPlayers = MutableLiveData<String>()
+    val numPlayers : LiveData<String> = _numPlayers
 
     private val _buttonEnable = MutableLiveData<Boolean>()
     val buttonEnable : LiveData<Boolean> = _buttonEnable
@@ -88,15 +88,16 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
     fun isValidValue(numPlayers: Int): Boolean = (numPlayers > 1 && numPlayers < 6)
 
 
-    fun onValueChange(numPlayers: Int){
+    fun onValueChange(numPlayers: String){
         _numPlayers.value = numPlayers
-        _buttonEnable.value = isValidValue(numPlayers)
+        _buttonEnable.value = numPlayers.isNotEmpty() && numPlayers.toIntOrNull() in 2..5
+
     }
 
     fun onButtonSelected(ctx: Context) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = numPlayers.value?.let { it -> createGame(it, ctx) }
+            numPlayers.value?.let { it -> createGame(it.toInt(), ctx) }
             _isLoading.value = false
         }
 
