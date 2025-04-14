@@ -1,6 +1,5 @@
 package com.pandemiagame.org.ui.screens
 
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -52,6 +51,9 @@ import com.pandemiagame.org.data.remote.Organ
 import com.pandemiagame.org.data.remote.models.Card
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
+import android.util.Log
+import androidx.collection.intListOf
+import androidx.compose.runtime.mutableStateListOf
 
 @Preview
 @Composable
@@ -69,10 +71,16 @@ fun PreviewGame(){
 fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: GameViewModel = viewModel()) {
     var isCardDrawn by remember { mutableStateOf(false) }
 
+    var infecting: Int by remember { mutableIntStateOf(0) }
+
+    var discarting: Int by remember { mutableIntStateOf(0) }
+
+    val discards = remember { mutableStateListOf(0, 0, 0) }
+
     // Observa el LiveData y lo convierte en un State<GameResponse?>
     val gameResponse by viewModel.game.observeAsState()
 
-    LaunchedEffect(gameId) {
+   LaunchedEffect(Unit) {
         viewModel.getGame(gameId)
     }
 
@@ -98,12 +106,28 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         }
     }
 
+    var selectedOrgan by remember { mutableStateOf<String?>(null) }
+    var selectedCard by remember { mutableStateOf<Int>(-1) }
+
+    // Manejar la infección cuando se selecciona un órgano
+    LaunchedEffect(selectedOrgan) {
+        selectedOrgan?.let { organType ->
+
+            if (infecting != -1) {
+                viewModel.doMove(selectedCard, otherPlayerIndex, organType)
+                infecting = -1
+                selectedOrgan = null
+            }
+        }
+    }
+    Log.v(discarting.toString(), discards[0].toString())
+
     Scaffold (
         topBar = { CustomTopAppBar() },
-    ) { innerPading ->
+    ) { innerPadding ->
             gameResponse?.let { game ->
                 Column(
-                    modifier = modifier.fillMaxSize().padding(innerPading),
+                    modifier = modifier.fillMaxSize().padding(innerPadding),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -173,12 +197,12 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         }
 
-                        game.let { response ->
-                            response.players.getOrNull(1)?.organs?.let { organs ->
-                                //Body(false, organs)
-                            }
-                        }
-                        Body(false, game.players[otherPlayerIndex].organs)
+                        Body(false, game.players[otherPlayerIndex].organs,         isInfecting = infecting != -1,
+                            onOrganSelected = { organType ->
+                                if (infecting != -1) {
+                                    selectedOrgan = organType
+                                }
+                            })
                     }
                     Box(
                         contentAlignment = Alignment.Center,
@@ -234,12 +258,13 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             )
 
                         }
-                        game.let { response ->
-                            response.players.getOrNull(currentPlayerIndex)?.organs?.let { organs ->
-                                //Body(true, organs)
-                            }
-                        }
-                        Body(false, game.players[currentPlayerIndex].organs)
+
+                        Body(false, game.players[currentPlayerIndex].organs,         isInfecting = infecting != -1,
+                            onOrganSelected = { organType ->
+                                if (infecting != -1) {
+                                    selectedOrgan = organType
+                                }
+                            })
 
                         Row(
                             modifier = Modifier
@@ -255,27 +280,73 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     ?: 0),
                                 contentDescription = "CARTA 1",
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(100.dp).clickable{
-                                    viewModel.doMove(0)
+                                modifier = Modifier.width(100.dp).border(width = if(discards[0] == 1) 3.dp else 0.dp, color = if(discards[0] == 1) Color.Gray else Color.Transparent).clickable{
+                                    selectedCard = 0
+
+                                    if (discarting == 1){
+                                        Log.v("DISCARTING2", "DISCARTING2")
+
+                                        discards[0] = (discards[0] + 1) % 2
+
+                                        Log.v("D0", discards[0].toString())
+                                    }
+                                    else{
+                                        if(game.players[currentPlayerIndex].playerCards[0].card.type=="organ" || game.players[currentPlayerIndex].playerCards[0].card.type=="cure") {
+                                                viewModel.doMove(0, -1)
+                                        }
+                                        else if(game.players[currentPlayerIndex].playerCards[0].card.type=="virus"){
+                                            infecting = 1;
+                                        }
+                                    }
                                 }
+
                             )
                             Image(
                                 painter = painterResource(id = Card.fromDisplayName(game.players[currentPlayerIndex].playerCards[1].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 2",
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(100.dp).clickable{
-                                    viewModel.doMove(1)
-                                }
+                                modifier = Modifier.width(100.dp).border(width = if(discards[1] == 1) 3.dp else 0.dp, color = if(discards[1] == 1) Color.Gray else Color.Transparent).clickable{
+                                    selectedCard = 1
+                                    if (discarting == 1){
+                                        Log.v("DISCARTING2", "DISCARTING2")
 
+                                        discards[1] = (discards[1] + 1) % 2
+
+                                        Log.v("D1", discards[1].toString())
+
+                                    }
+                                    else {
+                                        if (game.players[currentPlayerIndex].playerCards[1].card.type == "organ" || game.players[currentPlayerIndex].playerCards[1].card.type == "cure") {
+                                            viewModel.doMove(1, -1)
+                                        } else if (game.players[currentPlayerIndex].playerCards[1].card.type == "virus") {
+                                            infecting = 1;
+                                        }
+                                    }
+                                }
                             )
                             Image(
                                 painter = painterResource(id = Card.fromDisplayName(game.players[currentPlayerIndex].playerCards[2].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 3",
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.width(100.dp).clickable{
-                                    viewModel.doMove(2)
+                                modifier = Modifier.width(100.dp).border(width = if(discards[2] == 1) 3.dp else 0.dp, color = if(discards[2] == 1) Color.Gray else Color.Transparent).clickable{
+                                    selectedCard = 2
+                                    if (discarting == 1){
+                                        Log.v("DISCARTING2", "DISCARTING2")
+                                        discards[2] = (discards[2] + 1) % 2
+                                        Log.v("D2", discards[2].toString())
+
+
+                                    }
+                                    else {
+                                        if (game.players[currentPlayerIndex].playerCards[2].card.type == "organ" || game.players[currentPlayerIndex].playerCards[2].card.type == "cure") {
+                                            viewModel.doMove(2, -1)
+                                        } else if (game.players[currentPlayerIndex].playerCards[2].card.type == "virus") {
+                                            selectedCard = 2
+                                            infecting = 1;
+                                        }
+                                    }
                                 }
 
                             )
@@ -285,7 +356,17 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             modifier = Modifier.padding(top = 20.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Button(onClick = { /*TODO*/ }) {
+                            Button(onClick = {
+                                if(discarting == 1){
+                                    for(i in 0..discards.size - 1){
+                                        discards[i] = 0
+                                    }
+                                    discarting = 0
+                                }
+                                else if(infecting == 0) {
+                                    discarting = 1
+                                }
+                            }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.discard),
                                     contentDescription = "Discard cards"
@@ -304,34 +385,24 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 }
 
 @Composable
-fun Body(myBody: Boolean, organs: List<Organ>){
+fun Body(myBody: Boolean, organs: List<Organ>, isInfecting: Boolean, onOrganSelected: (String) -> Unit = {}){
+    // 0 = No lo tiene
+    // 1 = Sí lo tiene
+    // 2 = Lo tiene con cura
+    // 3 = Lo tiene protegido
+    // -1 = Lo tiene infectado
+
     // Calcula organPlace directamente basado en los organs recibidos
     val organPlace = remember(organs) {
         IntArray(4).apply {
             organs.forEach { organ ->
                 when (organ.tipo) {
-                    "brain" -> this[0] = 1
-                    "heart" -> this[1] = 1
-                    "lungs" -> this[2] = 1
-                    "intestine" -> this[3] = 1
+                    "brain" -> if (organ.cure == 1) this[0] = 2 else if (organ.cure == 2) this[0] = 3 else if(organ.virus == true) this[0] = -1 else this[0] = 1
+                    "heart" ->  if (organ.cure == 1) this[1] = 2 else if (organ.cure == 2) this[1] = 3 else if(organ.virus == true) this[1] = -1 else this[1] = 1
+                    "lungs" ->  if (organ.cure == 1) this[2] = 2 else if (organ.cure == 2) this[2] = 3 else if(organ.virus == true) this[2] = -1 else this[2] = 1
+                    "intestine" ->  if (organ.cure == 1) this[3] = 2 else if (organ.cure == 2) this[3] = 3 else if(organ.virus == true) this[3] = -1 else this[3] = 1
                 }
             }
-        }
-    }
-
-    Log.v("aa", organPlace.toString())
-    organs.forEach {
-        if(it.tipo == "brain") {
-            organPlace[0] = 1
-        }
-        else if(it.tipo == "heart"){
-            organPlace[1] = 1
-        }
-        else if(it.tipo == "lungs"){
-            organPlace[2] = 1
-        }
-        else if(it.tipo == "intestine"){
-            organPlace[3] = 1
         }
     }
 
@@ -348,29 +419,37 @@ fun Body(myBody: Boolean, organs: List<Organ>){
             horizontalArrangement = Arrangement.spacedBy(if(myBody) 10.dp else 30.dp)
         ) {
             Image(
-                painter = painterResource(id = if(organPlace[0] == 1) R.drawable.brain else R.drawable.brain_disable),
+                painter = painterResource(id = if(organPlace[0] == 1) R.drawable.brain else if(organPlace[0] == 2) R.drawable.brain_cure else if (organPlace[0] == 3) R.drawable.brain_protected else if(organPlace[0] == -1) R.drawable.brain_virus else R.drawable.brain_disable),
                 contentDescription = "Cerebro",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(if(myBody) 60.dp else 45.dp)
+                modifier = Modifier.width(if(myBody) 60.dp else 45.dp).clickable{
+                    onOrganSelected("brain")
+                }
             )
             Image(
-                painter = painterResource(id = if(organPlace[1] == 1) R.drawable.heart else R.drawable.heart_disable),
+                painter = painterResource(id = if(organPlace[1] == 1) R.drawable.heart else if(organPlace[1] == 2) R.drawable.heart_cure else if (organPlace[1] == 3) R.drawable.heart_protected else if(organPlace[1] == -1) R.drawable.heart_virus else R.drawable.heart_disable),
                 contentDescription = "Corazón",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(if(myBody) 60.dp else 45.dp)
+                modifier = Modifier.width(if(myBody) 60.dp else 45.dp).clickable {
+                    onOrganSelected("heart")
+                }
             )
             Image(
-                painter = painterResource(id = if(organPlace[2] == 1) R.drawable.lungs else R.drawable.lunge_disable),
+                painter = painterResource(id = if(organPlace[2] == 1) R.drawable.lungs else if(organPlace[2] == 2) R.drawable.lungs_cure else if (organPlace[2] == 3) R.drawable.lungs_protected else if(organPlace[2] == -1) R.drawable.lungs_virus else R.drawable.lungs_disable),
                 contentDescription = "Pulmones",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(if(myBody) 60.dp else 45.dp)
+                modifier = Modifier.width(if(myBody) 60.dp else 45.dp).clickable {
+                    onOrganSelected("lungs")
+                }
 
             )
             Image(
-                painter = painterResource(id = if(organPlace[3] == 1) R.drawable.intestine else R.drawable.intestine_disable),
                 contentDescription = "Intestino",
+                painter = painterResource(id = if(organPlace[3] == 1) R.drawable.intestine else if(organPlace[3] == 2) R.drawable.intestine_cure else if (organPlace[3] == 3) R.drawable.intestine_protected else if(organPlace[3] == -1) R.drawable.intestine_virus else R.drawable.intestine_disable),
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.width(if(myBody) 60.dp else 45.dp)
+                modifier = Modifier.width(if(myBody) 60.dp else 45.dp).clickable {
+                    onOrganSelected("intestine")
+                }
             )
         }
     }

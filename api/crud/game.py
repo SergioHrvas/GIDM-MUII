@@ -65,6 +65,11 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
 
     card = db.query(Card).filter(Card.id == move.card).first()
 
+    print(card.tipo)
+    if move.infect != None:
+        print(move.infect.player1)
+        print(move.infect.organ1)
+    
     if move.action == "discard":
         # Borramos las cartas
         discard_my_cards(db, player_id, move.discards)
@@ -84,12 +89,17 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 # Añadimos las nuevas cartas del mazo
                 steal_to_deck(db, game, player_id, 1)
 
-                print(f"ORGANO {card.organ_type} PUESTO DE {player_id} EN {game.id}")
-
         if card.tipo == "virus":
-            has_organ = player_has_organ(db, move.player_to, card.organ_type)
-            
+            has_organ = player_has_organ(db, move.infect.player1, card.organ_type)
+            print(has_organ)
             if has_organ == True:
+                """
+                print("Infectando")
+                print(move.infect)
+                print(move.infect.player1)
+                print(move.infect.organ1)
+                print(card.organ_type)"""
+
                 add_virus_to_organ(db, move.infect.player1, card.organ_type, move.infect.organ1)
                 remove_card_from_player(db, player_id, move.card)
 

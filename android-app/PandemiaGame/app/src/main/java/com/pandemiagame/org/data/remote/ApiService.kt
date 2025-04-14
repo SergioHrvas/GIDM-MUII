@@ -61,7 +61,7 @@ data class Move(
 )
 
 data class InfectData(
-    @SerializedName("player1") val player1: Int,
+    @SerializedName("player1") val player1: Int?,
     @SerializedName("organ1") val organ1: String,
     @SerializedName("player2") val player2: Int? = null,
     @SerializedName("organ2") val organ2: String? = null,

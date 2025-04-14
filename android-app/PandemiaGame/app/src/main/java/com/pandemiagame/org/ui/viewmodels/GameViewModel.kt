@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.pandemiagame.org.data.remote.GameResponse
+import com.pandemiagame.org.data.remote.InfectData
 import com.pandemiagame.org.data.remote.Move
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
@@ -42,7 +43,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun doMove(index_card: Int, ) {
+    fun doMove(index_card: Int, playerSelected: Int, organ: String = "") {
         viewModelScope.launch {
             try {
                 var token = "Bearer " + tokenManager.getToken()
@@ -50,6 +51,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 // Encontramos el índice del jugador actual de forma segura
                 val indice = game.value?.players?.indexOfFirst { it.id == game.value?.turn } ?: 0
 
+                Log.v(index_card.toString(), "aaaaaaaaaaaaaaaaaaaaaaaa")
                 // Obtenemos el ID de la carta con seguridad
                 val idCard = game.value
                     ?.players
@@ -59,11 +61,34 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     ?.card
                     ?.id
 
+                // Obtenemos el tipo de la carta con seguridad
+                val typeCard = game.value
+                    ?.players
+                    ?.getOrNull(indice)
+                    ?.playerCards
+                    ?.getOrNull(index_card)
+                    ?.card
+                    ?.type
+
+
+
+
+                var infect = if (playerSelected != -1) InfectData(
+                    player1 = if(typeCard=="virus") game.value?.players?.getOrNull(playerSelected)?.id else 0,
+                    organ1 = organ.toString()
+                ) else null
+
+
                 // Creamos el movimiento
-                val move = Move(
+                var move = Move(
                     action = "card",
                     card = idCard,
+                    infect = infect
                 )
+
+                Log.v("!", move.toString())
+
+
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
                     game.value?.turn ?: 0, move)
                 Log.v("res", response.toString())
