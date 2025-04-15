@@ -53,6 +53,8 @@ import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import android.util.Log
 import androidx.collection.intListOf
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableStateListOf
 
 @Preview
@@ -69,6 +71,9 @@ fun PreviewGame(){
 
 @Composable
 fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: GameViewModel = viewModel()) {
+    // Estado para controlar la visibilidad del diálogo de final de partida
+    var showWinnerDialog by remember { mutableStateOf(false) }
+
     var isCardDrawn by remember { mutableStateOf(false) }
 
     var infecting: Int by remember { mutableIntStateOf(0) }
@@ -77,6 +82,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
     val discards = remember { mutableStateListOf(0, 0, 0) }
 
+
     // Observa el LiveData y lo convierte en un State<GameResponse?>
     val gameResponse by viewModel.game.observeAsState()
 
@@ -84,11 +90,24 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         viewModel.getGame(gameId)
     }
 
+    // Observamos el winner del gameResponse
+    val winner = remember(gameResponse) {
+        gameResponse?.winner
+    }
+
+    // Cuando detectamos un ganador, mostramos el diálogo
+    LaunchedEffect(winner) {
+        if (winner != null) {
+            if (winner > 0) {
+                showWinnerDialog = true
+            }
+        }
+    }
+
     // Encuentra el índice del jugador actual basado en el turno
     val currentPlayerIndex = remember(gameResponse) {
         gameResponse?.players?.indexOfFirst { it.id == gameResponse?.turn } ?: 0
     }
-
 
     // Cambia esto a un estado mutable
     var otherPlayerIndex by remember { mutableIntStateOf(0) }
@@ -122,12 +141,37 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
             }
         }
     }
-    Log.v(discarting.toString(), discards[0].toString())
+
 
     Scaffold (
         topBar = { CustomTopAppBar() },
     ) { innerPadding ->
             gameResponse?.let { game ->
+                if (showWinnerDialog) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            // Opcional: maneja lo que pasa cuando se hace clic fuera del diálogo
+                            showWinnerDialog = false
+                        },
+                        title = {
+                            Text(text = "¡Juego Terminado!")
+                        },
+                        text = {
+                            Text(text = "Ganador: $winner")
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    showWinnerDialog = false
+                                    // Opcional: navegar a otra pantalla o reiniciar el juego
+                                    // navController.navigate("main_menu")
+                                }
+                            ) {
+                                Text("Aceptar")
+                            }
+                        }
+                    )
+                }
                 Column(
                     modifier = modifier.fillMaxSize().padding(innerPadding),
                     verticalArrangement = Arrangement.Top,
@@ -345,10 +389,8 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             modifier = Modifier.padding(top = 20.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            if(discarting == 0) Button(onClick = {
-                                if(infecting == 0) {
-                                    discarting = 1
-                                }
+                            if( (discarting == 0) && (infecting == 0)) Button(onClick = {
+                                discarting = 1
                             }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.discard),
@@ -359,6 +401,8 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
 
                         if (discarting == 1) Button(onClick = {
+                            isCardDrawn = true
+
                             var idDiscards = mutableListOf<Int>()
                             for (i in 0..discards.size-1){
                                 if(discards[i] == 1){
@@ -366,6 +410,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     discards[i] = 0
                                     }
                             }
+
                             viewModel.discardCards(idDiscards)
                             discarting = 0
 

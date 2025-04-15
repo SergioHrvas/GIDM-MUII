@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from datetime import datetime
 from models.card import Card
-from schemas.deck import DeckBase
+from schemas.deckcard import DeckBase
 from schemas.player import PlayerResponse
 from schemas.status import StatusEnum
 from typing import Any, Dict, List, Optional

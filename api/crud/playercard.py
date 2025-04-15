@@ -41,9 +41,6 @@ def discard_my_cards(db: Session, player_id: int, discards: Optional[List[int]] 
 
 
 def discard_cards(db: Session, game, player_id):
-    # Si no se proporciona ninguna carta, no hacer nada
-    if cards is None:
-        return
     # Jugador descarta cartas
     players = db.query(Player).filter(Player.id != player_id, Player.game_id == game.id).all()
     

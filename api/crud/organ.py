@@ -18,8 +18,7 @@ def remove_organ_from_player(db: Session, player_id: int, tipo: str):
 
 
 def add_organ_to_player(db: Session, player_id, tipo: str):
-    print(tipo)
-    print(player_id)
+
     db_organ = Organ(
         player_id = player_id,
         tipo = tipo,
@@ -33,6 +32,9 @@ def add_organ_to_player(db: Session, player_id, tipo: str):
         db.refresh(db_organ)
     else:
         print("No se encontró el órgano para el jugador.")
+        return False
+    
+    return True
 
 
 def player_has_organ(db: Session, player_id, tipo: str):
@@ -74,6 +76,7 @@ def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_inf
     if(db_organ):
         if db_organ.cure == 2:
             print("El órgano está inmunizado")
+            return False
         elif db_organ.cure == 1:
             db_organ.cure = 0
             db.commit()
@@ -88,16 +91,20 @@ def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_inf
                 db.delete(db_organ)
             else:
                 print("Error al añadir virus al órgano")
+                return False
         else:
             print("Error al añadir virus al órgano")
+            return False
     else:
         print("Error al encontrar el órgano")
+        return False
+    
+    return True
     
 
 def add_cure_to_organ(db: Session, player_id: int, tipo: str):
     # Buscar el registro de organ
     db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
-
     if(db_organ):
         if db_organ.virus == True:
             db_organ.virus = False
@@ -108,12 +115,19 @@ def add_cure_to_organ(db: Session, player_id: int, tipo: str):
                 db.refresh(db_organ)
             elif db_organ.cure == 2:
                 print("El órgano ya está inmunizado")
+                return False
             else:
                 print("Error al añadir cura al órgano")
+                return False
         else:
             print("Error al añadir cura al órgano")
+            return False
     else:
         print("Error al encontrar el órgano")
+        return False
+
+    return True
+
     
 
 def steal_card(db: Session, player_id, player_to, tipo: OrganType):
@@ -125,6 +139,8 @@ def steal_card(db: Session, player_id, player_to, tipo: OrganType):
         db.refresh(db_organ2)
     else:
         print("Error al robar carta.")
+        return False
+    return True
 
 
 def change_body(db: Session, player_id, player_to):
