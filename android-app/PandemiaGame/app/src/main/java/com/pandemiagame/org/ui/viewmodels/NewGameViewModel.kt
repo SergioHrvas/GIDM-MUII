@@ -87,6 +87,9 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
 
     fun isValidValue(numPlayers: Int): Boolean = (numPlayers > 1 && numPlayers < 6)
 
+    fun notCreating(){
+        _gameCreationStatus.value = false
+    }
 
     fun onValueChange(numPlayers: String){
         _numPlayers.value = numPlayers

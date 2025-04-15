@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -138,8 +139,10 @@ fun NewGameComp(modifier: Modifier = Modifier,  viewModel: NewGameViewModel = vi
                             // Observamos el estado de la creación y si es exitosa, navegamos
                             if (gameCreationStatus) {
                                 LaunchedEffect(gameCreationStatus) {
-                                    // Aquí ya sabemos que el juego fue creado correctamente, así que navegamos
-                                    navController.navigate("game/${viewModel.game.value?.id}")
+                                    viewModel.notCreating()
+                                    navController.navigate("game/${viewModel.game.value?.id}") {
+                                        popUpTo("create-game") { inclusive = true }
+                                    }
                                 }
                             }
                         }

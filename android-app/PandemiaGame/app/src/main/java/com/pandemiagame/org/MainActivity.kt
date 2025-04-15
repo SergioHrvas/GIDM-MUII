@@ -96,7 +96,8 @@ fun AppNavigation() {
                     backStackEntry ->
                 GameComp(
                     viewModel = gameViewModel,
-                    gameId = backStackEntry.arguments?.getString("game_id") ?: ""
+                    gameId = backStackEntry.arguments?.getString("game_id") ?: "",
+                    navController = navController
                 )
             }
             composable("profile") { Pantalla2(navController) }

@@ -83,12 +83,9 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
                     game.value?.turn ?: 0, move)
-                Log.v("res", response.toString())
-                Log.v("GAME BEFORE", _game.value.toString())
 
                 _game.value = response
 
-                Log.v("GAME AFTER", _game.value.toString())
             } catch (e: Exception) {
                 // Manejar error
                 Log.v("Error", e.toString())
@@ -103,7 +100,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
             try {
                 var token = "Bearer " + tokenManager.getToken()
 
-
                 // Creamos el movimiento
                 var move = Move(
                     action = "discard",
@@ -112,12 +108,9 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
                     game.value?.turn ?: 0, move)
-                Log.v("res", response.toString())
-                Log.v("GAME BEFORE", _game.value.toString())
 
                 _game.value = response
 
-                Log.v("GAME AFTER", _game.value.toString())
             } catch (e: Exception) {
                 // Manejar error
                 Log.v("Error", e.toString())

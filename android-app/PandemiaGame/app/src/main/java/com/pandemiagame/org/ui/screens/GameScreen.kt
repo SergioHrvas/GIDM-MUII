@@ -54,8 +54,11 @@ import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import android.util.Log
 import androidx.collection.intListOf
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateListOf
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @Preview
 @Composable
@@ -64,13 +67,15 @@ fun PreviewGame(){
         Box(modifier = Modifier
             .fillMaxSize()
             .background(Color.White)) {
-            GameComp()
+            GameComp(navController = NavController(
+                context = TODO()
+            ))
         }    }
 }
 
 
 @Composable
-fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: GameViewModel = viewModel()) {
+fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: GameViewModel = viewModel(), navController: NavController) {
     // Estado para controlar la visibilidad del diálogo de final de partida
     var showWinnerDialog by remember { mutableStateOf(false) }
 
@@ -80,8 +85,11 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
     var discarting: Int by remember { mutableIntStateOf(0) }
 
-    val discards = remember { mutableStateListOf(0, 0, 0) }
-
+    val discards = remember {
+        mutableStateListOf<Int>().apply {
+            addAll(listOf(0, 0, 0))
+        }
+    }
 
     // Observa el LiveData y lo convierte en un State<GameResponse?>
     val gameResponse by viewModel.game.observeAsState()
@@ -142,6 +150,33 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         }
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            isCardDrawn = false
+            showWinnerDialog = false
+            infecting = 0
+            discarting = 0
+            // En lugar de clear(), resetea los valores
+            discards[0] = 0
+            discards[1] = 0
+            discards[2] = 0
+        }
+    }
+
+    BackHandler(enabled = true) {
+        // Limpiar todos los estados inmediatamente
+        isCardDrawn = false
+        showWinnerDialog = false
+        infecting = 0
+        discarting = 0
+        discards[0] = 0
+        discards[1] = 0
+        discards[2] = 0
+
+        navController.popBackStack("home", inclusive = false)
+    }
+
+
 
     Scaffold (
         topBar = { CustomTopAppBar() },
@@ -163,8 +198,6 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             Button(
                                 onClick = {
                                     showWinnerDialog = false
-                                    // Opcional: navegar a otra pantalla o reiniciar el juego
-                                    // navController.navigate("main_menu")
                                 }
                             ) {
                                 Text("Aceptar")
