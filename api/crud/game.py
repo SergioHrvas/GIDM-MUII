@@ -57,6 +57,8 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
     # Obtenemos el juego
     game = db.query(Game).filter(Game.id == game_id).first()
 
+    done = False
+
     # Obtenemos el jugador
     player = db.query(Player).filter(Player.id == game.turn).first()
     
@@ -65,25 +67,26 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
 
     card = db.query(Card).filter(Card.id == move.card).first()
 
-    print(card.tipo)
-    if move.infect != None:
-        print(move.infect.player1)
-        print(move.infect.organ1)
-    
     if move.action == "discard":
         # Borramos las cartas
         discard_my_cards(db, player_id, move.discards)
+        done = True
+
+        print(done)
 
         # Añadimos las nuevas cartas del mazo
         steal_to_deck(db, game, player_id, len(move.discards))
-
+        print("aqui")
     elif move.action == "card":
         # Hacemos el movimiento
         if card.tipo == "organ":
             has_organ = player_has_organ(db, player_id, card.organ_type)
 
             if has_organ == False:
+                
                 add_organ_to_player(db, player_id, card.organ_type)
+                done = True
+
                 remove_card_from_player(db, player_id, move.card)
                 
                 # Añadimos las nuevas cartas del mazo
@@ -93,15 +96,10 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             has_organ = player_has_organ(db, move.infect.player1, card.organ_type)
             print(has_organ)
             if has_organ == True:
-                """
-                print("Infectando")
-                print(move.infect)
-                print(move.infect.player1)
-                print(move.infect.organ1)
-                print(card.organ_type)"""
-
                 add_virus_to_organ(db, move.infect.player1, card.organ_type, move.infect.organ1)
                 remove_card_from_player(db, player_id, move.card)
+
+                done = True
 
                 # Añadimos las nuevas cartas del mazo
                 steal_to_deck(db, game, player_id, 1)
@@ -113,6 +111,8 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 add_cure_to_organ(db, player_id, card.organ_type)
                 remove_card_from_player(db, player_id, move.card)
 
+                done = True
+
                 # Añadimos las nuevas cartas del mazo
                 steal_to_deck(db, game, player_id, 1)
 
@@ -123,6 +123,8 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                     steal_card(db, player_id, move.player_to, move.organ_to_steal)
                     remove_card_from_player(db, player_id, move.card)  
 
+                    done = True
+
                     # Añadimos las nuevas cartas del mazo
                     steal_to_deck(db, game, player_id, 1)
 
@@ -130,6 +132,8 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 change_body(db, player_id, move.player_to)
                 remove_card_from_player(db, player_id, move.card)  
 
+                done = True
+                
                 # Añadimos las nuevas cartas del mazo
                 steal_to_deck(db, game, player_id, 1)
                 
@@ -137,6 +141,8 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 infect_players(db, player_id, move.infect)
                 remove_card_from_player(db, player_id, move.card)  
 
+                done = True
+                
                 # Añadimos las nuevas cartas del mazo
                 steal_to_deck(db, game, player_id, 1)
 
@@ -151,11 +157,13 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 discard_cards(db, game_id, player_id)
                 remove_card_from_player(db, player_id, move.card)
 
+                done = True
+
                 # Añadimos las nuevas cartas del mazo
                 steal_to_deck(db, game, player_id, 1)
-                pass
 
 
+    if done:
         game.num_turns+=1
 
 
@@ -164,11 +172,11 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         #VER
         game.turn = game.turns[game.num_turns % num_turns]
 
-        db.commit()
-        db.refresh(game)
+    db.commit()
+    db.refresh(game)
 
-        if player:
-            db.refresh(player)
+    if player:
+        db.refresh(player)
     return game
 
 def review_winner(db: Session, game):

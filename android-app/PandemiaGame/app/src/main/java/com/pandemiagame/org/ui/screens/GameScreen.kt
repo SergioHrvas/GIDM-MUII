@@ -113,9 +113,11 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
     LaunchedEffect(selectedOrgan) {
         selectedOrgan?.let { organType ->
 
-            if (infecting != -1) {
+            if (infecting != 0) {
+
                 viewModel.doMove(selectedCard, otherPlayerIndex, organType)
-                infecting = -1
+                infecting = 0
+
                 selectedOrgan = null
             }
         }
@@ -197,9 +199,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         }
 
-                        Body(false, game.players[otherPlayerIndex].organs,         isInfecting = infecting != -1,
+                        Body(false, game.players[otherPlayerIndex].organs,         isInfecting = infecting != 0,
                             onOrganSelected = { organType ->
-                                if (infecting != -1) {
+                                if (infecting != 0) {
                                     selectedOrgan = organType
                                 }
                             })
@@ -259,9 +261,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         }
 
-                        Body(false, game.players[currentPlayerIndex].organs,         isInfecting = infecting != -1,
+                        Body(false, game.players[currentPlayerIndex].organs,         isInfecting = infecting != 0,
                             onOrganSelected = { organType ->
-                                if (infecting != -1) {
+                                if (infecting != 0) {
                                     selectedOrgan = organType
                                 }
                             })
@@ -284,11 +286,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     selectedCard = 0
 
                                     if (discarting == 1){
-                                        Log.v("DISCARTING2", "DISCARTING2")
-
                                         discards[0] = (discards[0] + 1) % 2
-
-                                        Log.v("D0", discards[0].toString())
                                     }
                                     else{
                                         if(game.players[currentPlayerIndex].playerCards[0].card.type=="organ" || game.players[currentPlayerIndex].playerCards[0].card.type=="cure") {
@@ -309,12 +307,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                 modifier = Modifier.width(100.dp).border(width = if(discards[1] == 1) 3.dp else 0.dp, color = if(discards[1] == 1) Color.Gray else Color.Transparent).clickable{
                                     selectedCard = 1
                                     if (discarting == 1){
-                                        Log.v("DISCARTING2", "DISCARTING2")
-
                                         discards[1] = (discards[1] + 1) % 2
-
-                                        Log.v("D1", discards[1].toString())
-
                                     }
                                     else {
                                         if (game.players[currentPlayerIndex].playerCards[1].card.type == "organ" || game.players[currentPlayerIndex].playerCards[1].card.type == "cure") {
@@ -333,11 +326,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                 modifier = Modifier.width(100.dp).border(width = if(discards[2] == 1) 3.dp else 0.dp, color = if(discards[2] == 1) Color.Gray else Color.Transparent).clickable{
                                     selectedCard = 2
                                     if (discarting == 1){
-                                        Log.v("DISCARTING2", "DISCARTING2")
                                         discards[2] = (discards[2] + 1) % 2
-                                        Log.v("D2", discards[2].toString())
-
-
                                     }
                                     else {
                                         if (game.players[currentPlayerIndex].playerCards[2].card.type == "organ" || game.players[currentPlayerIndex].playerCards[2].card.type == "cure") {
@@ -356,14 +345,8 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             modifier = Modifier.padding(top = 20.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Button(onClick = {
-                                if(discarting == 1){
-                                    for(i in 0..discards.size - 1){
-                                        discards[i] = 0
-                                    }
-                                    discarting = 0
-                                }
-                                else if(infecting == 0) {
+                            if(discarting == 0) Button(onClick = {
+                                if(infecting == 0) {
                                     discarting = 1
                                 }
                             }) {
@@ -374,9 +357,46 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                             }
 
+
+                        if (discarting == 1) Button(onClick = {
+                            var idDiscards = mutableListOf<Int>()
+                            for (i in 0..discards.size-1){
+                                if(discards[i] == 1){
+                                    idDiscards.add(game.players[currentPlayerIndex].playerCards[i].card.id)
+                                    discards[i] = 0
+                                    }
+                            }
+                            viewModel.discardCards(idDiscards)
+                            discarting = 0
+
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.confirm),
+                                contentDescription = "Confirmar"
+                            )
+
+                        }
+
+                        if ((discarting == 1) || (infecting == 1)) Button(onClick = {
+                            if(discarting == 1){
+                                for(i in 0..discards.size - 1){
+                                    discards[i] = 0
+                                }
+                                discarting = 0
+                            }
+                            if(infecting == 1){
+                                infecting = 0
+                            }
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.cancel),
+                                contentDescription = "Cancelar"
+                            )
+
                         }
                     }
 
+                    }
 
                 }
             } ?: Text("Cargando...")

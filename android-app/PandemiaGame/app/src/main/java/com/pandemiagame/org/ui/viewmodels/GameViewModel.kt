@@ -51,7 +51,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 // Encontramos el índice del jugador actual de forma segura
                 val indice = game.value?.players?.indexOfFirst { it.id == game.value?.turn } ?: 0
 
-                Log.v(index_card.toString(), "aaaaaaaaaaaaaaaaaaaaaaaa")
                 // Obtenemos el ID de la carta con seguridad
                 val idCard = game.value
                     ?.players
@@ -70,14 +69,10 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     ?.card
                     ?.type
 
-
-
-
                 var infect = if (playerSelected != -1) InfectData(
                     player1 = if(typeCard=="virus") game.value?.players?.getOrNull(playerSelected)?.id else 0,
                     organ1 = organ.toString()
                 ) else null
-
 
                 // Creamos el movimiento
                 var move = Move(
@@ -85,9 +80,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     card = idCard,
                     infect = infect
                 )
-
-                Log.v("!", move.toString())
-
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
                     game.value?.turn ?: 0, move)
@@ -104,4 +96,32 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
+
+
+    fun discardCards(cards: List<Int>) {
+        viewModelScope.launch {
+            try {
+                var token = "Bearer " + tokenManager.getToken()
+
+
+                // Creamos el movimiento
+                var move = Move(
+                    action = "discard",
+                    discards = cards
+                )
+
+                val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
+                    game.value?.turn ?: 0, move)
+                Log.v("res", response.toString())
+                Log.v("GAME BEFORE", _game.value.toString())
+
+                _game.value = response
+
+                Log.v("GAME AFTER", _game.value.toString())
+            } catch (e: Exception) {
+                // Manejar error
+                Log.v("Error", e.toString())
+            }
+        }
+    }
 }

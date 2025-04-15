@@ -10,7 +10,7 @@ class Game(Base):
     __tablename__ = 'games'
 
     id = Column(Integer, primary_key=True)
-    status = Column(SQLAlchemyEnum(StatusEnum, name="status_enum"), nullable=False)  # ✅ Enum corregido
+    status = Column(SQLAlchemyEnum(StatusEnum, name="status_enum"), nullable=False)
     turn = Column(Integer)
     num_turns = Column(Integer)
     turns = Column(JSONB)

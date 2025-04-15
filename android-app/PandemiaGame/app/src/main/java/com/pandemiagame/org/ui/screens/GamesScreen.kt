@@ -77,8 +77,6 @@ fun GamesComp(
         }
     }
 
-
-
     Scaffold(
         topBar = { CustomTopAppBar() },
     ) { innerPadding ->

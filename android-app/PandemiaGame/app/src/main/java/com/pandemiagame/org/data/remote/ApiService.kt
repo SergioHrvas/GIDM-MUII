@@ -52,7 +52,7 @@ data class Organ(
 // Modelo de movimiento
 data class Move(
     @SerializedName("action") val action: String,
-    @SerializedName("card") val card: Int?,
+    @SerializedName("card") val card: Int? = null,
     @SerializedName("player_to") val playerTo: Int? = null,
     @SerializedName("discards") val discards: List<Int>? = null,
     @SerializedName("organ_to_steal") val organToSteal: String? = null,
