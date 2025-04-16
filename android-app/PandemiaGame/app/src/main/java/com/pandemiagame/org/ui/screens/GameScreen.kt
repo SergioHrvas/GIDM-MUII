@@ -406,7 +406,6 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                 selecting = 1
                                             }
                                             "action" -> {
-                                                Log.v("AEIOU", game.players[currentPlayerIndex].playerCards[0].card.name)
                                                 when (game.players[currentPlayerIndex].playerCards[0].card.name){
                                                     "Change Body" -> {
                                                         if(game.players.size > 2){
@@ -418,8 +417,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                     }
                                                     "Steal Organ" -> {
                                                         selecting = 1
-                                                        Log.v("SELECTING", selecting.toString())
-
+                                                    }
+                                                    "Discard Cards" -> {
+                                                        viewModel.doMove(0)
                                                     }
                                                 }
                                             }
@@ -445,7 +445,6 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                 selecting = 1
                                             }
                                             "action" -> {
-                                                Log.v("AEIOU", game.players[currentPlayerIndex].playerCards[0].card.name)
                                                 when (game.players[currentPlayerIndex].playerCards[1].card.name){
                                                     "Change Body" -> {
                                                         if(game.players.size > 2){
@@ -457,8 +456,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                     }
                                                     "Steal Organ" -> {
                                                         selecting = 1
-                                                        Log.v("SELECTING", selecting.toString())
-
+                                                    }
+                                                    "Discard Cards" -> {
+                                                        viewModel.doMove(1)
                                                     }
                                                 }
                                             }
@@ -483,7 +483,6 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                 selecting = 1
                                             }
                                             "action" -> {
-                                                Log.v("AEIOU", game.players[currentPlayerIndex].playerCards[2].card.name)
                                                 when (game.players[currentPlayerIndex].playerCards[2].card.name){
                                                     "Change Body" -> {
                                                         if(game.players.size > 2){
@@ -495,8 +494,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                     }
                                                     "Steal Organ" -> {
                                                         selecting = 1
-                                                        Log.v("SELECTING", selecting.toString())
-
+                                                    }
+                                                    "Discard Cards" -> {
+                                                        viewModel.doMove(2)
                                                     }
                                                 }
                                             }

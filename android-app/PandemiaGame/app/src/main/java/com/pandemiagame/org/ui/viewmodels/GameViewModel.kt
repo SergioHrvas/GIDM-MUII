@@ -91,7 +91,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     infect = infect,
                 )
 
-                Log.v("INFECT", infect.toString())
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
                     game.value?.turn ?: 0, move)

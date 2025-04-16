@@ -1,5 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from models.game import Game
 from models.playercard import PlayerCard
 from models.player import Player
 from models.card import Card
@@ -40,14 +41,29 @@ def discard_my_cards(db: Session, player_id: int, discards: Optional[List[int]] 
     db.commit()
 
 
-def discard_cards(db: Session, game, player_id):
+def discard_cards(db: Session, game_id: int, player_id: int):
+    # Obtener el juego
+    game = db.query(Game).filter(Game.id == game_id).first()
+    if not game:
+        print("Juego no encontrado")
+        return False
+    
+    
     # Jugador descarta cartas
-    players = db.query(Player).filter(Player.id != player_id, Player.game_id == game.id).all()
+    players = db.query(Player).filter(Player.id != player_id, Player.game_id == game_id).all()
     
     for player in players:
         cards = db.query(PlayerCard).filter(PlayerCard.player_id == player.id).all()
-        db.delete(cards)
-        db.commit()
+        
+        for card in cards:
+            if(card):
+                db.delete(card)
+        
+        
+        # Jugador roba cartas del mazo
+        steal_to_deck(db, game, player.id, 3)
 
-    # Jugador roba cartas del mazo
-    steal_to_deck(db, game, player_id, 3)
+
+    db.commit()
+    
+
