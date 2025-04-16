@@ -69,17 +69,44 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     ?.card
                     ?.type
 
-                var infect = if (playerSelected != -1) InfectData(
-                    player1 = if(typeCard=="virus") game.value?.players?.getOrNull(playerSelected)?.id else 0,
+                // Obtenemos el tipo de la carta con seguridad
+                val nameCard = game.value
+                    ?.players
+                    ?.getOrNull(indice)
+                    ?.playerCards
+                    ?.getOrNull(index_card)
+                    ?.card
+                    ?.name
+
+                var infect = if (typeCard == "virus") InfectData(
+                    player1 = game.value?.players?.getOrNull(playerSelected)?.id,
                     organ1 = organ.toString()
                 ) else null
+
+                var player_to: Int = 0
+
+                if(typeCard == "action"){
+                    player_to = game.value?.players?.getOrNull(playerSelected)?.id!!
+
+                    if(nameCard == "Steal Organ"){
+
+                    }
+                    else{
+
+                    }
+
+                }
 
                 // Creamos el movimiento
                 var move = Move(
                     action = "card",
                     card = idCard,
-                    infect = infect
+                    infect = infect,
+                    playerTo = player_to
                 )
+
+                Log.v("aaa", move.toString())
+
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
                     game.value?.turn ?: 0, move)
