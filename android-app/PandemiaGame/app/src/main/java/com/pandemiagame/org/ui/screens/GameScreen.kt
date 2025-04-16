@@ -79,8 +79,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
     var isCardDrawn by remember { mutableStateOf(false) }
 
-    var infecting: Int by remember { mutableStateOf(0) }
-
+    var selecting: Int by remember { mutableStateOf(0) }
 
     var discarting: Int by remember { mutableIntStateOf(0) }
 
@@ -139,10 +138,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
     LaunchedEffect(selectedOrgan) {
         selectedOrgan?.let { organType ->
 
-            if (infecting != 0) {
-
+            if (selecting != 0) {
                 viewModel.doMove(selectedCard, otherPlayerIndex, organType)
-                infecting = 0
+                selecting = 0
 
                 selectedOrgan = null
             }
@@ -164,7 +162,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         onDispose {
             isCardDrawn = false
             showWinnerDialog = false
-            infecting = 0
+            selecting = 0
             discarting = 0
             // En lugar de clear(), resetea los valores
             discards[0] = 0
@@ -177,7 +175,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         // Limpiar todos los estados inmediatamente
         isCardDrawn = false
         showWinnerDialog = false
-        infecting = 0
+        selecting = 0
         discarting = 0
         discards[0] = 0
         discards[1] = 0
@@ -316,7 +314,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                         }
 
                         Body(false, game.players[otherPlayerIndex].organs, onOrganSelected = { organType ->
-                                if (infecting != 0) {
+                                if (selecting != 0) {
                                     selectedOrgan = organType
                                 }
                             })
@@ -377,7 +375,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                         }
 
                         Body(false, game.players[currentPlayerIndex].organs, onOrganSelected = { organType ->
-                                if (infecting != 0) {
+                                if (selecting != 0) {
                                     selectedOrgan = organType
                                 }
                             })
@@ -398,23 +396,31 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier.width(100.dp).border(width = if(discards[0] == 1) 3.dp else 0.dp, color = if(discards[0] == 1) Color.Gray else Color.Transparent).clickable{
                                     selectedCard = 0
-
                                     if (discarting == 1){
                                         discards[0] = (discards[0] + 1) % 2
                                     }
-                                    else{
-                                        if(game.players[currentPlayerIndex].playerCards[0].card.type=="organ" || game.players[currentPlayerIndex].playerCards[0].card.type=="cure") {
-                                                viewModel.doMove(0, -1)
-                                        }
-                                        else if(game.players[currentPlayerIndex].playerCards[0].card.type=="virus"){
-                                            infecting = 1
-                                        } else if (game.players[currentPlayerIndex].playerCards[0].card.type == "action") {
-                                            if(game.players[currentPlayerIndex].playerCards[0].card.name == "Change Body") {
-                                                if(game.players.size > 2){
-                                                    changing_body = true
-                                                }
-                                                else{
-                                                    ready_to_change = true
+                                    else {
+                                        when (game.players[currentPlayerIndex].playerCards[0].card.type) {
+                                            "organ", "cure" -> viewModel.doMove(0)
+                                            "virus" -> {
+                                                selecting = 1
+                                            }
+                                            "action" -> {
+                                                Log.v("AEIOU", game.players[currentPlayerIndex].playerCards[0].card.name)
+                                                when (game.players[currentPlayerIndex].playerCards[0].card.name){
+                                                    "Change Body" -> {
+                                                        if(game.players.size > 2){
+                                                            changing_body = true
+                                                        }
+                                                        else{
+                                                            ready_to_change = true
+                                                        }
+                                                    }
+                                                    "Steal Organ" -> {
+                                                        selecting = 1
+                                                        Log.v("SELECTING", selecting.toString())
+
+                                                    }
                                                 }
                                             }
                                         }
@@ -433,17 +439,27 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                         discards[1] = (discards[1] + 1) % 2
                                     }
                                     else {
-                                        if (game.players[currentPlayerIndex].playerCards[1].card.type == "organ" || game.players[currentPlayerIndex].playerCards[1].card.type == "cure") {
-                                            viewModel.doMove(1, -1)
-                                        } else if (game.players[currentPlayerIndex].playerCards[1].card.type == "virus") {
-                                            infecting = 1
-                                        } else if (game.players[currentPlayerIndex].playerCards[1].card.type == "action") {
-                                            if(game.players[currentPlayerIndex].playerCards[1].card.name == "Change Body") {
-                                                if(game.players.size > 2){
-                                                    changing_body = true
-                                                }
-                                                else{
-                                                    ready_to_change = true
+                                        when (game.players[currentPlayerIndex].playerCards[1].card.type) {
+                                            "organ", "cure" -> viewModel.doMove(1)
+                                            "virus" -> {
+                                                selecting = 1
+                                            }
+                                            "action" -> {
+                                                Log.v("AEIOU", game.players[currentPlayerIndex].playerCards[0].card.name)
+                                                when (game.players[currentPlayerIndex].playerCards[1].card.name){
+                                                    "Change Body" -> {
+                                                        if(game.players.size > 2){
+                                                            changing_body = true
+                                                        }
+                                                        else{
+                                                            ready_to_change = true
+                                                        }
+                                                    }
+                                                    "Steal Organ" -> {
+                                                        selecting = 1
+                                                        Log.v("SELECTING", selecting.toString())
+
+                                                    }
                                                 }
                                             }
                                         }
@@ -461,18 +477,27 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                         discards[2] = (discards[2] + 1) % 2
                                     }
                                     else {
-                                        if (game.players[currentPlayerIndex].playerCards[2].card.type == "organ" || game.players[currentPlayerIndex].playerCards[2].card.type == "cure") {
-                                            viewModel.doMove(2, -1)
-                                        } else if (game.players[currentPlayerIndex].playerCards[2].card.type == "virus") {
-                                            selectedCard = 2
-                                            infecting = 1
-                                        } else if (game.players[currentPlayerIndex].playerCards[2].card.type == "action") {
-                                            if(game.players[currentPlayerIndex].playerCards[2].card.name == "Change Body") {
-                                                if(game.players.size > 2){
-                                                    changing_body = true
-                                                }
-                                                else{
-                                                    ready_to_change = true
+                                        when (game.players[currentPlayerIndex].playerCards[2].card.type) {
+                                            "organ", "cure" -> viewModel.doMove(2)
+                                            "virus" -> {
+                                                selecting = 1
+                                            }
+                                            "action" -> {
+                                                Log.v("AEIOU", game.players[currentPlayerIndex].playerCards[2].card.name)
+                                                when (game.players[currentPlayerIndex].playerCards[2].card.name){
+                                                    "Change Body" -> {
+                                                        if(game.players.size > 2){
+                                                            changing_body = true
+                                                        }
+                                                        else{
+                                                            ready_to_change = true
+                                                        }
+                                                    }
+                                                    "Steal Organ" -> {
+                                                        selecting = 1
+                                                        Log.v("SELECTING", selecting.toString())
+
+                                                    }
                                                 }
                                             }
                                         }
@@ -485,7 +510,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             modifier = Modifier.padding(top = 20.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            if( (discarting == 0) && (infecting == 0)) Button(onClick = {
+                            if( (discarting == 0) && (selecting == 0)) Button(onClick = {
                                 discarting = 1
                             }) {
                                 Icon(
@@ -518,15 +543,15 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         }
 
-                        if ((discarting == 1) || (infecting == 1)) Button(onClick = {
+                        if ((discarting == 1) || (selecting == 1)) Button(onClick = {
                             if(discarting == 1){
                                 for(i in 0..discards.size - 1){
                                     discards[i] = 0
                                 }
                                 discarting = 0
                             }
-                            if(infecting == 1){
-                                infecting = 0
+                            if(selecting == 1){
+                                selecting = 0
                             }
                         }) {
                             Icon(

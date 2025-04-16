@@ -43,7 +43,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun doMove(index_card: Int, playerSelected: Int, organ: String = "") {
+    fun doMove(index_card: Int, playerSelected: Int = -1, organ: String = "") {
         viewModelScope.launch {
             try {
                 var token = "Bearer " + tokenManager.getToken()
@@ -78,40 +78,27 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     ?.card
                     ?.name
 
-                var infect = if (typeCard == "virus") InfectData(
+                var infect = if (playerSelected != -1) InfectData(
                     player1 = game.value?.players?.getOrNull(playerSelected)?.id,
-                    organ1 = organ.toString()
+                    organ1 = if (organ != "") organ.toString() else null
                 ) else null
 
-                var player_to: Int = 0
-
-                if(typeCard == "action"){
-                    player_to = game.value?.players?.getOrNull(playerSelected)?.id!!
-
-                    if(nameCard == "Steal Organ"){
-
-                    }
-                    else{
-
-                    }
-
-                }
 
                 // Creamos el movimiento
                 var move = Move(
                     action = "card",
                     card = idCard,
                     infect = infect,
-                    playerTo = player_to
                 )
 
-                Log.v("aaa", move.toString())
-
+                Log.v("INFECT", infect.toString())
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
                     game.value?.turn ?: 0, move)
+                Log.v("BEFORE", _game.value.toString())
 
                 _game.value = response
+                Log.v("AFTER", _game.value.toString())
 
             } catch (e: Exception) {
                 // Manejar error

@@ -53,16 +53,14 @@ data class Organ(
 data class Move(
     @SerializedName("action") val action: String,
     @SerializedName("card") val card: Int? = null,
-    @SerializedName("player_to") val playerTo: Int? = null,
     @SerializedName("discards") val discards: List<Int>? = null,
-    @SerializedName("organ_to_steal") val organToSteal: String? = null,
     @SerializedName("organ_to_pass") val organToPass: String? = null,
     @SerializedName("infect") val infect: InfectData? = null
 )
 
 data class InfectData(
     @SerializedName("player1") val player1: Int?,
-    @SerializedName("organ1") val organ1: String,
+    @SerializedName("organ1") val organ1: String? = null,
     @SerializedName("player2") val player2: Int? = null,
     @SerializedName("organ2") val organ2: String? = null,
     @SerializedName("player3") val player3: Int? = null,

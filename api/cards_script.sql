@@ -25,7 +25,7 @@ VALUES
 INSERT INTO cards (name, tipo)
 VALUES 
     -- Cartas de acción
-    ('Steal Card', 'action'),           -- Robar carta
+    ('Steal Organ', 'action'),           -- Robar carta
     ('Infect Player', 'action'),        -- Contagiar a otro jugador
     ('Exchange Card', 'action'),        -- Intercambiar carta
     ('Change Body', 'action'),          -- Cambiar cuerpo

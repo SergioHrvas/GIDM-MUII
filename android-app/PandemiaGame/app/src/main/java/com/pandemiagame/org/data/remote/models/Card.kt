@@ -25,7 +25,7 @@ enum class Card(val displayName: String, val drawable: Int) {
     ORGAN_MAGIC("Magic Organ", R.drawable.magic),
 
     // Acciones (IDs 56-60)
-    STEAL_CARD("Steal Card", R.drawable.steal),
+    STEAL_ORGAN("Steal Organ", R.drawable.steal),
     INFECT_PLAYER("Infect Player", R.drawable.sneeze),
     EXCHANGE_CARD("Exchange Card", R.drawable.organ_change),
     CHANGE_BODY("Change Body", R.drawable.body_change),

@@ -99,12 +99,12 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
 
         elif card.tipo == "action":
             if card.name == "Steal Organ":
-                can_steal = player_can_steal(db, player_id, move.player_to, move.organ_to_steal)
+                can_steal = player_can_steal(db, player_id, move.infect.player1, move.infect.organ1)
                 if can_steal == True:
-                    done = steal_card(db, player_id, move.player_to, move.organ_to_steal)
+                    done = steal_card(db, player_id, move.infect.player1, move.infect.organ1)
                     
             elif card.name == "Change Body":
-                change_body(db, player_id, move.player_to)
+                change_body(db, player_id, move.infect.player1)
                 done = True
                 
             elif card.name == "Infect Player":
@@ -112,7 +112,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 done = True
                 
             elif card.name == "Exchange Card":
-                done = change_organs(db, player_id, move.organ_to_pass, move.player_to, move.organ_to_steal)
+                done = change_organs(db, player_id, move.organ_to_pass, move.infect.player1, move.infect.organ1)
 
             elif card.name == "Discard Cards":
                 discard_cards(db, game_id, player_id)
