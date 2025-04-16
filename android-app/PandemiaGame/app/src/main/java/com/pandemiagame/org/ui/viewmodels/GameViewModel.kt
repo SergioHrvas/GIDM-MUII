@@ -24,6 +24,10 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
     private val _game = MutableLiveData<GameResponse>()
     val game: LiveData<GameResponse> = _game
+
+    private val _changingTurn = MutableLiveData<Boolean>()
+    val changingTurn: LiveData<Boolean> = _changingTurn
+
     private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
 
     fun getGame(juegoId: String) {
@@ -97,6 +101,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 Log.v("BEFORE", _game.value.toString())
 
                 _game.value = response
+                _changingTurn.value = true
                 Log.v("AFTER", _game.value.toString())
 
             } catch (e: Exception) {
@@ -123,11 +128,16 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     game.value?.turn ?: 0, move)
 
                 _game.value = response
+                _changingTurn.value = true
 
             } catch (e: Exception) {
                 // Manejar error
                 Log.v("Error", e.toString())
             }
         }
+    }
+
+    fun setChangingTurn(ct: Boolean){
+        _changingTurn.value = ct
     }
 }

@@ -54,8 +54,12 @@ import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import android.util.Log
 import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 
 @Preview
@@ -92,7 +96,10 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
     // Observa el LiveData y lo convierte en un State<GameResponse?>
     val gameResponse by viewModel.game.observeAsState()
 
-   LaunchedEffect(Unit) {
+    // Observa el LiveData y lo convierte en un State<GameResponse?>
+    val changingTurn by viewModel.changingTurn.observeAsState()
+
+    LaunchedEffect(Unit) {
         viewModel.getGame(gameId)
     }
 
@@ -151,7 +158,6 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
     var ready_to_change: Boolean by remember { mutableStateOf(false) }
 
     LaunchedEffect(ready_to_change) {
-        Log.v("a", ready_to_change.toString())
         if(ready_to_change) {
             viewModel.doMove(selectedCard, otherPlayerIndex)
             ready_to_change = false
@@ -184,8 +190,6 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         navController.popBackStack("home", inclusive = false)
     }
 
-
-
     Scaffold (
         topBar = { CustomTopAppBar() },
     ) { innerPadding ->
@@ -211,6 +215,47 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             }
                         }
                     )
+                }
+                if ((changingTurn == true) && (winner != null)) {
+                    Dialog(
+                        onDismissRequest = {
+                            viewModel.setChangingTurn(false)
+                        },
+                        properties = DialogProperties(
+                            usePlatformDefaultWidth = false // Esto permite que el diálogo no use el ancho predeterminado
+                        )
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxSize() // Ocupa toda la pantalla
+                                .padding(16.dp),
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(24.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Turno del jugador ${game.players[currentPlayerIndex].name} ${game.players[currentPlayerIndex].id}",
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(bottom = 24.dp)
+                                )
+
+                                Button(
+                                    onClick = {
+                                        viewModel.setChangingTurn(false)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 32.dp)
+                                ) {
+                                    Text("Aceptar")
+                                }
+                            }
+                        }
+                    }
                 }
                 if(changing_body){
 
