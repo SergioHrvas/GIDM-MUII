@@ -385,8 +385,22 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         // Carta animada al robar
                         if (isCardDrawn) {
-                            DrawCardAnimation {
+                            DrawCardAnimation () {
+
                                 isCardDrawn = false
+
+                                var idDiscards = mutableListOf<Int>()
+                                for (i in 0..discards.size-1){
+                                    if(discards[i] == 1){
+                                        idDiscards.add(game.players[currentPlayerIndex].playerCards[i].card.id)
+                                        discards[i] = 0
+                                    }
+                                }
+
+                                viewModel.discardCards(idDiscards)
+
+                                viewModel.setChangingTurn(true)
+
                             } // Resetea el estado cuando termina
                         }
                     }
@@ -569,15 +583,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                         if (discarting == 1) Button(onClick = {
                             isCardDrawn = true
 
-                            var idDiscards = mutableListOf<Int>()
-                            for (i in 0..discards.size-1){
-                                if(discards[i] == 1){
-                                    idDiscards.add(game.players[currentPlayerIndex].playerCards[i].card.id)
-                                    discards[i] = 0
-                                    }
-                            }
 
-                            viewModel.discardCards(idDiscards)
                             discarting = 0
 
                         }) {
@@ -707,6 +713,8 @@ fun DrawCardAnimation(onAnimationEnd: () -> Unit) {
             endY,
             animationSpec = tween(durationMillis = 800, easing = LinearOutSlowInEasing)
         )
+
+
         onAnimationEnd() // Restablece el estado después de la animación
     }
 

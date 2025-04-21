@@ -100,8 +100,10 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     game.value?.turn ?: 0, move)
                 Log.v("BEFORE", _game.value.toString())
 
+                if(_game.value?.turn != response.turn){
+                    _changingTurn.value = true
+                }
                 _game.value = response
-                _changingTurn.value = true
                 Log.v("AFTER", _game.value.toString())
 
             } catch (e: Exception) {
@@ -128,7 +130,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     game.value?.turn ?: 0, move)
 
                 _game.value = response
-                _changingTurn.value = true
 
             } catch (e: Exception) {
                 // Manejar error
