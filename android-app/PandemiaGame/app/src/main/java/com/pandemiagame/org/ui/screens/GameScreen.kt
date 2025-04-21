@@ -53,6 +53,7 @@ import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateListOf
@@ -294,12 +295,17 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                         },
                         properties = DialogProperties(
                             usePlatformDefaultWidth = false // Esto permite que el diálogo no use el ancho predeterminado
-                        )
+                        ),
                     ) {
                         Surface(
                             modifier = Modifier
-                                .fillMaxSize() // Ocupa toda la pantalla
-                                .padding(16.dp),
+                                .fillMaxSize()
+                                .clickable{
+                                    viewModel.setChangingTurn(false)
+
+                                },
+
+                            color = MaterialTheme.colorScheme.primaryContainer
                         ) {
                             Column(
                                 modifier = Modifier
@@ -313,17 +319,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.padding(bottom = 24.dp)
                                 )
-
-                                Button(
-                                    onClick = {
-                                        viewModel.setChangingTurn(false)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 32.dp)
-                                ) {
-                                    Text("Aceptar")
-                                }
+                                Text("Pulse para jugar su turno", color=Color.White)
                             }
                         }
                     }
@@ -531,11 +527,15 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                     }
                                     else {
                                         when (game.players[currentPlayerIndex].playerCards[0].card.type) {
-                                            "organ", "cure" -> viewModel.doMove(0)
+                                            "organ", "cure" -> {
+                                                selecting = 0
+                                                viewModel.doMove(0)
+                                            }
                                             "virus" -> {
                                                 selecting = 1
                                             }
                                             "action" -> {
+                                                selecting = 0
                                                 when (game.players[currentPlayerIndex].playerCards[0].card.name){
                                                     "Change Body" -> {
                                                         if(game.players.size > 2){
