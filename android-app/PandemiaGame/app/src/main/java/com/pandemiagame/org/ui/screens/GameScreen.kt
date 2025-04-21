@@ -48,10 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pandemiagame.org.data.remote.Organ
-import com.pandemiagame.org.data.remote.models.Card
+import com.pandemiagame.org.data.remote.models.CardEnum
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
-import android.util.Log
 import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Surface
@@ -61,6 +60,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.pandemiagame.org.data.remote.GameResponse
+import com.pandemiagame.org.data.remote.Card
+import com.pandemiagame.org.data.remote.CardWrapper
+import com.pandemiagame.org.data.remote.Player
 
 @Preview
 @Composable
@@ -100,6 +103,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
     val changingTurn by viewModel.changingTurn.observeAsState()
 
     LaunchedEffect(Unit) {
+        viewModel.setChangingTurn(true)
         viewModel.getGame(gameId)
     }
 
@@ -186,6 +190,73 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         discards[0] = 0
         discards[1] = 0
         discards[2] = 0
+
+        viewModel.setGame(GameResponse(
+            status = "pending",
+            date = "",
+            id = 0,
+            turn = 0,
+            numTurns = 0,
+            turns = listOf<Int>(0),
+            winner = 0,
+            cards = listOf<Card>(Card(
+                id = 0,
+                name = "",
+                type = ""
+            )),
+            players = listOf<Player>(Player(
+                name = "",
+                gameId = 0,
+                id = 0,
+                playerCards = listOf<CardWrapper>(CardWrapper(
+                    card = Card(
+                        id = 0,
+                        name = "BackCard",
+                        type = ""
+                    )
+                ),CardWrapper(
+                    card = Card(
+                        id = 0,
+                        name = "BackCard",
+                        type = ""
+                    )
+                ),CardWrapper(
+                    card = Card(
+                        id = 0,
+                        name = "BackCard",
+                        type = ""
+                    )
+                )),
+                organs = listOf<Organ>()
+            ),
+            Player(
+                name = "",
+                gameId = 0,
+                id = 0,
+                playerCards = listOf<CardWrapper>(CardWrapper(
+                    card = Card(
+                        id = 0,
+                        name = "BackCard",
+                        type = ""
+                    )
+                ),
+                    CardWrapper(
+                        card = Card(
+                            id = 0,
+                            name = "BackCard",
+                            type = ""
+                        )
+                    ),
+                    CardWrapper(
+                        card = Card(
+                            id = 0,
+                            name = "BackCard",
+                            type = ""
+                        )
+                    )),
+                organs = listOf<Organ>()
+            ))
+        ))
 
         navController.popBackStack("home", inclusive = false)
     }
@@ -449,7 +520,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         ) {
                             Image(
-                                painter = painterResource(id = Card.fromDisplayName(game.players[currentPlayerIndex].playerCards[0].card.name)?.drawable
+                                painter = painterResource(id = CardEnum.fromDisplayName(game.players[currentPlayerIndex].playerCards[0].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 1",
                                 contentScale = ContentScale.Fit,
@@ -488,7 +559,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                             )
                             Image(
-                                painter = painterResource(id = Card.fromDisplayName(game.players[currentPlayerIndex].playerCards[1].card.name)?.drawable
+                                painter = painterResource(id = CardEnum.fromDisplayName(game.players[currentPlayerIndex].playerCards[1].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 2",
                                 contentScale = ContentScale.Fit,
@@ -526,7 +597,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                 }
                             )
                             Image(
-                                painter = painterResource(id = Card.fromDisplayName(game.players[currentPlayerIndex].playerCards[2].card.name)?.drawable
+                                painter = painterResource(id = CardEnum.fromDisplayName(game.players[currentPlayerIndex].playerCards[2].card.name)?.drawable
                                     ?: 0),
                                 contentDescription = "CARTA 3",
                                 contentScale = ContentScale.Fit,

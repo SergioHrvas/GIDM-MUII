@@ -2,7 +2,7 @@ package com.pandemiagame.org.data.remote.models
 
 import com.pandemiagame.org.R
 
-enum class Card(val displayName: String, val drawable: Int) {
+enum class CardEnum(val displayName: String, val drawable: Int) {
     // Virus (IDs 41-45)
     VIRUS_HEART("Virus Heart", R.drawable.virus_heart),
     VIRUS_INTESTINE("Virus Intestine", R.drawable.virus_intestine),
@@ -29,12 +29,14 @@ enum class Card(val displayName: String, val drawable: Int) {
     INFECT_PLAYER("Infect Player", R.drawable.sneeze),
     EXCHANGE_CARD("Exchange Card", R.drawable.organ_change),
     CHANGE_BODY("Change Body", R.drawable.body_change),
-    DISCARD_CARDS("Discard Cards", R.drawable.discard_cards);
+    DISCARD_CARDS("Discard Cards", R.drawable.discard_cards),
+
+    BACKCARD("BackCard", R.drawable.back);
 
     companion object {
-        private val nameMap = Card.entries.associateBy { it.displayName }
+        private val nameMap = CardEnum.entries.associateBy { it.displayName }
 
-        fun fromDisplayName(name: String): Card? {
+        fun fromDisplayName(name: String): CardEnum? {
             return nameMap[name]
         }
     }

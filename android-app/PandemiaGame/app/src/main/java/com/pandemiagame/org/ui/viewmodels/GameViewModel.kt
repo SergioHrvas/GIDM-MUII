@@ -30,6 +30,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
     private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
 
+
     fun getGame(juegoId: String) {
 
         viewModelScope.launch {
@@ -140,5 +141,9 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
     fun setChangingTurn(ct: Boolean){
         _changingTurn.value = ct
+    }
+
+    fun setGame(game: GameResponse){
+        _game.value = game
     }
 }
