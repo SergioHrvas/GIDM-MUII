@@ -114,6 +114,46 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
+    fun doMoveInfect(index_card: Int, infectData: InfectData) {
+        viewModelScope.launch {
+            try {
+                var token = "Bearer " + tokenManager.getToken()
+
+                // Encontramos el índice del jugador actual de forma segura
+                val indice = game.value?.players?.indexOfFirst { it.id == game.value?.turn } ?: 0
+
+                // Obtenemos el ID de la carta con seguridad
+                val idCard = game.value
+                    ?.players
+                    ?.getOrNull(indice)
+                    ?.playerCards
+                    ?.getOrNull(index_card)
+                    ?.card
+                    ?.id
+
+                // Creamos el movimiento
+                var move = Move(
+                    action = "card",
+                    card = idCard,
+                    infect = infectData,
+                )
+
+                val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
+                    game.value?.turn ?: 0, move)
+                Log.v("BEFORE", _game.value.toString())
+
+                if(_game.value?.turn != response.turn){
+                    _changingTurn.value = true
+                }
+                _game.value = response
+                Log.v("AFTER", _game.value.toString())
+
+            } catch (e: Exception) {
+                // Manejar error
+                Log.v("Error", e.toString())
+            }
+        }
+    }
 
 
     fun discardCards(cards: List<Int>) {

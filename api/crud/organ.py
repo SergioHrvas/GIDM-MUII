@@ -67,6 +67,8 @@ def player_can_steal(db: Session, player_id: int, player_to: int, tipo: OrganTyp
 
 
 def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_infect: str):
+    print(card_tipo)
+    
     # Buscar el registro de organ
     if(card_tipo != "magic"):
         db_organ = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == card_tipo).first()
@@ -209,37 +211,39 @@ def can_infect(db: Session, player_id, player_to, organtype):
 
 
 def infect_players(db: Session, player_id, infect):
+    print("Infectando jugadores")
+    print(infect)
     if infect.player1 and infect.organ1:
         caninfect = can_infect(db, player_id, infect.player1, infect.organ1)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player1, infect.organ1)
+            add_virus_to_organ(db, infect.player1, infect.organ1, infect.organ1)
             remove_virus_to_organ(db, player_id, infect.organ1)
             
     if infect.player2 and infect.organ2:
         caninfect = can_infect(db, player_id, infect.player2, infect.organ2)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player2, infect.organ2)
+            add_virus_to_organ(db, infect.player2, infect.organ2, infect.organ2)
             remove_virus_to_organ(db, player_id, infect.organ2)
 
     if infect.player3 and infect.organ3:
         caninfect = can_infect(db, player_id, infect.player3, infect.organ3)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player3, infect.organ3)
+            add_virus_to_organ(db, infect.player3, infect.organ3, infect.organ3)
             remove_virus_to_organ(db, player_id, infect.organ3)
 
     if infect.player4 and infect.organ4:
         caninfect = can_infect(db, player_id, infect.player4, infect.organ4)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player4, infect.organ4)
+            add_virus_to_organ(db, infect.player4, infect.organ4, infect.organ4)
             remove_virus_to_organ(db, player_id, infect.organ4)
 
     if infect.player5 and infect.organ5:
         caninfect = can_infect(db, player_id, infect.player5, infect.organ5)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player5, infect.organ5)
+            add_virus_to_organ(db, infect.player5, infect.organ5, infect.organ5)
             remove_virus_to_organ(db, player_id, infect.organ5)

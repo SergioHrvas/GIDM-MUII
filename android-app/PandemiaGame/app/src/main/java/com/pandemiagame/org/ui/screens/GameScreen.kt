@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -53,10 +54,16 @@ import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -64,6 +71,7 @@ import androidx.navigation.NavController
 import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.Card
 import com.pandemiagame.org.data.remote.CardWrapper
+import com.pandemiagame.org.data.remote.InfectData
 import com.pandemiagame.org.data.remote.Player
 
 @Preview
@@ -168,6 +176,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
             ready_to_change = false
         }
     }
+
+    var infecting: Boolean by remember { mutableStateOf(false) }
+
 
     DisposableEffect(Unit) {
         onDispose {
@@ -353,6 +364,135 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             }
                         }
                     )
+                }
+                if (infecting) {
+                    // Mapa para guardar las selecciones: órgano -> jugador objetivo
+                    val selections = remember {
+                        mutableStateMapOf<String, Int?>().apply {
+                            // Inicializar con null para cada órgano con virus
+                            game.players[currentPlayerIndex].organs
+                                .filter { it.virus }
+                                .forEach { put(it.tipo, null) }
+                        }
+                    }
+
+                    Dialog(
+                        onDismissRequest = { infecting = false }
+                    ) {
+                        Surface(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text("Seleccionar objetivos de infección",
+                                    style = MaterialTheme.typography.titleLarge)
+
+                                // Lista de órganos con virus y sus selectores
+                                game.players[currentPlayerIndex].organs
+                                    .filter { it.virus }
+                                    .forEach { organ ->
+                                        Column {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(vertical = 8.dp)
+                                            ) {
+                                                Text(
+                                                    text = "${organ.tipo}:",
+                                                    modifier = Modifier.weight(1f)
+                                                )
+
+                                                // Dropdown para seleccionar jugador objetivo
+                                                Box(modifier = Modifier.weight(2f)) {
+                                                    var expanded by remember { mutableStateOf(false) }
+                                                    val targetPlayers = game.players
+                                                        .filter { player ->
+                                                            player.id != game.players[currentPlayerIndex].id &&
+                                                                    player.organs.any { targetOrgan ->
+                                                                        targetOrgan.tipo == organ.tipo &&
+                                                                        targetOrgan.cure < 2 // No está completamente curado
+                                                                    }
+                                                        }
+
+                                                    OutlinedButton(
+                                                        onClick = { expanded = true },
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        Text(selections[organ.tipo]?.toString() ?: "Seleccionar jugador")
+                                                        Icon(
+                                                            Icons.Default.ArrowDropDown,
+                                                            contentDescription = null
+                                                        )
+                                                    }
+
+                                                    DropdownMenu(
+                                                        expanded = expanded,
+                                                        onDismissRequest = { expanded = false }
+                                                    ) {
+                                                        targetPlayers.forEach { player ->
+                                                            DropdownMenuItem(
+                                                                text = { Text(player.id.toString()) },
+                                                                onClick = {
+                                                                    selections[organ.tipo] = player.id
+                                                                    expanded = false
+                                                                }
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            HorizontalDivider()
+                                        }
+                                    }
+
+                                // Botones de acción
+                                Row(
+                                    horizontalArrangement = Arrangement.End,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Button(
+                                        onClick = { infecting = false },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.errorContainer
+                                        )
+                                    ) {
+                                        Text("Cancelar")
+                                    }
+
+                                    Spacer(modifier = Modifier.width(16.dp))
+
+                                    Button(
+                                        onClick = {
+                                            Log.v("a", selections.toString())
+                                            // Convertir las selecciones a lista
+                                            val selectedPairs = selections.mapNotNull { (organ, player) ->
+                                                player?.let { organ to it }
+                                            }.take(5) // Limitar a máximo 5 pares
+
+                                            val data = InfectData(
+                                                player1 = selectedPairs.getOrNull(0)?.second,
+                                                organ1 = selectedPairs.getOrNull(0)?.first,
+                                                player2 = selectedPairs.getOrNull(1)?.second,
+                                                organ2 = selectedPairs.getOrNull(1)?.first,
+                                                player3 = selectedPairs.getOrNull(2)?.second,
+                                                organ3 = selectedPairs.getOrNull(2)?.first,
+                                                player4 = selectedPairs.getOrNull(3)?.second,
+                                                organ4 = selectedPairs.getOrNull(3)?.first,
+                                                player5 = selectedPairs.getOrNull(4)?.second,
+                                                organ5 = selectedPairs.getOrNull(4)?.first
+                                            )
+                                            infecting = false
+                                            viewModel.doMoveInfect(selectedCard, infectData = data)
+                                        },
+                                        enabled = selections.values.any { it != null } // Solo habilitar si hay al menos una selección
+                                    ) {
+                                        Text("Confirmar")
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 Column(
                     modifier = modifier.fillMaxSize().padding(innerPadding),
@@ -551,6 +691,12 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                     "Discard Cards" -> {
                                                         viewModel.doMove(0)
                                                     }
+                                                    "Infect Player" -> {
+                                                        Log.v("aa",
+                                                            game.players[currentPlayerIndex].organs.size.toString()
+                                                        )
+                                                        infecting = true
+                                                    }
                                                 }
                                             }
                                         }
@@ -590,6 +736,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                     "Discard Cards" -> {
                                                         viewModel.doMove(1)
                                                     }
+                                                    "Infect Player" -> {
+                                                        infecting = true
+                                                    }
                                                 }
                                             }
                                         }
@@ -627,6 +776,13 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                     }
                                                     "Discard Cards" -> {
                                                         viewModel.doMove(2)
+                                                    }
+
+                                                    "Infect Player" -> {
+                                                        Log.v("aa",
+                                                            game.players[currentPlayerIndex].organs.size.toString()
+                                                        )
+                                                        infecting = true
                                                     }
                                                 }
                                             }
