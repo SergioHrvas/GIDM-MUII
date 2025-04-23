@@ -45,8 +45,9 @@ data class Player(
 // Órganos del jugador (ajusta según tu implementación real)
 data class Organ(
     @SerializedName("tipo") val tipo: String,
-    @SerializedName("virus") val virus: Boolean,
-    @SerializedName("cure") val cure: Int
+    @SerializedName("virus") val virus: Int,
+    @SerializedName("cure") val cure: Int,
+    @SerializedName("magic_organ") val magic_organ: Int
 )
 
 // Modelo de movimiento

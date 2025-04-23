@@ -16,8 +16,9 @@ class Organ(Base):
     id = Column(Integer, primary_key=True, index=True)
     player_id = Column(Integer, ForeignKey("players.id", ondelete="CASCADE"))
     tipo = Column(SQLAlchemyEnum(OrganType), nullable=False)
-    virus = Column(Boolean)
+    virus = Column(Integer)
     cure = Column(Integer)
+    magic_organ = Column(Integer, default=0)
 
     # Relación con Player (ahora directamente, sin BodyPlayer)
     player = relationship("Player", back_populates="organs")

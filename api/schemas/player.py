@@ -19,8 +19,9 @@ class CardType(str, Enum):
 # Esquema para una carta asociada a un órgano
 class OrganCard(BaseModel):
     tipo: str  # Nombre del órgano (corazon, pulmon, estomago, cerebro, multicolor)
-    virus: bool
+    virus: int
     cure: int
+    magic_organ: int # Tipo de virus/cura asociado (1 = corazon, 2 = cerebro, 3 = intestinos, 4 = pulmones)
 
 class PlayerCard(BaseModel):
     card: CardBase

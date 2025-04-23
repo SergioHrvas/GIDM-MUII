@@ -10,7 +10,7 @@ from datetime import datetime
 from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_my_cards, discard_cards
-from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs, infect_players
+from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, player_has_organ_to_cure_infect, steal_card, change_body, change_organs, infect_players
 from crud.deckcard import initialize_deck, steal_to_deck
 import random
 
@@ -85,18 +85,14 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             has_organ = player_has_organ(db, player_id, card.organ_type)
             if has_organ == False:
                 done = add_organ_to_player(db, player_id, card.organ_type)
-
         if card.tipo == "virus":
-            has_organ = player_has_organ(db, move.infect.player1, card.organ_type)
+            has_organ = player_has_organ_to_cure_infect(db, move.infect.player1, card.organ_type)
             if has_organ == True:
                 done = add_virus_to_organ(db, move.infect.player1, card.organ_type, move.infect.organ1)
-                
         elif card.tipo == "cure":
-            has_organ = player_has_organ(db, player_id, card.organ_type)
+            has_organ = player_has_organ_to_cure_infect(db, player_id, card.organ_type)
             if has_organ == True:
-                done = add_cure_to_organ(db, player_id, card.organ_type)
-                print("done", done)
-
+                done = add_cure_to_organ(db, player_id, card.organ_type, move.infect.organ1)
         elif card.tipo == "action":
             if card.name == "Steal Organ":
                 can_steal = player_can_steal(db, player_id, move.infect.player1, move.infect.organ1)
@@ -149,7 +145,7 @@ def review_winner(db: Session, game):
     players = db.query(Player).filter(Player.game_id == game.id)
 
     for player in players:
-        organs = db.query(Organ).filter(Organ.player_id == player.id, Organ.virus == False).all()
+        organs = db.query(Organ).filter(Organ.player_id == player.id, Organ.virus == 0).all()
         if len(organs) >= 4:
             game.winner = player.id
             game.status = StatusEnum('finished')  # Conversión explícita
