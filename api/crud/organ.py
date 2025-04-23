@@ -22,7 +22,7 @@ def add_organ_to_player(db: Session, player_id, tipo: str):
     db_organ = Organ(
         player_id = player_id,
         tipo = tipo,
-        virus = False,
+        virus = 0,
         cure = 0
     )
 
@@ -67,28 +67,43 @@ def player_can_steal(db: Session, player_id: int, player_to: int, tipo: OrganTyp
 
 
 def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_infect: str):
-    print(card_tipo)
-    
-    # Buscar el registro de organ
-    if(card_tipo != "magic"):
-        db_organ = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == card_tipo).first()
-    else:
-        db_organ = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == organ_to_infect).first()
 
+    # Buscar el registro del órgano que se va a infectar
+    db_organ = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == organ_to_infect).first()
+
+
+    # # Después, si hay órgano:
     if(db_organ):
-        if db_organ.cure == 2:
+        # # # Si el órgano está inmunizado, no se puede infectar
+        if db_organ.cure == 3:
             print("El órgano está inmunizado")
             return False
-        elif db_organ.cure == 1:
+        # # # Si el órgano tiene una cura de tipo magic (2), se le quita la cura
+        elif db_organ.cure == 2:
             db_organ.cure = 0
             db.commit()
             db.refresh(db_organ)
-        elif db_organ.cure == 0:
-            if db_organ.virus == False:
-                db_organ.virus = True
+        # # # Si el órgano tiene una cura de su tipo (1), se le quita la cura si el tipo de órgano es igual al tipo de carta
+        elif db_organ.cure == 1:
+            if db_organ.tipo == card_tipo:
+                db_organ.cure = 0
                 db.commit()
                 db.refresh(db_organ)
-            elif db_organ.virus == True:
+        # # # Si el órgano no tiene cura ni virus, se le añade el virus:
+        elif db_organ.cure == 0:
+            if db_organ.virus == 0:
+                # Si el tipo de carta es magic, se le añade el virus (= 2)
+                # Si el tipo de carta es del tipo del órgano, se le añade el virus (= 1)
+                if card_tipo == "magic":
+                    db_organ.virus = 2
+            
+                elif db_organ.tipo == card_tipo:
+                    db_organ.virus = 1
+                db.commit()
+                db.refresh(db_organ)
+
+            # # # Si el órgano ya tiene el virus, se elimina el órgano
+            elif (db_organ.virus == 1) and (db_organ.virus == 2):
                 #Eliminamos el órgano
                 db.delete(db_organ)
             else:
@@ -104,20 +119,47 @@ def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_inf
     return True
     
 
-def add_cure_to_organ(db: Session, player_id: int, tipo: str):
+def add_cure_to_organ(db: Session, player_id: int, tipo: str, organ_to_cure: str):
     # Buscar el registro de organ
-    db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == tipo).first()
+    db_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organ_to_cure).first()
+    
+    # Si existe el órgano:
     if(db_organ):
-        if db_organ.virus == True:
-            db_organ.virus = False
-        elif db_organ.virus == False:
-            if ( db_organ.cure == 0 ) or ( db_organ.cure == 1 ):
-                db_organ.cure += 1
-                db.commit()
-                db.refresh(db_organ)
-            elif db_organ.cure == 2:
-                print("El órgano ya está inmunizado")
-                return False
+        # Si el órgano tiene virus magico (2), se le quita el virus
+        if db_organ.virus == 2:
+            db_organ.virus = 0
+        # Si el órgano tiene virus normal (1), se le quita el virus si el tipo de carta es igual al tipo de órgano
+        elif db_organ.virus == 1:
+            if db_organ.tipo == tipo:
+                db_organ.virus = 0
+        # Si el órgano no tiene virus ni cura, se le añade la cura:
+        elif db_organ.virus == 0:
+            # Si el tipo de carta es magic, se le añade la cura (= 2)
+            if tipo == "magic":
+                # # Si el órgano no tiene cura, se le añade la cura
+                if db_organ.cure == 0:
+                    db_organ.cure = 2
+                # # Si el órgano tiene cura, se inmuniza el órgano
+                elif (db_organ.cure == 1) or (db_organ.cure == 2):
+                    db_organ.cure = 3
+                else:
+                    print("Error al añadir cura al órgano")
+                    return False
+                
+            # Si el tipo de carta es del tipo del órgano, se le añade la cura (= 1)
+            elif db_organ.tipo == tipo:
+                # # Si el órgano no tiene cura, se le añade la cura
+                if db_organ.cure == 0:
+                    db_organ.cure = 1
+                # # Si el órgano tiene cura, se inmuniza el órgano
+                elif (db_organ.cure == 1) or (db_organ.cure == 2):
+                    db_organ.cure = 3
+                elif db_organ.cure == 3:
+                    print("El órgano ya está inmunizado")
+                    return False
+                else:
+                    print("Error al añadir cura al órgano")
+                    return False
             else:
                 print("Error al añadir cura al órgano")
                 return False
@@ -169,9 +211,9 @@ def change_organs(db: Session, player_id, type_from, player_to, type_to):
         db_organ_player_to = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == type_to).first()
 
         if db_organ_player_from and db_organ_player_to:
-            if db_organ_player_from.cure == 2:
+            if db_organ_player_from.cure == 3:
                 return False
-            elif db_organ_player_to.cure == 2:
+            elif db_organ_player_to.cure == 3:
                 return False
             else:
                 player = db_organ_player_from.player_id
@@ -190,7 +232,7 @@ def remove_virus_to_organ(db: Session, player_id, organtype):
     organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organtype, Organ.virus == True).first()
 
     if organ:
-        organ.virus = False;
+        organ.virus = 0;
 
 
 def can_infect(db: Session, player_id, player_to, organtype):
@@ -199,7 +241,7 @@ def can_infect(db: Session, player_id, player_to, organtype):
 
     if my_infected_organ:
         # Miro si tiene el órgano para infectar
-        organ_to_infect = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == organtype, Organ.cure != 2)
+        organ_to_infect = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == organtype, Organ.cure != 3)
 
         if organ_to_infect:
             return True

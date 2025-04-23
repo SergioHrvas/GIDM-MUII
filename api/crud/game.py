@@ -94,7 +94,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         elif card.tipo == "cure":
             has_organ = player_has_organ(db, player_id, card.organ_type)
             if has_organ == True:
-                done = add_cure_to_organ(db, player_id, card.organ_type)
+                done = add_cure_to_organ(db, player_id, card.organ_type, move.infect.organ1)
                 print("done", done)
 
         elif card.tipo == "action":
