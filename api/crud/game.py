@@ -149,7 +149,7 @@ def review_winner(db: Session, game):
     players = db.query(Player).filter(Player.game_id == game.id)
 
     for player in players:
-        organs = db.query(Organ).filter(Organ.player_id == player.id, Organ.virus == False).all()
+        organs = db.query(Organ).filter(Organ.player_id == player.id, Organ.virus == 0).all()
         if len(organs) >= 4:
             game.winner = player.id
             game.status = StatusEnum('finished')  # Conversión explícita
