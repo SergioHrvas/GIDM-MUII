@@ -10,7 +10,7 @@ from datetime import datetime
 from schemas.move import Move
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_my_cards, discard_cards
-from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, steal_card, change_body, change_organs, infect_players
+from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, player_has_organ_to_cure, steal_card, change_body, change_organs, infect_players
 from crud.deckcard import initialize_deck, steal_to_deck
 import random
 
@@ -92,10 +92,10 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 done = add_virus_to_organ(db, move.infect.player1, card.organ_type, move.infect.organ1)
                 
         elif card.tipo == "cure":
-            has_organ = player_has_organ(db, player_id, card.organ_type)
+            has_organ = player_has_organ_to_cure(db, player_id, card.organ_type)
+
             if has_organ == True:
                 done = add_cure_to_organ(db, player_id, card.organ_type, move.infect.organ1)
-                print("done", done)
 
         elif card.tipo == "action":
             if card.name == "Steal Organ":

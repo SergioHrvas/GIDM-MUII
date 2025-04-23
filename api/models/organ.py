@@ -23,5 +23,6 @@ class Organ(Base):
     player = relationship("Player", back_populates="organs")
 
     __table_args__ = (
-        CheckConstraint('cure BETWEEN 0 AND 2', name='cure_value'),
+        CheckConstraint('cure BETWEEN 0 AND 3', name='cure_value'),
+        CheckConstraint('virus BETWEEN 0 AND 2', name='virus_value')
     )
