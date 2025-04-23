@@ -46,7 +46,8 @@ data class Player(
 data class Organ(
     @SerializedName("tipo") val tipo: String,
     @SerializedName("virus") val virus: Int,
-    @SerializedName("cure") val cure: Int
+    @SerializedName("cure") val cure: Int,
+    @SerializedName("magic_organ") val magic_organ: Int
 )
 
 // Modelo de movimiento

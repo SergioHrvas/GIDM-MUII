@@ -51,7 +51,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
     fun doMove(index_card: Int, playerSelected: Int = -1, organ: String = "") {
         viewModelScope.launch {
             try {
-                Log.v("a", "b")
                 var token = "Bearer " + tokenManager.getToken()
 
                 // Encontramos el índice del jugador actual de forma segura
@@ -65,7 +64,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     ?.getOrNull(index_card)
                     ?.card
                     ?.id
-                Log.v("c", "d")
 
                 var infect = if (playerSelected != -1) InfectData(
                     player1 = game.value?.players?.getOrNull(playerSelected)?.id,
@@ -80,20 +78,14 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     infect = infect,
                 )
 
-                Log.v("e", "b")
-
-
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
                     game.value?.turn ?: 0, move)
-                Log.v("aaaaaaa", response.toString())
-                Log.v("BEFORE", _game.value.toString())
 
                 if(_game.value?.turn != response.turn){
                     _changingTurn.value = true
                 }
                 _game.value = response
-                Log.v("AFTER", _game.value.toString())
 
             } catch (e: Exception) {
                 // Manejar error

@@ -32,11 +32,9 @@ def get_game_by_id(game_id: int, db: Session = Depends(get_db)):
 @router.post("/{game_id}/move", response_model=GameResponse)
 def do_move(game_id: int, player_id: int, move: Move, db: Session = Depends(get_db)):
     do_move_game(game_id, player_id, move, db)
-    print("Se ha hecho el movimiento")
 
     game = get_game(game_id, db)
 
-    print(game.players[0].organs[0].virus)
     if game is None:
         raise HTTPException(status_code=404, detail="Game not found")
     return game

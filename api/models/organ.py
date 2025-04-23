@@ -18,11 +18,11 @@ class Organ(Base):
     tipo = Column(SQLAlchemyEnum(OrganType), nullable=False)
     virus = Column(Integer)
     cure = Column(Integer)
+    magic_organ = Column(Integer, default=0)
 
     # Relación con Player (ahora directamente, sin BodyPlayer)
     player = relationship("Player", back_populates="organs")
 
     __table_args__ = (
-        CheckConstraint('cure BETWEEN 0 AND 3', name='cure_value'),
-        CheckConstraint('virus BETWEEN 0 AND 2', name='virus_value')
+        CheckConstraint('cure BETWEEN 0 AND 2', name='cure_value'),
     )
