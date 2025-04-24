@@ -96,7 +96,7 @@ def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_inf
         elif db_organ.cure == 1:
             print("db_organ.tipo: ", db_organ.tipo)
             print("card_tipo: ", card_tipo)
-            if db_organ.tipo == card_tipo:
+            if (db_organ.tipo == card_tipo) or (db_organ.tipo == OrganType.magic) or (card_tipo == OrganType.magic):
                 db_organ.cure = 0
                 db.commit()
                 db.refresh(db_organ)

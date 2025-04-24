@@ -406,13 +406,14 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                 // Dropdown para seleccionar jugador objetivo
                                                 Box(modifier = Modifier.weight(2f)) {
                                                     var expanded by remember { mutableStateOf(false) }
-                                                    val targetPlayers = game.players
-                                                        .filter { player ->
-                                                            player.id != game.players[currentPlayerIndex].id &&
-                                                                    player.organs.any { targetOrgan ->
-                                                                        targetOrgan.tipo == organ.tipo &&
-                                                                        targetOrgan.cure != 3 // No está completamente curado
-                                                                    }
+                                                    val targetPlayerAndOrgans = game.players
+                                                        .filter { player -> player.id != game.players[currentPlayerIndex].id }
+                                                        .flatMap { player ->
+                                                            player.organs
+                                                                .filter { targetOrgan ->
+                                                                    mirarTipo(targetOrgan, organ)
+                                                                }
+                                                                .map { targetOrgan -> player to targetOrgan }
                                                         }
 
                                                     OutlinedButton(
@@ -430,11 +431,11 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                         expanded = expanded,
                                                         onDismissRequest = { expanded = false }
                                                     ) {
-                                                        targetPlayers.forEach { player ->
+                                                        targetPlayerAndOrgans.forEach { player ->
                                                             DropdownMenuItem(
-                                                                text = { Text(player.id.toString()) },
+                                                                text = { Text(player.first.id.toString() + " " + player.second.tipo) },
                                                                 onClick = {
-                                                                    selections[organ.tipo] = player.id
+                                                                    selections[organ.tipo] = player.first.id
                                                                     expanded = false
                                                                 }
                                                             )
@@ -881,6 +882,42 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
             } ?: Text("Cargando...")
         }
 
+}
+
+private fun mirarTipo(targetOrgan: Organ, organ: Organ): Boolean {
+    if (targetOrgan.cure == 3){
+        return false
+    }
+    else if(targetOrgan.cure == 2){
+        return true;
+    }
+    else if (organ.virus == 2){
+        return true
+    }
+    else if (targetOrgan.tipo == "magic"){
+        return true
+    }
+    else if((targetOrgan.cure == 0) || (targetOrgan.cure == 1)) {
+        if(organ.tipo == "magic"){
+            return if((organ.magic_organ == 1) && (targetOrgan.tipo == "heart")){
+                true
+            } else if((organ.magic_organ == 2) && (targetOrgan.tipo == "brain")){
+                true
+            } else if((organ.magic_organ == 3) && (targetOrgan.tipo == "intestine")){
+                true
+            } else if((organ.magic_organ == 4) && (targetOrgan.tipo == "lungs")){
+                true
+            } else{
+                false
+            }
+        }
+        else{
+            return (organ.tipo == targetOrgan.tipo)
+        }
+    }
+    else{
+        return false;
+    }
 }
 
 @Composable
