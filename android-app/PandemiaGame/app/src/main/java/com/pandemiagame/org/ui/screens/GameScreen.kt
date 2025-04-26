@@ -1,6 +1,5 @@
 package com.pandemiagame.org.ui.screens
 
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -104,6 +103,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
             addAll(listOf(0, 0, 0))
         }
     }
+
+    var exchanging by remember { mutableStateOf(false) }
+
 
     // Observa el LiveData y lo convierte en un State<GameResponse?>
     val gameResponse by viewModel.game.observeAsState()
@@ -494,6 +496,112 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                         }
                     }
                 }
+                if (exchanging && (selectedOrgan != null)) {
+
+                    Dialog(
+                        onDismissRequest = {
+                            exchanging = false
+                            selectedOrgan = null
+                        }
+                    ) {
+                        Surface(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Column() {
+                                Text(text = "Cambiando ${selectedOrgan} por...")
+
+                                var indice = -1
+                                for (i in 0..game.players[otherPlayerIndex].organs.size - 1){
+                                    if(game.players[otherPlayerIndex].organs[i].tipo == selectedOrgan){
+                                        indice = i
+                                        break
+                                    }
+                                }
+                                var targetOrgans = listOf<Organ>()
+                                if(indice != -1){
+                                    targetOrgans = listOf(game.players[otherPlayerIndex].organs[indice])
+                                }
+                                else {
+                                    // Buscar todos los órganos del jugador otherIndex que no estén inmunizados, que yo no tenga o que sea el mismo tipo de órgano que el que cambio
+                                    targetOrgans = game.players[otherPlayerIndex].organs.filter {
+                                        (it.cure != 3) && puedoCambiarlo(
+                                            selectedOrgan,
+                                            it,
+                                            game.players[currentPlayerIndex].organs
+                                        )
+                                    }
+                                }
+
+                                var otherOrganSelected by remember { mutableStateOf<String?>(null) }
+                                var expanded by remember { mutableStateOf(false) }
+
+                                OutlinedButton(
+                                    onClick = { expanded = true },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(otherOrganSelected ?: "Seleccionar órgano")
+                                    Icon(
+                                        Icons.Default.ArrowDropDown,
+                                        contentDescription = null
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }
+                                ) {
+
+                                    targetOrgans.forEach { organ ->
+                                        DropdownMenuItem(
+                                            text = { Text(organ.tipo) },
+                                            onClick = {
+                                                otherOrganSelected = organ.tipo
+                                                expanded = false
+                                            }
+                                        )
+                                        HorizontalDivider()
+
+                                    }
+                                }
+                                // Botones de acción
+                                Row(
+                                    horizontalArrangement = Arrangement.End,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            exchanging = false
+                                            selectedOrgan = null
+                                            otherOrganSelected = null
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.errorContainer
+                                        )
+                                    ) {
+                                        Text("Cancelar")
+                                    }
+
+                                    Spacer(modifier = Modifier.width(16.dp))
+
+                                    Button(
+                                        onClick = {
+                                            val data = InfectData(
+                                                player1 = game.players[otherPlayerIndex].id,
+                                                organ1 = otherOrganSelected,
+                                            )
+                                            viewModel.doMoveExchange(selectedCard,
+                                                selectedOrgan.toString(), infectData = data)
+                                            exchanging = false
+                                            selectedOrgan = null
+                                        },
+                                        enabled = otherOrganSelected != null  // Solo habilitar si hay al menos una selección
+                                    ) {
+                                        Text("Confirmar")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 Column(
                     modifier = modifier
                         .fillMaxSize()
@@ -643,9 +751,10 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                         }
 
                         Body(false, game.players[currentPlayerIndex].organs, onOrganSelected = { organType ->
-                                if (selecting != 0) {
+                                if ((selecting != 0) || exchanging) {
                                     selectedOrgan = organType
                                 }
+
                             })
 
                         Row(
@@ -703,11 +812,11 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                         }
 
                                                         "Infect Player" -> {
-                                                            Log.v(
-                                                                "aa",
-                                                                game.players[currentPlayerIndex].organs.size.toString()
-                                                            )
                                                             infecting = true
+                                                        }
+
+                                                        "Exchange Card" -> {
+                                                            exchanging = true
                                                         }
                                                     }
                                                 }
@@ -763,6 +872,11 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                         "Infect Player" -> {
                                                             infecting = true
                                                         }
+
+
+                                                        "Exchange Card" -> {
+                                                            exchanging = true
+                                                        }
                                                     }
                                                 }
                                             }
@@ -814,11 +928,12 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                                                         }
 
                                                         "Infect Player" -> {
-                                                            Log.v(
-                                                                "aa",
-                                                                game.players[currentPlayerIndex].organs.size.toString()
-                                                            )
                                                             infecting = true
+                                                        }
+
+
+                                                        "Exchange Card" -> {
+                                                            exchanging = true
                                                         }
                                                     }
                                                 }
@@ -832,7 +947,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             modifier = Modifier.padding(top = 20.dp),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            if( (discarting == 0) && (selecting == 0)) Button(onClick = {
+                            if( (discarting == 0) && (selecting == 0) && (exchanging == false)) Button(onClick = {
                                 discarting = 1
                             }) {
                                 Icon(
@@ -857,7 +972,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 
                         }
 
-                        if ((discarting == 1) || (selecting == 1)) Button(onClick = {
+                        if ((discarting == 1) || (selecting == 1) || (exchanging == true)) Button(onClick = {
                             if(discarting == 1){
                                 for(i in 0..discards.size - 1){
                                     discards[i] = 0
@@ -866,6 +981,9 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
                             }
                             if(selecting == 1){
                                 selecting = 0
+                            }
+                            if(exchanging){
+                                exchanging = false
                             }
                         }) {
                             Icon(
@@ -882,6 +1000,19 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
             } ?: Text("Cargando...")
         }
 
+}
+
+private fun puedoCambiarlo (myOrganSelected: String?, theirOrgan: Organ, myOrganList: List<Organ>): Boolean{
+    if (theirOrgan.tipo == myOrganSelected){
+        return true
+    } else {
+        if (myOrganList.contains(theirOrgan)){
+            return false
+        }
+        else{
+            return true
+        }
+    }
 }
 
 private fun mirarTipo(targetOrgan: Organ, organ: Organ): Boolean {
@@ -1001,7 +1132,9 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        onOrganSelected("brain")
+                        if(organPlace[0] != 0){
+                            onOrganSelected("brain")
+                        }
                     }
             )
             Image(
@@ -1011,7 +1144,9 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        onOrganSelected("heart")
+                        if(organPlace[1] != 0) {
+                            onOrganSelected("heart")
+                        }
                     }
             )
             Image(
@@ -1021,7 +1156,9 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        onOrganSelected("lungs")
+                        if(organPlace[2] != 0) {
+                            onOrganSelected("lungs")
+                        }
                     }
 
             )
@@ -1032,7 +1169,9 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        onOrganSelected("intestine")
+                        if(organPlace[3] != 0) {
+                            onOrganSelected("intestine")
+                        }
                     }
             )
             Image(
@@ -1042,7 +1181,9 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        onOrganSelected("magic")
+                        if(organPlace[4] != 0) {
+                            onOrganSelected("magic")
+                        }
                     }
             )
         }
