@@ -1,3 +1,4 @@
+from operator import or_
 from sqlalchemy.orm import Session
 from models.playercard import PlayerCard
 from models.organ import Organ
@@ -94,8 +95,6 @@ def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_inf
             db.refresh(db_organ)
         # # # Si el órgano tiene una cura de su tipo (1), se le quita la cura si el tipo de órgano es igual al tipo de carta
         elif db_organ.cure == 1:
-            print("db_organ.tipo: ", db_organ.tipo)
-            print("card_tipo: ", card_tipo)
             if (db_organ.tipo == card_tipo) or (db_organ.tipo == OrganType.magic) or (card_tipo == OrganType.magic):
                 db_organ.cure = 0
                 db.commit()
@@ -165,8 +164,6 @@ def add_cure_to_organ(db: Session, player_id: int, card_tipo: str, organ_to_cure
             db_organ.virus = 0
         # Si el órgano tiene virus normal (1), se le quita el virus si el tipo de carta es igual al tipo de órgano
         elif db_organ.virus == 1:
-            print("db_organ.tipo: ", db_organ.tipo)
-            print("card_tipo: ", card_tipo)
             if (db_organ.tipo == card_tipo) or (db_organ.tipo == OrganType.magic) or (card_tipo == OrganType.magic):
                 db_organ.virus = 0
             else:
@@ -279,7 +276,10 @@ def change_organs(db: Session, player_id, type_from, player_to, type_to):
     has_organ_player_from = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == type_to).first()
     has_organ_player_to = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == type_from).first()
 
-    if(has_organ_player_from or has_organ_player_to):
+    print("has_organ_player_from: ", has_organ_player_from)
+    print("has_organ_player_to: ", has_organ_player_to)
+
+    if((has_organ_player_from or has_organ_player_to) and type_from != type_to):
         return False
     else:
         db_organ_player_from = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == type_from).first()
@@ -304,15 +304,16 @@ def change_organs(db: Session, player_id, type_from, player_to, type_to):
 
 
 def remove_virus_to_organ(db: Session, player_id, organtype):
-    organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organtype, (Organ.virus == 1) or (Organ.virus == 2)).first()
-
+    organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organtype, or_(Organ.virus == 1, Organ.virus == 2)).first()
+    print("organ: ")
     if organ:
-        organ.virus = 0;
+        print(organ)
+        organ.virus = 0
 
 
 def can_infect(db: Session, player_id, player_to, organtype):
     # Miro si tengo ese órgano infectado
-    my_infected_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organtype, (Organ.virus == 1) or (Organ.virus == 2))
+    my_infected_organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organtype, or_(Organ.virus == 1, Organ.virus == 2))
 
     if my_infected_organ:
         # Miro si tiene el órgano para infectar
@@ -329,10 +330,8 @@ def can_infect(db: Session, player_id, player_to, organtype):
 
 def infect_players(db: Session, player_id, infect):
     print("Infectando jugadores")
-    print(infect)
     if infect.player1 and infect.organ1:
         caninfect = can_infect(db, player_id, infect.player1, infect.organ1)
-
         if caninfect:
             add_virus_to_organ(db, infect.player1, infect.organ1, infect.organ1)
             remove_virus_to_organ(db, player_id, infect.organ1)

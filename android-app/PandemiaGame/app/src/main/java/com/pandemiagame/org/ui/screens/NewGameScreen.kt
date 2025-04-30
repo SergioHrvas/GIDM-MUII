@@ -1,49 +1,58 @@
 package com.pandemiagame.org.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import com.pandemiagame.org.R
-import com.pandemiagame.org.ui.theme.PandemiaGameTheme
-import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.pandemiagame.org.R
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
+import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+
+const val MAX_PLAYERS = 5
+
 
 @Preview
 @Composable
@@ -60,16 +69,15 @@ fun PreviewNewGame(){
 
 
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewGameComp(modifier: Modifier = Modifier,  viewModel: NewGameViewModel = viewModel(),  navController: NavController) {
-    val context = LocalContext.current  // Obtén el contexto actual
+fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavController) {
     val buttonEnable :Boolean by viewModel.buttonEnable.observeAsState(initial=false)  // Estado para el boton activado
-    val numPlayers :String by viewModel.numPlayers.observeAsState(initial="")  // Estado para el email
 
     val isLoading :Boolean by viewModel.isLoading.observeAsState(initial=false) // Estado para el cargando
     val coroutine = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+
 
     // Llamamos al estado de la creación del juego
     val gameCreationStatus by viewModel.gameCreationStatus.observeAsState(false)
@@ -111,29 +119,58 @@ fun NewGameComp(modifier: Modifier = Modifier,  viewModel: NewGameViewModel = vi
                             .padding(16.dp)
                     ) {
                         Column {
-                            Text("Numero de jugadores")        // Campo de texto para el nombre
-                            TextField(
-                                value = numPlayers,  // Convierte a String para mostrarlo en el TextField
-                                onValueChange = {
-                                    viewModel.onValueChange(it)
-                                },
-                                label = { Text("Introduce el número de jugadores (2-5)") },
-                                keyboardOptions = KeyboardOptions.Default.copy(
-                                    keyboardType = KeyboardType.Number
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        top = 8.dp,
-                                        bottom = 16.dp
-                                    )// Modificador opcional para ajustar el ancho
-                            )
+                            repeat(viewModel.playerNames.size) { index ->
+                                Row (
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ){
+                                    TextField(
+                                        value = viewModel.playerNames.getOrElse(index) { "" },
+                                        onValueChange = { newName -> viewModel.onNameChanged(newName, index) },
+                                        label = { Text("Jugador ${index + 1}") },
+                                        modifier = Modifier
+                                            .weight(1f)  // Ocupa todo el espacio disponible
+                                            .padding(end = 8.dp)  // Espacio entre TextField y Button
+                                    )//                                    )
+                                    IconButton(
+                                        modifier = Modifier.size(48.dp),
+                                        onClick = { viewModel.removePlayer(index) },
+                                        enabled = (viewModel.playerNames.size - 1) > 1
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Eliminar jugador",
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+                            }
 
-                            newGameButton(buttonEnable) {
-                                coroutine.launch {
-                                    viewModel.onButtonSelected(
-                                        context
+                            Row{
+                                // Contador de jugadores
+                                Text(
+                                    text = "${viewModel.playerNames.size} Jugador${if (viewModel.playerNames.size != 1) "es" else ""}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+
+                                // Botón para añadir jugador (disabled cuando se alcanza el máximo)
+                                IconButton(
+                                    onClick = { viewModel.addPlayer() },
+                                    enabled = (viewModel.playerNames.size < MAX_PLAYERS)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = null
                                     )
+                                }
+                            }
+
+                            NewGameButton(buttonEnable) {
+                                coroutine.launch {
+                                    viewModel.onButtonSelected()
                                 }
                             }
                             // Observamos el estado de la creación y si es exitosa, navegamos
@@ -156,7 +193,7 @@ fun NewGameComp(modifier: Modifier = Modifier,  viewModel: NewGameViewModel = vi
 
 
 @Composable
-fun newGameButton(buttonEnable: Boolean, onButtonSelected: () -> Unit){
+fun NewGameButton(buttonEnable: Boolean, onButtonSelected: () -> Unit){
     Button(
         onClick = {
             onButtonSelected()},

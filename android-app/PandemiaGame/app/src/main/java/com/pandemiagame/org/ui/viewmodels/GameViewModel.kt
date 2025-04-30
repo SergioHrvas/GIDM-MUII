@@ -41,6 +41,8 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 val response = RetrofitClient.instance.getGame(token, juegoId.toInt())
 
                 _game.value = response
+
+                Log.v("game", _game.value.toString())
             } catch (e: Exception) {
                 // Manejar error
                 Log.v("Error", e.toString())

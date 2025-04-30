@@ -2,6 +2,7 @@ package com.pandemiagame.org.ui.viewmodels
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,7 @@ import com.pandemiagame.org.data.remote.GameRequest
 import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
+import com.pandemiagame.org.ui.screens.MAX_PLAYERS
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -45,18 +47,26 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
     private val _gameCreationStatus = MutableLiveData<Boolean>()
     val gameCreationStatus: LiveData<Boolean> = _gameCreationStatus
 
+    private val _playerNames = mutableStateListOf<String>().apply {
+        addAll(listOf("", ""))
+    }
+
+    val playerNames: List<String> = _playerNames
+
+
     private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
 
 
-    fun createGame(numPlayers: Int, context: Context) {
+    fun createGame() {
         viewModelScope.launch {
             _isLoading.value = true
 
+            println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             try {
                 val gameRequest = GameRequest(
                     status = "pending",
                     date = getCurrentDateTimeLegacy(),
-                    players = numPlayers
+                    players = _playerNames
                 )
 
 
@@ -85,24 +95,34 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
         }
     }
 
-    fun isValidValue(numPlayers: Int): Boolean = (numPlayers > 1 && numPlayers < 6)
-
     fun notCreating(){
         _gameCreationStatus.value = false
     }
 
-    fun onValueChange(numPlayers: String){
-        _numPlayers.value = numPlayers
-        _buttonEnable.value = numPlayers.isNotEmpty() && numPlayers.toIntOrNull() in 2..5
-
+    fun onNameChanged(name: String, i: Int){
+        _playerNames[i] = name
+        _buttonEnable.value = (_playerNames.size > 1) && (_playerNames[0].isNotEmpty() == true) && (_playerNames[1].isNotEmpty() == true)
+        println(_playerNames[0])
+        println(_playerNames[1])
     }
 
-    fun onButtonSelected(ctx: Context) {
+    fun onButtonSelected() {
         viewModelScope.launch {
             _isLoading.value = true
-            numPlayers.value?.let { it -> createGame(it.toInt(), ctx) }
+            createGame()
             _isLoading.value = false
         }
+    }
 
+    fun addPlayer() {
+        if ( _playerNames.size.toInt() < MAX_PLAYERS) {
+            _playerNames.add("")
+        }
+    }
+
+    fun removePlayer(i: Int) {
+        if(i>=0 && (i < _playerNames.size.toInt())){
+            _playerNames.removeAt(i)
+        }
     }
 }

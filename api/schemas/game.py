@@ -17,7 +17,7 @@ class GameBase(BaseModel):
     date: datetime
     
 class GameCreate(GameBase):
-    players: int
+    players: List[str]
     pass
 
 class GameResponse(GameBase):

@@ -9,7 +9,7 @@ data class LoginResponse(val access_token: String)
 data class User(val id: Int, val name: String, val email: String)
 data class Post(val userId: Int, val title: String, val body: String)
 
-data class GameRequest(val players: Int, val status: String, val date: String = Date().toString())
+data class GameRequest(val players: List<String>, val status: String, val date: String = Date().toString())
 
 // Modelo principal del juego
 data class GameResponse(

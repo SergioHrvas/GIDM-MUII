@@ -15,7 +15,7 @@ from crud.deckcard import initialize_deck, steal_to_deck
 import random
 
 def create_game(game: GameCreate, current_user: int, db: Session):
-    if(game.players <= 0):
+    if(len(game.players) <= 0):
         return "Error"
     db_game = Game(
         status = StatusEnum('pending'),  # Conversión explícita
@@ -31,8 +31,8 @@ def create_game(game: GameCreate, current_user: int, db: Session):
     
     players = []
     # Creamos players
-    for i in range(game.players):  
-        db_player = Player(name="", game_id=db_game.id, user_id=current_user)
+    for i in range(len(game.players)):  
+        db_player = Player(name=game.players[i], game_id=db_game.id, user_id=current_user)
         db.add(db_player)
         db.commit()
         db.refresh(db_player) 

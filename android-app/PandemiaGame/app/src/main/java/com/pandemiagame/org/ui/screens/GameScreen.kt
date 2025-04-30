@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -86,932 +87,747 @@ fun PreviewGame(){
         }    }
 }
 
+data class InfectData(
+    val player1: Int? = null,
+    val organ1: String? = null,
+    val player2: Int? = null,
+    val organ2: String? = null,
+    val player3: Int? = null,
+    val organ3: String? = null,
+    val player4: Int? = null,
+    val organ4: String? = null,
+    val player5: Int? = null,
+    val organ5: String? = null
+)
+
+
 
 @Composable
 fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: GameViewModel = viewModel(), navController: NavController) {
-    // Estado para controlar la visibilidad del diálogo de final de partida
-    var showWinnerDialog by remember { mutableStateOf(false) }
+    // Estados principales del juego
+    val gameState = rememberGameState(viewModel)
 
-    var isCardDrawn by remember { mutableStateOf(false) }
+    // Efectos y lógica principal
+    GameEffects(gameState, viewModel, gameId, navController)
 
-    var selecting: Int by remember { mutableStateOf(0) }
-
-    var discarting: Int by remember { mutableIntStateOf(0) }
-
-    val discards = remember {
-        mutableStateListOf<Int>().apply {
-            addAll(listOf(0, 0, 0))
-        }
-    }
-
-    var exchanging by remember { mutableStateOf(false) }
-
-
-    // Observa el LiveData y lo convierte en un State<GameResponse?>
+    // UI principal
+    GameLayout(
+        modifier = modifier,
+        gameState = gameState,
+        viewModel = viewModel,
+        navController = navController
+    )
+}
+@Composable
+fun rememberGameState(viewModel: GameViewModel): GameState {
+    // Estados observados del ViewModel
     val gameResponse by viewModel.game.observeAsState()
-
-    // Observa el LiveData y lo convierte en un State<GameResponse?>
     val changingTurn by viewModel.changingTurn.observeAsState()
 
+    // Calculamos estados derivados
+    val winner = remember(gameResponse) { gameResponse?.winner }
+    val currentPlayerIndex = remember(gameResponse) {
+        gameResponse?.players?.indexOfFirst { it.id == gameResponse?.turn } ?: 0
+    }
+
+    // Calculamos otherPlayerIndex directamente basado en currentPlayerIndex
+    val otherPlayerIndex = remember(currentPlayerIndex, gameResponse) {
+        gameResponse?.players?.let { players ->
+            if (players.size > 1) {
+                var nextIndex = (currentPlayerIndex + 1) % players.size
+                if (nextIndex == currentPlayerIndex) (nextIndex + 1) % players.size else nextIndex
+            } else 0
+        } ?: 0
+    }
+
+    // Creamos el estado con los valores iniciales
+    val state = remember(gameResponse, changingTurn) {
+        GameState(
+            showWinnerDialog = false,
+            isCardDrawn = false,
+            selecting = 0,
+            discarting = false,
+            discards = mutableListOf(0, 0, 0),
+            exchanging = false,
+            changingBody = false,
+            readyToChange = false,
+            infecting = false,
+            selectedOrgan = null,
+            selectedCard = -1,
+            gameResponse = gameResponse,
+            changingTurn = changingTurn,
+            currentPlayerIndex = currentPlayerIndex,
+            otherPlayerIndex = otherPlayerIndex,
+            winner = winner
+        )
+    }
+
+
+    return state
+}
+
+class GameState(
+    showWinnerDialog: Boolean,
+    isCardDrawn: Boolean,
+    selecting: Int,
+    discarting: Boolean,
+    discards: MutableList<Int>,
+    exchanging: Boolean,
+    changingBody: Boolean,
+    readyToChange: Boolean,
+    infecting: Boolean,
+    selectedOrgan: String?,
+    selectedCard: Int,
+    gameResponse: GameResponse?,
+    changingTurn: Boolean?,
+    currentPlayerIndex: Int,
+    otherPlayerIndex: Int,
+    winner: Int?
+) {
+    var showWinnerDialog by mutableStateOf(showWinnerDialog)
+    var isCardDrawn by mutableStateOf(isCardDrawn)
+    var selecting by mutableStateOf(selecting)
+    var discarting by mutableStateOf(discarting)
+    val discards = mutableStateListOf<Int>().apply { addAll(discards) }
+    var exchanging by mutableStateOf(exchanging)
+    var changingBody by mutableStateOf(changingBody)
+    var readyToChange by mutableStateOf(readyToChange)
+    var infecting by mutableStateOf(infecting)
+    var selectedOrgan by mutableStateOf(selectedOrgan)
+    var selectedCard by mutableIntStateOf(selectedCard)
+    val gameResponse by mutableStateOf(gameResponse)
+    val changingTurn by mutableStateOf(changingTurn)
+    val currentPlayerIndex by mutableStateOf(currentPlayerIndex)
+    var otherPlayerIndex by mutableIntStateOf(otherPlayerIndex)
+    val winner by mutableStateOf(winner)
+}
+@Composable
+fun GameEffects(
+    gameState: GameState,
+    viewModel: GameViewModel,
+    gameId: String,
+    navController: NavController
+) {
+    val currentPlayerIndex = gameState.currentPlayerIndex
+    val gameResponse = gameState.gameResponse
+
+    // Efecto para cargar el juego inicialmente
     LaunchedEffect(Unit) {
         viewModel.setChangingTurn(true)
         viewModel.getGame(gameId)
     }
 
-    // Observamos el winner del gameResponse
-    val winner = remember(gameResponse) {
-        gameResponse?.winner
-    }
-
-    // Cuando detectamos un ganador, mostramos el diálogo
-    LaunchedEffect(winner) {
-        if (winner != null) {
-            if (winner > 0) {
-                showWinnerDialog = true
-            }
+    // Efecto para manejar el ganador
+    LaunchedEffect(gameState.winner) {
+        if (gameState.winner != null && gameState.winner!! > 0) {
+            gameState.showWinnerDialog = true
         }
     }
 
-    // Encuentra el índice del jugador actual basado en el turno
-    val currentPlayerIndex = remember(gameResponse) {
-        gameResponse?.players?.indexOfFirst { it.id == gameResponse?.turn } ?: 0
-    }
-
-    // Cambia esto a un estado mutable
-    var otherPlayerIndex by remember { mutableIntStateOf(0) }
-
-    // Actualiza otherPlayerIndex cuando cambia currentPlayerIndex o gameResponse
+    // Efecto para actualizar el índice del otro jugador
     LaunchedEffect(currentPlayerIndex, gameResponse) {
         gameResponse?.players?.let { players ->
             if (players.size > 1) {
                 var nextIndex = (currentPlayerIndex + 1) % players.size
                 if (nextIndex == currentPlayerIndex) nextIndex = (nextIndex + 1) % players.size
-                otherPlayerIndex = nextIndex
+                gameState.otherPlayerIndex = nextIndex
             } else {
-                otherPlayerIndex = 0
+                gameState.otherPlayerIndex = 0
             }
         }
     }
 
-    var selectedOrgan by remember { mutableStateOf<String?>(null) }
-    var selectedCard by remember { mutableStateOf<Int>(-1) }
-
-    // Manejar la infección cuando se selecciona un órgano
-    LaunchedEffect(selectedOrgan) {
-        selectedOrgan?.let { organType ->
-
-            if (selecting != 0) {
-                viewModel.doMove(selectedCard, otherPlayerIndex, organType)
-                selecting = 0
-
-                selectedOrgan = null
+    // Efecto para manejar la infección
+    LaunchedEffect(gameState.selectedOrgan) {
+        gameState.selectedOrgan?.let { organType ->
+            if (gameState.selecting > 0) {
+                viewModel.doMove(gameState.selectedCard, gameState.otherPlayerIndex, organType)
+                gameState.selecting = 0
+                gameState.selectedOrgan = null
             }
         }
     }
 
-    var changing_body: Boolean by remember { mutableStateOf(false) }
-    var ready_to_change: Boolean by remember { mutableStateOf(false) }
-
-    LaunchedEffect(ready_to_change) {
-        if(ready_to_change) {
-            viewModel.doMove(selectedCard, otherPlayerIndex)
-            ready_to_change = false
+    // Efecto para manejar el cambio de cuerpo
+    LaunchedEffect(gameState.readyToChange) {
+        if (gameState.readyToChange) {
+            viewModel.doMove(gameState.selectedCard, gameState.otherPlayerIndex)
+            gameState.readyToChange = false
         }
     }
 
-    var infecting: Boolean by remember { mutableStateOf(false) }
-
-
+    // Efecto de limpieza al desmontar
     DisposableEffect(Unit) {
         onDispose {
-            isCardDrawn = false
-            showWinnerDialog = false
-            selecting = 0
-            discarting = 0
-            // En lugar de clear(), resetea los valores
-            discards[0] = 0
-            discards[1] = 0
-            discards[2] = 0
+            gameState.isCardDrawn = false
+            gameState.showWinnerDialog = false
+            gameState.selecting = 0
+            gameState.discarting = false
+            gameState.discards[0] = 0
+            gameState.discards[1] = 0
+            gameState.discards[2] = 0
         }
     }
 
-    BackHandler(enabled = true) {
-        // Limpiar todos los estados inmediatamente
-        isCardDrawn = false
-        showWinnerDialog = false
-        selecting = 0
-        discarting = 0
-        discards[0] = 0
-        discards[1] = 0
-        discards[2] = 0
 
-        viewModel.setGame(GameResponse(
-            status = "pending",
-            date = "",
-            id = 0,
-            turn = 0,
-            numTurns = 0,
-            turns = listOf<Int>(0),
-            winner = 0,
-            cards = listOf<Card>(Card(
-                id = 0,
-                name = "",
-                type = ""
-            )),
-            players = listOf<Player>(Player(
+    // Manejador de botón de retroceso
+    BackHandler(enabled = true) {
+        resetGameState(gameState)
+        viewModel.setGame(createEmptyGame()) // Usamos createEmptyGame() en lugar de resetGame()
+        navController.popBackStack("home", inclusive = false)
+    }
+}
+
+// Función para crear un juego vacío
+private fun createEmptyGame(): GameResponse {
+    return GameResponse(
+        status = "pending",
+        date = "",
+        id = 0,
+        turn = 0,
+        numTurns = 0,
+        turns = listOf(),
+        winner = 0,
+        cards = listOf(),
+        players = listOf(
+            Player(
                 name = "",
                 gameId = 0,
                 id = 0,
-                playerCards = listOf<CardWrapper>(CardWrapper(
-                    card = Card(
-                        id = 0,
-                        name = "BackCard",
-                        type = ""
-                    )
-                ),CardWrapper(
-                    card = Card(
-                        id = 0,
-                        name = "BackCard",
-                        type = ""
-                    )
-                ),CardWrapper(
-                    card = Card(
-                        id = 0,
-                        name = "BackCard",
-                        type = ""
-                    )
-                )),
-                organs = listOf<Organ>()
+                playerCards = listOf(
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
+                ),
+                organs = listOf()
             ),
             Player(
                 name = "",
                 gameId = 0,
                 id = 0,
-                playerCards = listOf<CardWrapper>(CardWrapper(
-                    card = Card(
-                        id = 0,
-                        name = "BackCard",
-                        type = ""
-                    )
+                playerCards = listOf(
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
                 ),
-                    CardWrapper(
-                        card = Card(
-                            id = 0,
-                            name = "BackCard",
-                            type = ""
-                        )
-                    ),
-                    CardWrapper(
-                        card = Card(
-                            id = 0,
-                            name = "BackCard",
-                            type = ""
-                        )
-                    )),
-                organs = listOf<Organ>()
-            ))
-        ))
+                organs = listOf()
+            )
+        )
+    )
+}
 
-        navController.popBackStack("home", inclusive = false)
-    }
+private fun resetGameState(gameState: GameState) {
+    gameState.isCardDrawn = false
+    gameState.showWinnerDialog = false
+    gameState.selecting = 0
+    gameState.discarting = false
+    gameState.discards[0] = 0
+    gameState.discards[1] = 0
+    gameState.discards[2] = 0
+}
 
-    Scaffold (
+@Composable
+fun GameLayout(
+    modifier: Modifier = Modifier,
+    gameState: GameState,
+    viewModel: GameViewModel,
+    navController: NavController
+) {
+    Scaffold(
         topBar = { CustomTopAppBar() },
     ) { innerPadding ->
-            gameResponse?.let { game ->
-                if (showWinnerDialog) {
-                    AlertDialog(
-                        onDismissRequest = {
-                            showWinnerDialog = false
-                        },
-                        title = {
-                            Text(text = "¡Juego Terminado!")
-                        },
-                        text = {
-                            Text(text = "Ganador: $winner")
-                        },
-                        confirmButton = {
-                            Button(
-                                onClick = {
-                                    showWinnerDialog = false
-                                }
-                            ) {
-                                Text("Aceptar")
-                            }
+        gameState.gameResponse?.let { game ->
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Diálogos
+                GameDialogs(gameState, game, viewModel)
+
+                // Jugador oponente
+                OpponentPlayerSection(
+                    game = game,
+                    otherPlayerIndex = gameState.otherPlayerIndex,
+                    onPlayerChange = {
+                        gameState.otherPlayerIndex = (gameState.otherPlayerIndex + 1) % game.players.size
+                        if(gameState.otherPlayerIndex == gameState.currentPlayerIndex) {
+                            gameState.otherPlayerIndex = (gameState.otherPlayerIndex + 1) % game.players.size
                         }
-                    )
-                }
-                if ((changingTurn == true) && (winner != null)) {
-                    Dialog(
-                        onDismissRequest = {
-                            viewModel.setChangingTurn(false)
-                        },
-                        properties = DialogProperties(
-                            usePlatformDefaultWidth = false // Esto permite que el diálogo no use el ancho predeterminado
-                        ),
-                    ) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable {
-                                    viewModel.setChangingTurn(false)
-
-                                },
-
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(24.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "Turno del jugador ${game.players[currentPlayerIndex].name} ${game.players[currentPlayerIndex].id}",
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(bottom = 24.dp)
-                                )
-                                Text("Pulse para jugar su turno", color=Color.White)
-                            }
+                    },
+                    onOrganSelected = { organType ->
+                        if (gameState.selecting == 1) {
+                            gameState.selectedOrgan = organType
                         }
                     }
-                }
-                if(changing_body){
+                )
 
-                    AlertDialog(
-                        onDismissRequest = {
-                            changing_body = false
-                        },
-                        title = {
-                            Text(text = "Vas a cambiar el cuerpo con el jugador ${game.players[otherPlayerIndex].name}")
-                        },
-                        confirmButton = {
-                            Button(
-                                onClick = {
-                                    changing_body = false
-                                    ready_to_change = true
-                                }
-                            ) {
-                                Text("Aceptar")
-                            }
-                        },
-                        dismissButton = {
-                            Button(
-                                onClick = {
-                                    changing_body = false
-                                }
-                            ) {
-                                Text("Cancelar")
+                // Separador con mazo de cartas
+                DeckSection(
+                    isCardDrawn = gameState.isCardDrawn,
+                    onCardDrawn = {
+                        gameState.isCardDrawn = true
+                    },
+                    onDrawAnimationComplete = {
+                        gameState.isCardDrawn = false
+                        val idDiscards = mutableListOf<Int>()
+                        for (i in 0..gameState.discards.size - 1) {
+                            if (gameState.discards[i] == 1) {
+                                idDiscards.add(game.players[gameState.currentPlayerIndex].playerCards[i].card.id)
+                                gameState.discards[i] = 0
                             }
                         }
-                    )
-                }
-                if (infecting) {
-                    // Mapa para guardar las selecciones: órgano -> jugador objetivo
-                    val selections = remember {
-                        mutableStateMapOf<String, Int?>().apply {
-                            // Inicializar con null para cada órgano con virus
-                            game.players[currentPlayerIndex].organs
-                                .filter { (it.virus == 1) || (it.virus == 2)}
-                                .forEach { put(it.tipo, null) }
+                        if (gameState.winner == 0) {
+                            viewModel.discardCards(idDiscards)
+                            viewModel.setChangingTurn(true)
                         }
                     }
+                )
 
-                    Dialog(
-                        onDismissRequest = { infecting = false }
-                    ) {
-                        Surface(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text("Seleccionar objetivos de infección",
-                                    style = MaterialTheme.typography.titleLarge)
-
-                                // Lista de órganos con virus y sus selectores
-                                game.players[currentPlayerIndex].organs
-                                    .filter { (it.virus == 1) || (it.virus == 2)}
-                                    .forEach { organ ->
-                                        Column {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                modifier = Modifier.padding(vertical = 8.dp)
-                                            ) {
-                                                Text(
-                                                    text = "${organ.tipo}:",
-                                                    modifier = Modifier.weight(1f)
-                                                )
-
-                                                // Dropdown para seleccionar jugador objetivo
-                                                Box(modifier = Modifier.weight(2f)) {
-                                                    var expanded by remember { mutableStateOf(false) }
-                                                    val targetPlayerAndOrgans = game.players
-                                                        .filter { player -> player.id != game.players[currentPlayerIndex].id }
-                                                        .flatMap { player ->
-                                                            player.organs
-                                                                .filter { targetOrgan ->
-                                                                    mirarTipo(targetOrgan, organ)
-                                                                }
-                                                                .map { targetOrgan -> player to targetOrgan }
-                                                        }
-
-                                                    OutlinedButton(
-                                                        onClick = { expanded = true },
-                                                        modifier = Modifier.fillMaxWidth()
-                                                    ) {
-                                                        Text(selections[organ.tipo]?.toString() ?: "Seleccionar jugador")
-                                                        Icon(
-                                                            Icons.Default.ArrowDropDown,
-                                                            contentDescription = null
-                                                        )
-                                                    }
-
-                                                    DropdownMenu(
-                                                        expanded = expanded,
-                                                        onDismissRequest = { expanded = false }
-                                                    ) {
-                                                        targetPlayerAndOrgans.forEach { player ->
-                                                            DropdownMenuItem(
-                                                                text = { Text(player.first.id.toString() + " " + player.second.tipo) },
-                                                                onClick = {
-                                                                    selections[organ.tipo] = player.first.id
-                                                                    expanded = false
-                                                                }
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            HorizontalDivider()
-                                        }
-                                    }
-
-                                // Botones de acción
-                                Row(
-                                    horizontalArrangement = Arrangement.End,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Button(
-                                        onClick = { infecting = false },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.errorContainer
-                                        )
-                                    ) {
-                                        Text("Cancelar")
-                                    }
-
-                                    Spacer(modifier = Modifier.width(16.dp))
-
-                                    Button(
-                                        onClick = {
-                                            // Convertir las selecciones a lista
-                                            val selectedPairs = selections.mapNotNull { (organ, player) ->
-                                                player?.let { organ to it }
-                                            }.take(5) // Limitar a máximo 5 pares
-
-                                            val data = InfectData(
-                                                player1 = selectedPairs.getOrNull(0)?.second,
-                                                organ1 = selectedPairs.getOrNull(0)?.first,
-                                                player2 = selectedPairs.getOrNull(1)?.second,
-                                                organ2 = selectedPairs.getOrNull(1)?.first,
-                                                player3 = selectedPairs.getOrNull(2)?.second,
-                                                organ3 = selectedPairs.getOrNull(2)?.first,
-                                                player4 = selectedPairs.getOrNull(3)?.second,
-                                                organ4 = selectedPairs.getOrNull(3)?.first,
-                                                player5 = selectedPairs.getOrNull(4)?.second,
-                                                organ5 = selectedPairs.getOrNull(4)?.first
-                                            )
-                                            infecting = false
-                                            viewModel.doMoveInfect(selectedCard, infectData = data)
-                                        },
-                                        enabled = selections.values.any { it != null } // Solo habilitar si hay al menos una selección
-                                    ) {
-                                        Text("Confirmar")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (exchanging && (selectedOrgan != null)) {
-
-                    Dialog(
-                        onDismissRequest = {
-                            exchanging = false
-                            selectedOrgan = null
-                        }
-                    ) {
-                        Surface(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Column() {
-                                Text(text = "Cambiando ${selectedOrgan} por...")
-
-                                var indice = -1
-                                for (i in 0..game.players[otherPlayerIndex].organs.size - 1){
-                                    if(game.players[otherPlayerIndex].organs[i].tipo == selectedOrgan){
-                                        indice = i
-                                        break
-                                    }
-                                }
-                                var targetOrgans = listOf<Organ>()
-                                if(indice != -1){
-                                    targetOrgans = listOf(game.players[otherPlayerIndex].organs[indice])
-                                }
-                                else {
-                                    // Buscar todos los órganos del jugador otherIndex que no estén inmunizados, que yo no tenga o que sea el mismo tipo de órgano que el que cambio
-                                    targetOrgans = game.players[otherPlayerIndex].organs.filter {
-                                        (it.cure != 3) && puedoCambiarlo(
-                                            selectedOrgan,
-                                            it,
-                                            game.players[currentPlayerIndex].organs
-                                        )
-                                    }
-                                }
-
-                                var otherOrganSelected by remember { mutableStateOf<String?>(null) }
-                                var expanded by remember { mutableStateOf(false) }
-
-                                OutlinedButton(
-                                    onClick = { expanded = true },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(otherOrganSelected ?: "Seleccionar órgano")
-                                    Icon(
-                                        Icons.Default.ArrowDropDown,
-                                        contentDescription = null
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false }
-                                ) {
-
-                                    targetOrgans.forEach { organ ->
-                                        DropdownMenuItem(
-                                            text = { Text(organ.tipo) },
-                                            onClick = {
-                                                otherOrganSelected = organ.tipo
-                                                expanded = false
-                                            }
-                                        )
-                                        HorizontalDivider()
-
-                                    }
-                                }
-                                // Botones de acción
-                                Row(
-                                    horizontalArrangement = Arrangement.End,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Button(
-                                        onClick = {
-                                            exchanging = false
-                                            selectedOrgan = null
-                                            otherOrganSelected = null
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.errorContainer
-                                        )
-                                    ) {
-                                        Text("Cancelar")
-                                    }
-
-                                    Spacer(modifier = Modifier.width(16.dp))
-
-                                    Button(
-                                        onClick = {
-                                            val data = InfectData(
-                                                player1 = game.players[otherPlayerIndex].id,
-                                                organ1 = otherOrganSelected,
-                                            )
-                                            viewModel.doMoveExchange(selectedCard,
-                                                selectedOrgan.toString(), infectData = data)
-                                            exchanging = false
-                                            selectedOrgan = null
-                                        },
-                                        enabled = otherOrganSelected != null  // Solo habilitar si hay al menos una selección
-                                    ) {
-                                        Text("Confirmar")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                Column(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Column(modifier = Modifier.padding(bottom = 2.dp)) {
-                        Row(
-                            modifier = Modifier
-                                .padding(top = 10.dp)
-                                .fillMaxWidth(), // Ocupar todo el ancho disponible
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(start = 10.dp)
-                                    .weight(1F)
-                            ) {
-                                var expanded by remember { mutableStateOf(false) }
-                                val options = listOf("Opción 1", "Opción 2", "Opción 3")
-
-                                Button(onClick = { expanded = true }) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.menu),
-                                        contentDescription = "Discard cards"
-                                    )
-
-                                }
-
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false }
-                                ) {
-                                    options.forEach { option ->
-                                        DropdownMenuItem(
-                                            text = { Text(option) },
-                                            onClick = {
-                                                expanded = false
-                                                println("Seleccionaste: $option") // Aquí puedes manejar la selección
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            game.players.size.let {
-                                if (it > 2) Icon(
-                                    painter = painterResource(R.drawable.baseline_arrow_right_24),
-                                    contentDescription = "Cambiar jugador",
-                                    modifier = Modifier.clickable {
-                                        otherPlayerIndex = (otherPlayerIndex + 1) % game.players.size
-                                        if(otherPlayerIndex == currentPlayerIndex) {
-                                            otherPlayerIndex = (otherPlayerIndex + 1) % game.players.size
-                                        }
-                                    } // Disparar animación al hacer clic
-                                )
-                            }
-                            Text(
-                                text = "Usuario #${game.players[otherPlayerIndex].id}",
-                                modifier = Modifier.padding(end = 20.dp)
-                            )
-                            Image(
-                                painter = painterResource(id = R.drawable.user),
-                                contentDescription = "Imagen de perfil",
-                                modifier = Modifier
-                                    .padding(end = 10.dp)
-                                    .size(40.dp)
-                                    .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            )
-
-                        }
-
-                        Body(false, game.players[otherPlayerIndex].organs, onOrganSelected = { organType ->
-                                if (selecting != 0) {
-                                    selectedOrgan = organType
-                                }
-                            })
-                    }
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .zIndex(1f)  // Asegura que el Box con la animación esté por encima de otros elementos
-                    ) {
-                        HorizontalDivider(thickness = 3.dp, modifier = Modifier.fillMaxWidth())
-
-                        // Mazo de cartas (backdeck)
-                        Image(
-                            painter = painterResource(id = R.drawable.backdeck),
-                            contentDescription = "Mazo de cartas",
-                            modifier = Modifier
-                                .height(110.dp)
-                                .clickable {
-                                    isCardDrawn = true
-                                } // Disparar animación al hacer clic
+                // Jugador actual
+                CurrentPlayerSection(
+                    game = game,
+                    currentPlayerIndex = gameState.currentPlayerIndex,
+                    discards = gameState.discards,
+                    discarting = gameState.discarting,
+                    selecting = gameState.selecting,
+                    exchanging = gameState.exchanging,
+                    onCardSelected = { cardIndex ->
+                        handleCardSelection(
+                            cardIndex = cardIndex,
+                            gameState = gameState,
+                            game = game,
+                            viewModel = viewModel
                         )
-
-                        // Carta animada al robar
-                        if (isCardDrawn) {
-                            DrawCardAnimation () {
-
-                                isCardDrawn = false
-
-                                var idDiscards = mutableListOf<Int>()
-                                for (i in 0..discards.size-1){
-                                    if(discards[i] == 1){
-                                        idDiscards.add(game.players[currentPlayerIndex].playerCards[i].card.id)
-                                        discards[i] = 0
-                                    }
-                                }
-
-                                viewModel.discardCards(idDiscards)
-
-                                viewModel.setChangingTurn(true)
-
-                            } // Resetea el estado cuando termina
+                    },
+                    onDiscardToggle = {
+                        gameState.discarting = true
+                    },
+                    onConfirmDiscard = {
+                        gameState.isCardDrawn = true
+                        gameState.discarting = false
+                    },
+                    onCancelAction = {
+                        if(gameState.discarting) {
+                            for(i in 0..gameState.discards.size - 1) {
+                                gameState.discards[i] = 0
+                            }
+                            gameState.discarting = false
+                        }
+                        if(gameState.selecting > 0) {
+                            gameState.selecting = 0
+                        }
+                        if(gameState.exchanging) {
+                            gameState.exchanging = false
+                        }
+                    },
+                    onOrganSelected = { organType ->
+                        if (gameState.selecting == 2 || gameState.exchanging) {
+                            gameState.selectedOrgan = organType
+                            Log.v("SELECTING", organType.toString())
                         }
                     }
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(top = 10.dp)
-                                .fillMaxWidth(), // Ocupar todo el ancho disponible
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Text(
-                                text = "Usuario #${game.players[currentPlayerIndex].id}",
-                                modifier = Modifier.padding(end = 20.dp)
-                            )
-                            Image(
-                                painter = painterResource(id = R.drawable.user),
-                                contentDescription = "Imagen de perfil",
-                                modifier = Modifier
-                                    .padding(end = 10.dp)
-                                    .size(40.dp)
-                                    .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            )
+                )
+            }
+        } ?: Text("Cargando...")
+    }
+}
 
-                        }
+@Composable
+fun GameDialogs(
+    gameState: GameState,
+    game: GameResponse,
+    viewModel: GameViewModel
+) {
+    val winnerName = remember(gameState.winner) {
+        game.players.firstOrNull { it.id == gameState.winner }?.name ?: ""
+    }
 
-                        Body(false, game.players[currentPlayerIndex].organs, onOrganSelected = { organType ->
-                                if ((selecting != 0) || exchanging) {
-                                    selectedOrgan = organType
-                                }
+    // Diálogo de ganador
+    if (gameState.showWinnerDialog) {
+        WinnerDialog(
+            winnerName = winnerName,
+            onDismiss = { gameState.showWinnerDialog = false }
+        )
+    }
 
-                            })
+    // Diálogo de cambio de turno
+    if ((gameState.changingTurn == true) && (gameState.winner != null)) {
+        TurnChangeDialog(
+            playerName = game.players[gameState.currentPlayerIndex].name,
+            onDismiss = { viewModel.setChangingTurn(false) }
+        )
+    }
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 15.dp),
+    // Diálogo de cambio de cuerpo
+    if (gameState.changingBody) {
+        ChangeBodyDialog(
+            otherPlayerName = game.players[gameState.otherPlayerIndex].name,
+            onConfirm = {
+                gameState.changingBody = false
+                gameState.readyToChange = true
+            },
+            onCancel = { gameState.changingBody = false }
+        )
+    }
 
-                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+    // Diálogo de infección
+    if (gameState.infecting) {
+        InfectDialog(
+            currentPlayer = game.players[gameState.currentPlayerIndex],
+            otherPlayers = game.players.filter { it.id != game.players[gameState.currentPlayerIndex].id },
+            onConfirm = { infectData ->
+                gameState.infecting = false
+                viewModel.doMoveInfect(gameState.selectedCard, infectData = infectData)
+            },
+            onCancel = { gameState.infecting = false }
+        )
+    }
 
-                        ) {
-                            Image(
-                                painter = painterResource(id = CardEnum.fromDisplayName(game.players[currentPlayerIndex].playerCards[0].card.name)?.drawable
-                                    ?: 0),
-                                contentDescription = "CARTA 1",
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier
-                                    .width(100.dp)
-                                    .border(
-                                        width = if (discards[0] == 1) 3.dp else 0.dp,
-                                        color = if (discards[0] == 1) Color.Gray else Color.Transparent
-                                    )
-                                    .clickable {
-                                        selectedCard = 0
-                                        if (discarting == 1) {
-                                            discards[0] = (discards[0] + 1) % 2
-                                        } else {
-                                            when (game.players[currentPlayerIndex].playerCards[0].card.type) {
-                                                "organ" -> {
-                                                    selecting = 0
-                                                    viewModel.doMove(0)
-                                                }
+    Log.v("aaaabbbbeee", gameState.exchanging.toString())
 
-                                                "virus", "cure" -> {
-                                                    selecting = 1
-                                                }
+    Log.v("eeeeebbbbiiii", gameState.selectedOrgan.toString())
+    // Diálogo de intercambio
+    if (gameState.exchanging && (gameState.selectedOrgan != null)) {
+        ExchangeDialog(
+            game = game,
+            currentPlayerIndex = gameState.currentPlayerIndex,
+            otherPlayerIndex = gameState.otherPlayerIndex,
+            selectedOrgan = gameState.selectedOrgan!!,
+            onConfirm = { organToExchange ->
+                val data = InfectData(
+                    player1 = game.players[gameState.otherPlayerIndex].id,
+                    organ1 = organToExchange,
+                )
+                viewModel.doMoveExchange(
+                    gameState.selectedCard,
+                    gameState.selectedOrgan!!,
+                    infectData = data
+                )
+                gameState.exchanging = false
+                gameState.selectedOrgan = null
+            },
+            onCancel = {
+                gameState.exchanging = false
+                gameState.selectedOrgan = null
+            }
+        )
+    }
+}
 
-                                                "action" -> {
-                                                    selecting = 0
-                                                    when (game.players[currentPlayerIndex].playerCards[0].card.name) {
-                                                        "Change Body" -> {
-                                                            if (game.players.size > 2) {
-                                                                changing_body = true
-                                                            } else {
-                                                                ready_to_change = true
-                                                            }
-                                                        }
+@Composable
+fun OpponentPlayerSection(
+    game: GameResponse,
+    otherPlayerIndex: Int,
+    onPlayerChange: () -> Unit,
+    onOrganSelected: (String) -> Unit
+) {
+    Column(modifier = Modifier.padding(bottom = 2.dp)) {
+        PlayerHeader(
+            player = game.players[otherPlayerIndex],
+            showChangeButton = game.players.size > 2,
+            onPlayerChange = onPlayerChange,
+            current = false
+        )
 
-                                                        "Steal Organ" -> {
-                                                            selecting = 1
-                                                        }
+        Body(
+            myBody = false,
+            organs = game.players[otherPlayerIndex].organs,
+            onOrganSelected = onOrganSelected
+        )
+    }
+}
 
-                                                        "Discard Cards" -> {
-                                                            viewModel.doMove(0)
-                                                        }
-
-                                                        "Infect Player" -> {
-                                                            infecting = true
-                                                        }
-
-                                                        "Exchange Card" -> {
-                                                            exchanging = true
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                            )
-                            Image(
-                                painter = painterResource(id = CardEnum.fromDisplayName(game.players[currentPlayerIndex].playerCards[1].card.name)?.drawable
-                                    ?: 0),
-                                contentDescription = "CARTA 2",
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier
-                                    .width(100.dp)
-                                    .border(
-                                        width = if (discards[1] == 1) 3.dp else 0.dp,
-                                        color = if (discards[1] == 1) Color.Gray else Color.Transparent
-                                    )
-                                    .clickable {
-                                        selectedCard = 1
-                                        if (discarting == 1) {
-                                            discards[1] = (discards[1] + 1) % 2
-                                        } else {
-                                            when (game.players[currentPlayerIndex].playerCards[1].card.type) {
-                                                "organ" -> {
-                                                    selecting = 0
-                                                    viewModel.doMove(1)
-                                                }
-
-                                                "virus", "cure" -> {
-                                                    selecting = 1
-                                                }
-
-                                                "action" -> {
-                                                    when (game.players[currentPlayerIndex].playerCards[1].card.name) {
-                                                        "Change Body" -> {
-                                                            if (game.players.size > 2) {
-                                                                changing_body = true
-                                                            } else {
-                                                                ready_to_change = true
-                                                            }
-                                                        }
-
-                                                        "Steal Organ" -> {
-                                                            selecting = 1
-                                                        }
-
-                                                        "Discard Cards" -> {
-                                                            viewModel.doMove(1)
-                                                        }
-
-                                                        "Infect Player" -> {
-                                                            infecting = true
-                                                        }
-
-
-                                                        "Exchange Card" -> {
-                                                            exchanging = true
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                            )
-                            Image(
-                                painter = painterResource(id = CardEnum.fromDisplayName(game.players[currentPlayerIndex].playerCards[2].card.name)?.drawable
-                                    ?: 0),
-                                contentDescription = "CARTA 3",
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier
-                                    .width(100.dp)
-                                    .border(
-                                        width = if (discards[2] == 1) 3.dp else 0.dp,
-                                        color = if (discards[2] == 1) Color.Gray else Color.Transparent
-                                    )
-                                    .clickable {
-                                        selectedCard = 2
-                                        if (discarting == 1) {
-                                            discards[2] = (discards[2] + 1) % 2
-                                        } else {
-                                            when (game.players[currentPlayerIndex].playerCards[2].card.type) {
-                                                "organ" -> {
-                                                    selecting = 0
-                                                    viewModel.doMove(2)
-                                                }
-
-                                                "virus", "cure" -> {
-                                                    selecting = 1
-                                                }
-
-                                                "action" -> {
-                                                    when (game.players[currentPlayerIndex].playerCards[2].card.name) {
-                                                        "Change Body" -> {
-                                                            if (game.players.size > 2) {
-                                                                changing_body = true
-                                                            } else {
-                                                                ready_to_change = true
-                                                            }
-                                                        }
-
-                                                        "Steal Organ" -> {
-                                                            selecting = 1
-                                                        }
-
-                                                        "Discard Cards" -> {
-                                                            viewModel.doMove(2)
-                                                        }
-
-                                                        "Infect Player" -> {
-                                                            infecting = true
-                                                        }
-
-
-                                                        "Exchange Card" -> {
-                                                            exchanging = true
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier.padding(top = 20.dp),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            if( (discarting == 0) && (selecting == 0) && (exchanging == false)) Button(onClick = {
-                                discarting = 1
-                            }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.discard),
-                                    contentDescription = "Discard cards"
-                                )
-
-                            }
-
-
-                        if (discarting == 1) Button(onClick = {
-                            isCardDrawn = true
-
-
-                            discarting = 0
-
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.confirm),
-                                contentDescription = "Confirmar"
-                            )
-
-                        }
-
-                        if ((discarting == 1) || (selecting == 1) || (exchanging == true)) Button(onClick = {
-                            if(discarting == 1){
-                                for(i in 0..discards.size - 1){
-                                    discards[i] = 0
-                                }
-                                discarting = 0
-                            }
-                            if(selecting == 1){
-                                selecting = 0
-                            }
-                            if(exchanging){
-                                exchanging = false
-                            }
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.cancel),
-                                contentDescription = "Cancelar"
-                            )
-
-                        }
-                    }
-
-                    }
-
+@Composable
+fun CurrentPlayerSection(
+    game: GameResponse,
+    currentPlayerIndex: Int,
+    discards: List<Int>,
+    discarting: Boolean,
+    selecting: Int,
+    exchanging: Boolean,
+    onCardSelected: (Int) -> Unit,
+    onDiscardToggle: () -> Unit,
+    onConfirmDiscard: () -> Unit,
+    onCancelAction: () -> Unit,
+    onOrganSelected: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        PlayerHeader(
+            player = game.players[currentPlayerIndex],
+            showChangeButton = false,
+            onPlayerChange = {},
+            current = true
+        )
+        Log.v("inside", selecting.toString() + ""+  exchanging.toString())
+        Body(
+            myBody = true,
+            organs = game.players[currentPlayerIndex].organs,
+            onOrganSelected = { organType ->
+                if (selecting == 2 || exchanging) {
+                    onOrganSelected(organType)
                 }
-            } ?: Text("Cargando...")
+            }
+        )
+
+        PlayerCardsRow(
+            cards = game.players[currentPlayerIndex].playerCards,
+            discards = discards,
+            onCardSelected = onCardSelected
+        )
+
+        PlayerActions(
+            discarting = discarting,
+            selecting = selecting,
+            exchanging = exchanging,
+            onDiscardToggle = onDiscardToggle,
+            onConfirmDiscard = onConfirmDiscard,
+            onCancelAction = onCancelAction
+        )
+    }
+}
+
+@Composable
+fun PlayerHeader(
+    player: Player,
+    showChangeButton: Boolean,
+    onPlayerChange: () -> Unit,
+    current: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .padding(top = 10.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End
+    ) {
+        if (!current) Box(modifier = Modifier
+            .padding(start = 10.dp)
+            .weight(1F)) {
+            MenuButton()
         }
 
+        if (showChangeButton) {
+            Icon(
+                painter = painterResource(R.drawable.baseline_arrow_right_24),
+                contentDescription = "Cambiar jugador",
+                modifier = Modifier.clickable(onClick = onPlayerChange)
+            )
+        }
+
+        Text(
+            text = player.name,
+            modifier = Modifier.padding(end = 20.dp)
+        )
+
+        Image(
+            painter = painterResource(id = R.drawable.user),
+            contentDescription = "Imagen de perfil",
+            modifier = Modifier
+                .padding(end = 10.dp)
+                .size(40.dp)
+                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+        )
+    }
+}
+
+@Composable
+fun DeckSection(
+    isCardDrawn: Boolean,
+    onCardDrawn: () -> Unit,
+    onDrawAnimationComplete: () -> Unit
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .zIndex(1f)
+    ) {
+        HorizontalDivider(thickness = 3.dp, modifier = Modifier.fillMaxWidth())
+
+        Image(
+            painter = painterResource(id = R.drawable.backdeck),
+            contentDescription = "Mazo de cartas",
+            modifier = Modifier
+                .height(110.dp)
+                .clickable(onClick = onCardDrawn)
+        )
+
+        if (isCardDrawn) {
+            DrawCardAnimation(onAnimationEnd = onDrawAnimationComplete)
+        }
+    }
+}
+
+@Composable
+fun PlayerCardsRow(
+    cards: List<CardWrapper>,
+    discards: List<Int>,
+    onCardSelected: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(top = 15.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        cards.forEachIndexed { index, cardWrapper ->
+            PlayerCard(
+                card = cardWrapper.card,
+                isSelected = discards[index] == 1,
+                onClick = { onCardSelected(index) }
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerCard(
+    card: Card,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Image(
+        painter = painterResource(id = CardEnum.fromDisplayName(card.name)?.drawable ?: 0),
+        contentDescription = "Carta del jugador",
+        contentScale = ContentScale.Fit,
+        modifier = Modifier
+            .width(100.dp)
+            .border(
+                width = if (isSelected) 3.dp else 0.dp,
+                color = if (isSelected) Color.Gray else Color.Transparent
+            )
+            .clickable(onClick = onClick)
+    )
+}
+
+
+@Composable
+fun PlayerActions(
+    discarting: Boolean,
+    selecting: Int,
+    exchanging: Boolean,
+    onDiscardToggle: () -> Unit,
+    onConfirmDiscard: () -> Unit,
+    onCancelAction: () -> Unit
+) {
+    Row(
+        modifier = Modifier.padding(top = 20.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+
+        if (discarting) {
+            ActionButton(
+                iconResId = R.drawable.confirm,
+                contentDescription = "Confirmar",
+                onClick = onConfirmDiscard
+            )
+        }
+        if (!discarting && (selecting == 0) && !exchanging) {
+            ActionButton(
+                iconResId = R.drawable.discard,
+                contentDescription = "Descartar cartas",
+                onClick = onDiscardToggle
+            )
+        }
+        else {
+            ActionButton(
+                iconResId = R.drawable.cancel,
+                contentDescription = "Cancelar",
+                onClick = onCancelAction
+            )
+        }
+    }
+}
+
+@Composable
+fun ActionButton(
+    iconResId: Int,
+    contentDescription: String,
+    onClick: () -> Unit
+) {
+    Button(onClick = onClick) {
+        Icon(
+            painter = painterResource(id = iconResId),
+            contentDescription = contentDescription
+        )
+    }
+}
+
+private fun handleCardSelection(
+    cardIndex: Int,
+    gameState: GameState,
+    game: GameResponse,
+    viewModel: GameViewModel
+) {
+    gameState.selectedCard = cardIndex
+
+    if (gameState.discarting) {
+        gameState.discards[cardIndex] = (gameState.discards[cardIndex] + 1) % 2
+    } else {
+        when (game.players[gameState.currentPlayerIndex].playerCards[cardIndex].card.type) {
+            "organ" -> {
+                gameState.selecting = 0
+                if(game.winner == 0) {
+                    viewModel.doMove(cardIndex)
+                }
+            }
+            "virus" -> {
+                gameState.selecting = 1
+            }
+            "cure" -> {
+                gameState.selecting = 2
+            }
+            "action" -> {
+                handleActionCard(cardIndex, gameState, game, viewModel)
+            }
+        }
+    }
+}
+
+private fun handleActionCard(
+    cardIndex: Int,
+    gameState: GameState,
+    game: GameResponse,
+    viewModel: GameViewModel
+) {
+    when (game.players[gameState.currentPlayerIndex].playerCards[cardIndex].card.name) {
+        "Change Body" -> {
+            if (game.players.size > 2) {
+                gameState.changingBody = true
+            } else {
+                gameState.readyToChange = true
+            }
+        }
+        "Steal Organ" -> {
+            gameState.selecting = 1
+        }
+        "Discard Cards" -> {
+            viewModel.doMove(cardIndex)
+        }
+        "Infect Player" -> {
+            gameState.infecting = true
+        }
+        "Exchange Card" -> {
+            gameState.exchanging = true
+        }
+    }
 }
 
 private fun puedoCambiarlo (myOrganSelected: String?, theirOrgan: Organ, myOrganList: List<Organ>): Boolean{
-    if (theirOrgan.tipo == myOrganSelected){
-        return true
+    return if (theirOrgan.tipo == myOrganSelected){
+        true
     } else {
-        if (myOrganList.contains(theirOrgan)){
-            return false
-        }
-        else{
-            return true
-        }
+        !myOrganList.contains(theirOrgan)
     }
 }
 
@@ -1020,7 +836,7 @@ private fun mirarTipo(targetOrgan: Organ, organ: Organ): Boolean {
         return false
     }
     else if(targetOrgan.cure == 2){
-        return true;
+        return true
     }
     else if (organ.virus == 2){
         return true
@@ -1047,9 +863,346 @@ private fun mirarTipo(targetOrgan: Organ, organ: Organ): Boolean {
         }
     }
     else{
-        return false;
+        return false
     }
 }
+
+
+@Composable
+fun WinnerDialog(
+    winnerName: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "¡Juego Terminado!")
+        },
+        text = {
+            Text(text = "Ganador: $winnerName")
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Aceptar")
+            }
+        }
+    )
+}
+
+@Composable
+fun TurnChangeDialog(
+    playerName: String,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false
+        ),
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(onClick = onDismiss),
+            color = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Turno del jugador $playerName",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+                Text("Pulse para jugar su turno", color = Color.White)
+            }
+        }
+    }
+}
+
+@Composable
+fun ChangeBodyDialog(
+    otherPlayerName: String,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = {
+            Text(text = "Vas a cambiar el cuerpo con el jugador $otherPlayerName")
+        },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text("Aceptar")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onCancel) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
+@Composable
+fun InfectDialog(
+    currentPlayer: Player,
+    otherPlayers: List<Player>,
+    onConfirm: (InfectData) -> Unit,
+    onCancel: () -> Unit
+) {
+    // Mapa para guardar las selecciones: órgano -> jugador objetivo
+    val selections = remember {
+        mutableStateMapOf<String, Int?>().apply {
+            currentPlayer.organs
+                .filter { it.virus == 1 || it.virus == 2 }
+                .forEach { put(it.tipo, null) }
+        }
+    }
+
+    Dialog(onDismissRequest = onCancel) {
+        Surface(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Seleccionar objetivos de infección",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                // Lista de órganos con virus y sus selectores
+                currentPlayer.organs
+                    .filter { it.virus == 1 || it.virus == 2 }
+                    .forEach { organ ->
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "${organ.tipo}:",
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                // Dropdown para seleccionar jugador objetivo
+                                Box(modifier = Modifier.weight(2f)) {
+                                    var expanded by remember { mutableStateOf(false) }
+                                    val targetPlayerAndOrgans = otherPlayers
+                                        .flatMap { player ->
+                                            player.organs
+                                                .filter { targetOrgan ->
+                                                    mirarTipo(targetOrgan, organ)
+                                                }
+                                                .map { targetOrgan -> player to targetOrgan }
+                                        }
+
+                                    OutlinedButton(
+                                        onClick = { expanded = true },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(selections[organ.tipo]?.toString() ?: "Seleccionar jugador")
+                                        Icon(
+                                            Icons.Default.ArrowDropDown,
+                                            contentDescription = null
+                                        )
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = expanded,
+                                        onDismissRequest = { expanded = false }
+                                    ) {
+                                        targetPlayerAndOrgans.forEach { (player, targetOrgan) ->
+                                            DropdownMenuItem(
+                                                text = { Text("${player.id} ${targetOrgan.tipo}") },
+                                                onClick = {
+                                                    selections[organ.tipo] = player.id
+                                                    expanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            HorizontalDivider()
+                        }
+                    }
+
+                // Botones de acción
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text("Cancelar")
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Button(
+                        onClick = {
+                            val selectedPairs = selections.mapNotNull { (organ, player) ->
+                                player?.let { organ to it }
+                            }.take(5)
+
+                            val data = InfectData(
+                                player1 = selectedPairs.getOrNull(0)?.second,
+                                organ1 = selectedPairs.getOrNull(0)?.first,
+                                player2 = selectedPairs.getOrNull(1)?.second,
+                                organ2 = selectedPairs.getOrNull(1)?.first,
+                                player3 = selectedPairs.getOrNull(2)?.second,
+                                organ3 = selectedPairs.getOrNull(2)?.first,
+                                player4 = selectedPairs.getOrNull(3)?.second,
+                                organ4 = selectedPairs.getOrNull(3)?.first,
+                                player5 = selectedPairs.getOrNull(4)?.second,
+                                organ5 = selectedPairs.getOrNull(4)?.first
+                            )
+                            onConfirm(data)
+                        },
+                        enabled = selections.values.any { it != null }
+                    ) {
+                        Text("Confirmar")
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ExchangeDialog(
+    game: GameResponse,
+    currentPlayerIndex: Int,
+    otherPlayerIndex: Int,
+    selectedOrgan: String,
+    onConfirm: (String) -> Unit,
+    onCancel: () -> Unit
+) {
+    Dialog(onDismissRequest = onCancel) {
+        Surface(modifier = Modifier.padding(16.dp)) {
+            Column {
+                Text(text = "Cambiando $selectedOrgan por...")
+
+                val indice = game.players[otherPlayerIndex].organs.indexOfFirst { it.tipo == selectedOrgan }
+                val targetOrgans = if (indice != -1) {
+                    listOf(game.players[otherPlayerIndex].organs[indice])
+                } else {
+                    game.players[otherPlayerIndex].organs.filter {
+                        (it.cure != 3) && puedoCambiarlo(
+                            selectedOrgan,
+                            it,
+                            game.players[currentPlayerIndex].organs
+                        )
+                    }
+                }
+
+                var otherOrganSelected by remember { mutableStateOf<String?>(null) }
+                var expanded by remember { mutableStateOf(false) }
+
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(otherOrganSelected ?: "Seleccionar órgano")
+                    Icon(
+                        Icons.Default.ArrowDropDown,
+                        contentDescription = null
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    targetOrgans.forEach { organ ->
+                        DropdownMenuItem(
+                            text = { Text(organ.tipo) },
+                            onClick = {
+                                otherOrganSelected = organ.tipo
+                                expanded = false
+                            }
+                        )
+                        HorizontalDivider()
+                    }
+                }
+
+                // Botones de acción
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text("Cancelar")
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Button(
+                        onClick = {
+                            otherOrganSelected?.let { onConfirm(it) }
+                        },
+                        enabled = otherOrganSelected != null
+                    ) {
+                        Text("Confirmar")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MenuButton() {
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf("Opción 1", "Opción 2", "Opción 3") // Puedes personalizar estas opciones
+
+    Box {
+        Button(onClick = { expanded = true }) {
+            Icon(
+                painter = painterResource(id = R.drawable.menu), // Asegúrate de tener este icono en tus recursos
+                contentDescription = "Menú"
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        expanded = false
+                        // Aquí puedes manejar la acción para cada opción
+                        when (option) {
+                            "Opción 1" -> { /* Acción para opción 1 */ }
+                            "Opción 2" -> { /* Acción para opción 2 */ }
+                            "Opción 3" -> { /* Acción para opción 3 */ }
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+
+
 
 @Composable
 fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit = {}){
@@ -1060,7 +1213,6 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
     // 4 = Lo tiene protegido
     // -1 = Lo tiene infectado
     // -2 = Lo tiene infectado magico
-
 
     // Calcula organPlace directamente basado en los organs recibidos
     val organPlace = remember(organs) {
@@ -1123,7 +1275,7 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(if(myBody) 10.dp else 30.dp)
+            horizontalArrangement = Arrangement.spacedBy(if(myBody) 10.dp else 20.dp)
         ) {
             Image(
                 painter = painterResource(id = if(organPlace[0] == 1) R.drawable.brain else if(organPlace[0] == 2) R.drawable.brain_cure else if(organPlace[0] == 3) R.drawable.brain_cure_magic else if (organPlace[0] == 4) R.drawable.brain_protected else if(organPlace[0] == -1) R.drawable.brain_virus else if(organPlace[0] == -2) R.drawable.brain_virus_magic else R.drawable.brain_disable),
@@ -1132,7 +1284,7 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        if(organPlace[0] != 0){
+                        if (organPlace[0] != 0) {
                             onOrganSelected("brain")
                         }
                     }
@@ -1144,7 +1296,7 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        if(organPlace[1] != 0) {
+                        if (organPlace[1] != 0) {
                             onOrganSelected("heart")
                         }
                     }
@@ -1156,7 +1308,7 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        if(organPlace[2] != 0) {
+                        if (organPlace[2] != 0) {
                             onOrganSelected("lungs")
                         }
                     }
@@ -1169,7 +1321,7 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        if(organPlace[3] != 0) {
+                        if (organPlace[3] != 0) {
                             onOrganSelected("intestine")
                         }
                     }
@@ -1181,7 +1333,7 @@ fun Body(myBody: Boolean, organs: List<Organ>, onOrganSelected: (String) -> Unit
                 modifier = Modifier
                     .width(if (myBody) 60.dp else 45.dp)
                     .clickable {
-                        if(organPlace[4] != 0) {
+                        if (organPlace[4] != 0) {
                             onOrganSelected("magic")
                         }
                     }
