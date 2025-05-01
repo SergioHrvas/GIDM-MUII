@@ -8,11 +8,6 @@ from schemas.move import Move
 from utils.db import get_db
 router = APIRouter()
 
-"""
-@router.post("/", response_model=GameResponse)
-def create_new_game(game: GameCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    return create_game(game, current_user.id, db)
-"""
 @router.post("/", response_model=GameResponse)
 def create_new_game(game: GameCreate, db: Session = Depends(get_db)):
     return create_game(game, 1, db)

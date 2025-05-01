@@ -76,8 +76,7 @@ def player_can_steal(db: Session, player_id: int, player_to: int, tipo: OrganTyp
     else:
         return False
 
-def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_infect: str):
-
+def add_virus_to_organ(db: Session, player_to: int, card_tipo: str, organ_to_infect: str):    
     # Buscar el registro del órgano que se va a infectar
     db_organ = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == organ_to_infect).first()
 
@@ -305,9 +304,8 @@ def change_organs(db: Session, player_id, type_from, player_to, type_to):
 
 def remove_virus_to_organ(db: Session, player_id, organtype):
     organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == organtype, or_(Organ.virus == 1, Organ.virus == 2)).first()
-    print("organ: ")
+
     if organ:
-        print(organ)
         organ.virus = 0
 
 
@@ -329,37 +327,78 @@ def can_infect(db: Session, player_id, player_to, organtype):
 
 
 def infect_players(db: Session, player_id, infect):
-    print("Infectando jugadores")
+    done = [True, True, True, True, True]
     if infect.player1 and infect.organ1:
         caninfect = can_infect(db, player_id, infect.player1, infect.organ1)
         if caninfect:
-            add_virus_to_organ(db, infect.player1, infect.organ1, infect.organ1)
-            remove_virus_to_organ(db, player_id, infect.organ1)
+            organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == infect.organ1_from).first()
+            
+            organ_type = organ.tipo
+            if organ.virus == 2:
+                organ_type = OrganType.magic
+                
+            done[0] = add_virus_to_organ(db, infect.player1, organ_type, infect.organ1)
+            if done[0]:
+                remove_virus_to_organ(db, player_id, infect.organ1_from)
+            
             
     if infect.player2 and infect.organ2:
         caninfect = can_infect(db, player_id, infect.player2, infect.organ2)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player2, infect.organ2, infect.organ2)
-            remove_virus_to_organ(db, player_id, infect.organ2)
+            organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == infect.organ2_from).first()
+
+            organ_type = organ.tipo
+            if organ.virus == 2:
+                organ_type = OrganType.magic
+
+            done[1] = add_virus_to_organ(db, infect.player2, organ_type, infect.organ2)
+            if done[1]:
+                remove_virus_to_organ(db, player_id, infect.organ2_from)
 
     if infect.player3 and infect.organ3:
         caninfect = can_infect(db, player_id, infect.player3, infect.organ3)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player3, infect.organ3, infect.organ3)
-            remove_virus_to_organ(db, player_id, infect.organ3)
+            organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == infect.organ3_from).first()
+            organ_type = organ.tipo
+
+            if organ.virus == 2:
+                organ_type = OrganType.magic
+
+            done[2] = add_virus_to_organ(db, infect.player3, organ_type, infect.organ3)
+            if done[2]:
+                remove_virus_to_organ(db, player_id, infect.organ3_from)
 
     if infect.player4 and infect.organ4:
         caninfect = can_infect(db, player_id, infect.player4, infect.organ4)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player4, infect.organ4, infect.organ4)
-            remove_virus_to_organ(db, player_id, infect.organ4)
+            organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == infect.organ4_from).first()
+            organ_type = organ.tipo
+
+            if organ.virus == 2:
+                organ_type = OrganType.magic
+
+            done[3] = add_virus_to_organ(db, infect.player4, organ_type, infect.organ4)
+            if done[3]:
+                remove_virus_to_organ(db, player_id, infect.organ4_from)
 
     if infect.player5 and infect.organ5:
         caninfect = can_infect(db, player_id, infect.player5, infect.organ5)
 
         if caninfect:
-            add_virus_to_organ(db, infect.player5, infect.organ5, infect.organ5)
-            remove_virus_to_organ(db, player_id, infect.organ5)
+            organ = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == infect.organ5_from).first()
+            organ_type = organ.tipo
+
+            if organ.virus == 2:
+                organ_type = OrganType.magic
+
+            done[4] = add_virus_to_organ(db, infect.player5, organ_type, infect.organ5)
+            if done[4]:
+                remove_virus_to_organ(db, player_id, infect.organ5_from)
+
+    if all(done):
+        return True
+    else:
+        return False

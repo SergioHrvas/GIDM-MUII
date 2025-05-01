@@ -29,3 +29,7 @@ class Player(Base):
 
     # Relación con los órganos (cuerpo)
     organs = relationship("Organ", back_populates="player", cascade="all, delete-orphan")
+
+    # Relación con los movimientos
+    moves = relationship("Move", back_populates="player", cascade="all, delete-orphan")
+

@@ -426,7 +426,6 @@ fun GameLayout(
                     onOrganSelected = { organType ->
                         if (gameState.selecting == 2 || gameState.exchanging) {
                             gameState.selectedOrgan = organType
-                            Log.v("SELECTING", organType.toString())
                         }
                     }
                 )
@@ -486,9 +485,6 @@ fun GameDialogs(
         )
     }
 
-    Log.v("aaaabbbbeee", gameState.exchanging.toString())
-
-    Log.v("eeeeebbbbiiii", gameState.selectedOrgan.toString())
     // Diálogo de intercambio
     if (gameState.exchanging && (gameState.selectedOrgan != null)) {
         ExchangeDialog(
@@ -567,7 +563,6 @@ fun CurrentPlayerSection(
             onPlayerChange = {},
             current = true
         )
-        Log.v("inside", selecting.toString() + ""+  exchanging.toString())
         Body(
             myBody = true,
             organs = game.players[currentPlayerIndex].organs,
@@ -964,6 +959,8 @@ fun InfectDialog(
         }
     }
 
+    val organFrom = mutableListOf<String>()
+
     Dialog(onDismissRequest = onCancel) {
         Surface(modifier = Modifier.padding(16.dp)) {
             Column(
@@ -979,7 +976,9 @@ fun InfectDialog(
                 currentPlayer.organs
                     .filter { it.virus == 1 || it.virus == 2 }
                     .forEach { organ ->
+                        organFrom.add(organ.tipo)
                         Column {
+
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.padding(vertical = 8.dp)
@@ -992,6 +991,7 @@ fun InfectDialog(
                                 // Dropdown para seleccionar jugador objetivo
                                 Box(modifier = Modifier.weight(2f)) {
                                     var expanded by remember { mutableStateOf(false) }
+                                    var organ2 by remember { mutableStateOf("") }
                                     val targetPlayerAndOrgans = otherPlayers
                                         .flatMap { player ->
                                             player.organs
@@ -1005,7 +1005,7 @@ fun InfectDialog(
                                         onClick = { expanded = true },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(selections[organ.tipo]?.toString() ?: "Seleccionar jugador")
+                                        Text(if (selections[organ2]?.toString()?.isEmpty() == false) "$organ2 ${selections[organ2]?.toString() }" else "Seleccionar jugador")
                                         Icon(
                                             Icons.Default.ArrowDropDown,
                                             contentDescription = null
@@ -1020,7 +1020,8 @@ fun InfectDialog(
                                             DropdownMenuItem(
                                                 text = { Text("${player.id} ${targetOrgan.tipo}") },
                                                 onClick = {
-                                                    selections[organ.tipo] = player.id
+                                                    organ2 = targetOrgan.tipo
+                                                    selections[targetOrgan.tipo] = player.id
                                                     expanded = false
                                                 }
                                             )
@@ -1057,15 +1058,22 @@ fun InfectDialog(
                             val data = InfectData(
                                 player1 = selectedPairs.getOrNull(0)?.second,
                                 organ1 = selectedPairs.getOrNull(0)?.first,
+                                organ1from = organFrom.getOrNull(0),
                                 player2 = selectedPairs.getOrNull(1)?.second,
                                 organ2 = selectedPairs.getOrNull(1)?.first,
+                                organ2from = organFrom.getOrNull(1),
                                 player3 = selectedPairs.getOrNull(2)?.second,
                                 organ3 = selectedPairs.getOrNull(2)?.first,
+                                organ3from = organFrom.getOrNull(2),
                                 player4 = selectedPairs.getOrNull(3)?.second,
                                 organ4 = selectedPairs.getOrNull(3)?.first,
+                                organ4from = organFrom.getOrNull(3),
                                 player5 = selectedPairs.getOrNull(4)?.second,
-                                organ5 = selectedPairs.getOrNull(4)?.first
+                                organ5 = selectedPairs.getOrNull(4)?.first,
+                                organ5from = organFrom.getOrNull(4),
                             )
+
+                            Log.v("data", data.toString())
                             onConfirm(data)
                         },
                         enabled = selections.values.any { it != null }

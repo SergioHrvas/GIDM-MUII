@@ -24,3 +24,6 @@ class Card(Base):
 
     # Relación inversa con DeckCard
     deck_cards = relationship("DeckCard", back_populates="card")
+
+    # Relación inversa con Move
+    moves = relationship("Move", back_populates="card")

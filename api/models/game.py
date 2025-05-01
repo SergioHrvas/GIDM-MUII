@@ -26,3 +26,6 @@ class Game(Base):
         return [dc.card for dc in self.deck_cards]
     
     players = relationship("Player", back_populates="game", cascade="all, delete-orphan")
+
+    # Relación con Move
+    moves = relationship("Move", back_populates="game", cascade="all, delete-orphan")

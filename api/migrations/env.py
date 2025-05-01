@@ -15,6 +15,7 @@ from models.card import Card  # Asegúrate de importar correctamente el modelo C
 from models.player import Player
 from models.playercard import PlayerCard
 from models.organ import Organ
+from models.move import Move
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

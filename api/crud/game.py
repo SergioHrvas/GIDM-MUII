@@ -8,6 +8,8 @@ from models.card import Card
 from schemas.game import GameCreate
 from datetime import datetime
 from schemas.move import Move
+from models.move import Move as MoveModel
+
 import numpy as np
 from crud.playercard import remove_card_from_player, discard_my_cards, discard_cards
 from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, player_has_organ_to_cure_infect, steal_card, change_body, change_organs, infect_players
@@ -79,12 +81,25 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         # Añadimos las nuevas cartas del mazo
         steal_to_deck(db, game, player_id, len(move.discards))
 
+        # Creamos el movimiento
+        db_move = MoveModel(
+            player_id=player_id,
+            game_id=game_id,
+            date=datetime.now(),
+            action="discard",
+            data=move.discards
+        )
+        db.add(db_move)
+        db.commit()
+        db.refresh(db_move)
+
     elif move.action == "card":
         # Hacemos el movimiento
         if card.tipo == "organ":
             has_organ = player_has_organ(db, player_id, card.organ_type)
             if has_organ == False:
                 done = add_organ_to_player(db, player_id, card.organ_type)
+                    
         if card.tipo == "virus":
             has_organ = player_has_organ_to_cure_infect(db, move.infect.player1, card.organ_type)
             if has_organ == True:
@@ -93,6 +108,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             has_organ = player_has_organ_to_cure_infect(db, player_id, card.organ_type)
             if has_organ == True:
                 done = add_cure_to_organ(db, player_id, card.organ_type, move.infect.organ1)
+                    
         elif card.tipo == "action":
             if card.name == "Steal Organ":
                 can_steal = player_can_steal(db, player_id, move.infect.player1, move.infect.organ1)
@@ -104,8 +120,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 done = True
                 
             elif card.name == "Infect Player":
-                infect_players(db, player_id, move.infect)
-                done = True
+                done = infect_players(db, player_id, move.infect)
                 
             elif card.name == "Exchange Card":
                 done = change_organs(db, player_id, move.organ_to_pass, move.infect.player1, move.infect.organ1)
@@ -113,6 +128,8 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             elif card.name == "Discard Cards":
                 discard_cards(db, game_id, player_id)
                 done = True
+
+
         
         if done:
             remove_card_from_player(db, player_id, move.card)
@@ -125,6 +142,19 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         done = False
 
     if done:
+        # Creamos el movimiento
+        db_move = MoveModel(
+            player_id=player_id,
+            game_id=game_id,
+            card_id=move.card,
+            date=datetime.now(),
+            action="card",
+            data=move.infect.dict() if move.infect else None
+        )
+        db.add(db_move)
+        db.commit()
+        db.refresh(db_move)
+
         # Pasamos el turno al siguiente jugador
         game.num_turns+=1
         num_turns = len(game.turns)
@@ -157,7 +187,7 @@ def get_player_games(id_user: int, db:Session):
     # Obtenemos los jugadores del usuario
     games = db.query(Game).join(Player, Game.players).filter(Player.user_id == id_user).all()
 
-    return games
+    return gamesps
 
 
 
