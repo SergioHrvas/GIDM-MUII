@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, DateTime
 from sqlalchemy.types import Enum as SQLAlchemyEnum
 from database import Base
 from schemas.status import StatusEnum
@@ -16,6 +16,8 @@ class Game(Base):
     turns = Column(JSONB)
     winner = Column(Integer)
     date = Column(DateTime)
+
+    multiplayer = Column(Boolean, nullable=False)    
 
     # Relación con DeckCard
     deck_cards = relationship("DeckCard", back_populates="game", cascade="all, delete-orphan")

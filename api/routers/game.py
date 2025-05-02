@@ -3,14 +3,14 @@ from sqlalchemy.orm import Session
 from utils.auth import get_current_user
 from database import SessionLocal, init_db
 from crud.game import get_game, create_game, do_move_game, get_player_games
-from schemas.game import GameCreate, GameResponse
+from schemas.game import GameBase, GameResponse
 from schemas.move import Move
 from utils.db import get_db
 router = APIRouter()
 
 @router.post("/", response_model=GameResponse)
-def create_new_game(game: GameCreate, db: Session = Depends(get_db)):
-    return create_game(game, 1, db)
+def create_new_game(game: GameBase, current_user: int = Depends(get_current_user),db: Session = Depends(get_db)):
+    return create_game(game, current_user.id, db)
 
 @router.get("/my-games", response_model=list[GameResponse])
 def get_my_games(current_user: int = Depends(get_current_user), db: Session = Depends(get_db)):

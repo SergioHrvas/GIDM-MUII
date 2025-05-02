@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
+from models.user import User
 from schemas.status import StatusEnum
 from models.organ import Organ
 from models.game import Game
 from models.player import Player
 from models.deckcard import DeckCard
 from models.card import Card
-from schemas.game import GameCreate
+from schemas.game import GameBase
 from datetime import datetime
 from schemas.move import Move
 from models.move import Move as MoveModel
@@ -16,7 +17,7 @@ from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, 
 from crud.deckcard import initialize_deck, steal_to_deck
 import random
 
-def create_game(game: GameCreate, current_user: int, db: Session):
+def create_game(game: GameBase, current_user: int, db: Session):
     if(len(game.players) <= 0):
         return "Error"
     db_game = Game(
@@ -25,16 +26,25 @@ def create_game(game: GameCreate, current_user: int, db: Session):
         turns=0,
         turn=0,
         num_turns=0,
-        date=datetime.now()  
+        date=datetime.now(),
+        multiplayer=game.multiplayer
     )
     db.add(db_game)
     db.commit()
     db.refresh(db_game)
     
     players = []
+    
     # Creamos players
     for i in range(len(game.players)):  
-        db_player = Player(name=game.players[i], game_id=db_game.id, user_id=current_user)
+        if game.multiplayer:
+            db_user = db.query(User).filter(User.id == int(game.players[i])).first()
+            if db_user is None:
+                return "Error"            
+            db_player = Player(name=db_user.username, game_id=db_game.id, user_id=int(game.players[i]))
+        else:
+            db_player = Player(name=game.players[i], game_id=db_game.id, user_id=current_user)
+
         db.add(db_player)
         db.commit()
         db.refresh(db_player) 

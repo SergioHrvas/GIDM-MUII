@@ -13,12 +13,8 @@ class CardBase(BaseModel):
 
 
 class GameBase(BaseModel):
-    status: StatusEnum
-    date: datetime
-    
-class GameCreate(GameBase):
     players: List[str]
-    pass
+    multiplayer: bool = False
 
 class GameResponse(GameBase):
     id: int
@@ -27,6 +23,7 @@ class GameResponse(GameBase):
     turns: List[int]  # Para el campo JSONB
     winner: Optional[int] = None
     cards: List[CardBase] = Field(default_factory=list)  # Campo calculado
+    multiplayer: bool = False
 
     @model_validator(mode='after')
     def compute_cards(self) -> 'GameResponse':
