@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.pandemiagame.org.data.remote.GameRequest
 import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.RetrofitClient
+import com.pandemiagame.org.data.remote.User
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.screens.MAX_PLAYERS
 import kotlinx.coroutines.launch
@@ -47,6 +48,12 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
     private val _gameCreationStatus = MutableLiveData<Boolean>()
     val gameCreationStatus: LiveData<Boolean> = _gameCreationStatus
 
+    private val _users = MutableLiveData<List<User>>()
+    val users: LiveData<List<User>> = _users
+
+    private var _multiplayer = MutableLiveData<Boolean>()
+    val multiplayer : LiveData<Boolean> = _multiplayer
+
     private val _playerNames = mutableStateListOf<String>().apply {
         addAll(listOf("", ""))
     }
@@ -56,19 +63,35 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
 
     private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
 
+    fun getUsers() {
 
-    fun createGame() {
+        viewModelScope.launch {
+            try {
+
+                var token = "Bearer " + tokenManager.getToken()
+
+                val response = RetrofitClient.instance.getUsers(token)
+
+                _users.value = response
+
+            } catch (e: Exception) {
+                // Manejar error
+                Log.v("Error", e.toString())
+            }
+        }
+    }
+
+
+    fun createGame(mp: Boolean) {
         viewModelScope.launch {
             _isLoading.value = true
 
-            println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             try {
                 val gameRequest = GameRequest(
                     status = "pending",
-                    date = getCurrentDateTimeLegacy(),
+                    multiplayer = mp,
                     players = _playerNames
                 )
-
 
                 var token = "Bearer " + tokenManager.getToken()
                 val response = RetrofitClient.instance.createGame(token, gameRequest)
@@ -102,14 +125,12 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
     fun onNameChanged(name: String, i: Int){
         _playerNames[i] = name
         _buttonEnable.value = (_playerNames.size > 1) && (_playerNames[0].isNotEmpty() == true) && (_playerNames[1].isNotEmpty() == true)
-        println(_playerNames[0])
-        println(_playerNames[1])
     }
 
     fun onButtonSelected() {
         viewModelScope.launch {
             _isLoading.value = true
-            createGame()
+            createGame(multiplayer.value == true)
             _isLoading.value = false
         }
     }
@@ -124,5 +145,9 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
         if(i>=0 && (i < _playerNames.size.toInt())){
             _playerNames.removeAt(i)
         }
+    }
+
+    fun changeMultiplayer (){
+        _multiplayer.value = multiplayer.value != true
     }
 }

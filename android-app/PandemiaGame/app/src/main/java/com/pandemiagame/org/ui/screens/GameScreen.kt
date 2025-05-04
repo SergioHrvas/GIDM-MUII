@@ -312,7 +312,8 @@ private fun createEmptyGame(): GameResponse {
                 ),
                 organs = listOf()
             )
-        )
+        ),
+        multiplayer = false
     )
 }
 

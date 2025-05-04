@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,10 +20,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,7 +41,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,6 +59,7 @@ import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
 import kotlinx.coroutines.launch
+import kotlin.collections.set
 
 const val MAX_PLAYERS = 5
 
@@ -78,7 +88,11 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
     val coroutine = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
+    val multiplayer: Boolean by viewModel.multiplayer.observeAsState(initial=false)
 
+    LaunchedEffect(Unit) {
+        viewModel.getUsers()
+    }
     // Llamamos al estado de la creación del juego
     val gameCreationStatus by viewModel.gameCreationStatus.observeAsState(false)
 
@@ -90,6 +104,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         } else {
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -99,10 +114,24 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                    .verticalScroll(scrollState), // Hace scrollable el contenido
+                        .verticalScroll(scrollState), // Hace scrollable el contenido
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Botón para añadir jugador (disabled cuando se alcanza el máximo)
+                    IconButton(
+                        onClick = { viewModel.changeMultiplayer() },
+                    ) {
+                        if(!multiplayer)Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            contentDescription = null
+                        )
+                        else
+                            Icon(
+                                Icons.Default.KeyboardArrowLeft,
+                                contentDescription = null
+                            )
+                    }
                     Image(
                         painter = painterResource(id = R.drawable.login), // Nombre sin extensión
                         contentDescription = "Icono vectorial",
@@ -126,14 +155,43 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                         .padding(vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ){
-                                    TextField(
+                                    if(!multiplayer)TextField(
                                         value = viewModel.playerNames.getOrElse(index) { "" },
                                         onValueChange = { newName -> viewModel.onNameChanged(newName, index) },
                                         label = { Text("Jugador ${index + 1}") },
                                         modifier = Modifier
                                             .weight(1f)  // Ocupa todo el espacio disponible
                                             .padding(end = 8.dp)  // Espacio entre TextField y Button
-                                    )//                                    )
+                                    )
+                                    else {
+                                        var expanded by remember { mutableStateOf(false) }
+
+                                        OutlinedButton(
+                                            onClick = { expanded = true},
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(if (viewModel.playerNames[index].toString().isEmpty() == false) viewModel.playerNames[index] else " --- ")
+                                            Icon(
+                                                Icons.Default.ArrowDropDown,
+                                                contentDescription = null
+                                            )
+                                        }
+
+                                        DropdownMenu(
+                                            expanded = expanded,
+                                            onDismissRequest = { expanded = false }
+                                        ) {
+                                            viewModel.users.value?.forEach { user ->
+                                                DropdownMenuItem(
+                                                    text = { Text("${user.id} - ${user.username}") },
+                                                    onClick = {
+                                                        viewModel.onNameChanged(user.id.toString(), index)
+                                                        expanded = false
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
                                     IconButton(
                                         modifier = Modifier.size(48.dp),
                                         onClick = { viewModel.removePlayer(index) },

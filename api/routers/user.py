@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from models.user import User
 from utils.auth import get_current_user
 from database import SessionLocal, init_db
 from crud.user import get_user, create_user, login
@@ -12,6 +13,17 @@ router = APIRouter()
 @router.post("/", response_model=UserResponse)
 def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db, user)
+
+
+@router.get("/users", response_model=list[UserResponse])
+def read_all_users(db: Session = Depends(get_db)):
+    print("Reading all users")
+    db_users = db.query(User).all()
+    print(db_users)
+    if db_users is None:
+        raise HTTPException(status_code=404, detail="Users not found")
+    return db_users
+
 
 @router.get("/{user_id}", response_model=UserResponse)
 def read_user(user_id: int, db: Session = Depends(get_db), current_user: UserBase = Depends(get_current_user)):

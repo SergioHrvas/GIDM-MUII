@@ -6,10 +6,10 @@ import java.util.Date
 
 data class LoginResponse(val access_token: String)
 
-data class User(val id: Int, val name: String, val email: String)
+data class User(val id: Int, val username: String, val email: String)
 data class Post(val userId: Int, val title: String, val body: String)
 
-data class GameRequest(val players: List<String>, val status: String, val date: String = Date().toString())
+data class GameRequest(val players: List<String>, val status: String, val multiplayer: Boolean)
 
 // Modelo principal del juego
 data class GameResponse(
@@ -21,8 +21,8 @@ data class GameResponse(
     @SerializedName("turns") val turns: List<Int>,
     @SerializedName("winner") val winner: Int,
     @SerializedName("cards") val cards: List<Card>,
-    @SerializedName("players") val players: List<Player>
-)
+    @SerializedName("players") val players: List<Player>,
+    @SerializedName("multiplayer") val multiplayer: Boolean)
 
 // Modelo de Carta
 data class Card(
@@ -92,8 +92,8 @@ interface ApiService {
     @GET("game/my-games")
     suspend fun getMyGames(@Header("Authorization") auth: String): List<GameResponse>
 
-    @GET("users")
-    suspend fun getUsers(): List<User>
+    @GET("user/users")
+    suspend fun getUsers(@Header("Authorization") auth: String): List<User>
 
     @POST("posts")
     suspend fun createPost(@Body post: Post): Post
