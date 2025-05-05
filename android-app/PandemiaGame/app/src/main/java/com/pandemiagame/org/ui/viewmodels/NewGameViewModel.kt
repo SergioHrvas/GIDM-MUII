@@ -54,10 +54,15 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
     private var _multiplayer = MutableLiveData<Boolean>()
     val multiplayer : LiveData<Boolean> = _multiplayer
 
+    private val _players = mutableStateListOf<String>().apply {
+        addAll(listOf("", ""))
+    }
+
     private val _playerNames = mutableStateListOf<String>().apply {
         addAll(listOf("", ""))
     }
 
+    val players: List<String> = _players
     val playerNames: List<String> = _playerNames
 
 
@@ -90,7 +95,7 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
                 val gameRequest = GameRequest(
                     status = "pending",
                     multiplayer = mp,
-                    players = _playerNames
+                    players = _players
                 )
 
                 var token = "Bearer " + tokenManager.getToken()
@@ -122,9 +127,11 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
         _gameCreationStatus.value = false
     }
 
-    fun onNameChanged(name: String, i: Int){
-        _playerNames[i] = name
-        _buttonEnable.value = (_playerNames.size > 1) && (_playerNames[0].isNotEmpty() == true) && (_playerNames[1].isNotEmpty() == true)
+    fun onNameChanged(id: String, i: Int, name:String = ""){
+        _players[i] = id
+        if (multiplayer.value == true)
+            _playerNames[i] = name
+        _buttonEnable.value = (_players.size > 1) && (_players[0].isNotEmpty() == true) && (_players[1].isNotEmpty() == true)
     }
 
     fun onButtonSelected() {
@@ -136,18 +143,31 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
     }
 
     fun addPlayer() {
-        if ( _playerNames.size.toInt() < MAX_PLAYERS) {
-            _playerNames.add("")
+        if ( _players.size.toInt() < MAX_PLAYERS) {
+            _players.add("")
+            if(multiplayer.value == true){
+                _playerNames.add("")
+            }
         }
     }
 
     fun removePlayer(i: Int) {
-        if(i>=0 && (i < _playerNames.size.toInt())){
-            _playerNames.removeAt(i)
+        if(i>=0 && (i < _players.size.toInt())){
+            _players.removeAt(i)
+            if(multiplayer.value == true){
+                _playerNames.removeAt(i)
+            }
         }
     }
 
     fun changeMultiplayer (){
         _multiplayer.value = multiplayer.value != true
+        _players.clear()
+        _playerNames.clear()
+
+        _players.add("")
+        _players.add("")
+        _playerNames.add("")
+        _playerNames.add("")
     }
 }

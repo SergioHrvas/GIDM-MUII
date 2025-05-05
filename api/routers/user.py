@@ -17,9 +17,7 @@ def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.get("/users", response_model=list[UserResponse])
 def read_all_users(db: Session = Depends(get_db)):
-    print("Reading all users")
     db_users = db.query(User).all()
-    print(db_users)
     if db_users is None:
         raise HTTPException(status_code=404, detail="Users not found")
     return db_users

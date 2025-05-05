@@ -90,6 +90,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
 
     val multiplayer: Boolean by viewModel.multiplayer.observeAsState(initial=false)
 
+
     LaunchedEffect(Unit) {
         viewModel.getUsers()
     }
@@ -148,7 +149,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                             .padding(16.dp)
                     ) {
                         Column {
-                            repeat(viewModel.playerNames.size) { index ->
+                            repeat(viewModel.players.size) { index ->
                                 Row (
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -156,7 +157,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                     verticalAlignment = Alignment.CenterVertically
                                 ){
                                     if(!multiplayer)TextField(
-                                        value = viewModel.playerNames.getOrElse(index) { "" },
+                                        value = viewModel.players.getOrElse(index) { "" },
                                         onValueChange = { newName -> viewModel.onNameChanged(newName, index) },
                                         label = { Text("Jugador ${index + 1}") },
                                         modifier = Modifier
@@ -168,9 +169,11 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
 
                                         OutlinedButton(
                                             onClick = { expanded = true},
-                                            modifier = Modifier.fillMaxWidth()
+                                            modifier = Modifier
+                                                .weight(1f)  // Ocupa todo el espacio disponible
+                                                .padding(end = 8.dp)  // Espacio entre TextField y Button
                                         ) {
-                                            Text(if (viewModel.playerNames[index].toString().isEmpty() == false) viewModel.playerNames[index] else " --- ")
+                                            Text(if (viewModel.players[index].toString().isEmpty() == false) viewModel.playerNames[index] else " --- ")
                                             Icon(
                                                 Icons.Default.ArrowDropDown,
                                                 contentDescription = null
@@ -185,7 +188,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                                 DropdownMenuItem(
                                                     text = { Text("${user.id} - ${user.username}") },
                                                     onClick = {
-                                                        viewModel.onNameChanged(user.id.toString(), index)
+                                                        viewModel.onNameChanged(user.id.toString(), index, user.username)
                                                         expanded = false
                                                     }
                                                 )
@@ -195,7 +198,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                     IconButton(
                                         modifier = Modifier.size(48.dp),
                                         onClick = { viewModel.removePlayer(index) },
-                                        enabled = (viewModel.playerNames.size - 1) > 1
+                                        enabled = (viewModel.players.size - 1) > 1
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
@@ -209,7 +212,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                             Row{
                                 // Contador de jugadores
                                 Text(
-                                    text = "${viewModel.playerNames.size} Jugador${if (viewModel.playerNames.size != 1) "es" else ""}",
+                                    text = "${viewModel.players.size} Jugador${if (viewModel.players.size != 1) "es" else ""}",
                                     style = MaterialTheme.typography.titleMedium,
                                     modifier = Modifier.padding(horizontal = 16.dp)
                                 )
@@ -217,7 +220,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                 // Botón para añadir jugador (disabled cuando se alcanza el máximo)
                                 IconButton(
                                     onClick = { viewModel.addPlayer() },
-                                    enabled = (viewModel.playerNames.size < MAX_PLAYERS)
+                                    enabled = (viewModel.players.size < MAX_PLAYERS)
                                 ) {
                                     Icon(
                                         Icons.Default.Add,
