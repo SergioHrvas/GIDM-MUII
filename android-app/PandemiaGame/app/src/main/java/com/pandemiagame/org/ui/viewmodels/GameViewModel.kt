@@ -50,7 +50,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun doMove(index_card: Int, playerSelected: Int = -1, organ: String = "") {
+    fun doMove(index_card: Int, playerSelected: Int = -1, organ: String = "", currentTurn: Int? = -1) {
         viewModelScope.launch {
             try {
                 var token = "Bearer " + tokenManager.getToken()
@@ -82,7 +82,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
-                    game.value?.turn ?: 0, move)
+                    currentTurn ?: 0, move)
 
                 if(_game.value?.turn != response.turn){
                     _changingTurn.value = true
@@ -96,7 +96,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun doMoveInfect(index_card: Int, infectData: InfectData) {
+    fun doMoveInfect(index_card: Int, infectData: InfectData, currentTurn: Int = -1) {
         viewModelScope.launch {
             try {
                 var token = "Bearer " + tokenManager.getToken()
@@ -121,7 +121,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 )
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
-                    game.value?.turn ?: 0, move)
+                    currentTurn, move)
                 Log.v("BEFORE", _game.value.toString())
 
                 if(_game.value?.turn != response.turn){
@@ -138,7 +138,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
     }
 
 
-    fun doMoveExchange(index_card: Int, organToPass: String, infectData: InfectData) {
+    fun doMoveExchange(index_card: Int, organToPass: String, infectData: InfectData, currentTurn: Int = -1) {
         viewModelScope.launch {
             try {
                 var token = "Bearer " + tokenManager.getToken()
@@ -164,7 +164,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 )
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
-                    game.value?.turn ?: 0, move)
+                    currentTurn, move)
                 Log.v("BEFORE", _game.value.toString())
 
                 if(_game.value?.turn != response.turn){
@@ -179,7 +179,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
             }
         }
     }
-    fun discardCards(cards: List<Int>) {
+    fun discardCards(cards: List<Int>, currentTurn: Int = -1) {
         viewModelScope.launch {
             try {
                 var token = "Bearer " + tokenManager.getToken()
@@ -191,7 +191,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 )
 
                 val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
-                    game.value?.turn ?: 0, move)
+                    currentTurn, move)
 
                 _game.value = response
 

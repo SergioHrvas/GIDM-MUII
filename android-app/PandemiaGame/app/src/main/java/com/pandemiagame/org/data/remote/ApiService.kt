@@ -39,7 +39,8 @@ data class Player(
     @SerializedName("game_id") val gameId: Int,
     @SerializedName("id") val id: Int,
     @SerializedName("cards") val playerCards: List<CardWrapper>,
-    @SerializedName("organs") val organs: List<Organ>
+    @SerializedName("organs") val organs: List<Organ>,
+    @SerializedName("user") val user: User? = null
 )
 
 data class Organ(

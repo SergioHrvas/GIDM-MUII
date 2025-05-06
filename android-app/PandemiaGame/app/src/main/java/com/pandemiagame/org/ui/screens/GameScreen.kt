@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -64,15 +65,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.google.gson.Gson
 import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.Card
 import com.pandemiagame.org.data.remote.CardWrapper
 import com.pandemiagame.org.data.remote.InfectData
 import com.pandemiagame.org.data.remote.Player
+import com.pandemiagame.org.data.remote.User
 
 @Preview
 @Composable
@@ -124,11 +128,31 @@ fun rememberGameState(viewModel: GameViewModel): GameState {
     val gameResponse by viewModel.game.observeAsState()
     val changingTurn by viewModel.changingTurn.observeAsState()
 
+    val context = LocalContext.current
+
+    val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
+    val userJson = sharedPref.getString("user", null)
+    var user: User? = null
+    if(gameResponse?.multiplayer == true) {
+        if (userJson != null) {
+            user = Gson().fromJson(userJson, User::class.java)
+
+            Log.v("USER_RECUPERADO", user.toString())
+        } else {
+            Log.e("USER", "No se encontró usuario en SharedPreferences")
+        }
+    }
+
     // Calculamos estados derivados
     val winner = remember(gameResponse) { gameResponse?.winner }
     val currentPlayerIndex = remember(gameResponse) {
-        gameResponse?.players?.indexOfFirst { it.id == gameResponse?.turn } ?: 0
+        if(gameResponse?.multiplayer == false)
+            gameResponse?.players?.indexOfFirst { it.id == gameResponse?.turn } ?: 0
+        else{
+            gameResponse?.players?.indexOfFirst { it.user?.id == user?.id } ?: 0
+        }
     }
+
 
     // Calculamos otherPlayerIndex directamente basado en currentPlayerIndex
     val otherPlayerIndex = remember(currentPlayerIndex, gameResponse) {
@@ -241,7 +265,7 @@ fun GameEffects(
     LaunchedEffect(gameState.selectedOrgan) {
         gameState.selectedOrgan?.let { organType ->
             if (gameState.selecting > 0) {
-                viewModel.doMove(gameState.selectedCard, gameState.otherPlayerIndex, organType)
+                viewModel.doMove(gameState.selectedCard, gameState.otherPlayerIndex, organType, currentTurn = gameResponse?.players?.getOrNull(gameState.currentPlayerIndex)?.id)
                 gameState.selecting = 0
                 gameState.selectedOrgan = null
             }
@@ -251,7 +275,7 @@ fun GameEffects(
     // Efecto para manejar el cambio de cuerpo
     LaunchedEffect(gameState.readyToChange) {
         if (gameState.readyToChange) {
-            viewModel.doMove(gameState.selectedCard, gameState.otherPlayerIndex)
+            viewModel.doMove(gameState.selectedCard, gameState.otherPlayerIndex, currentTurn = gameResponse?.players?.getOrNull(gameState.currentPlayerIndex)?.id)
             gameState.readyToChange = false
         }
     }
@@ -381,7 +405,7 @@ fun GameLayout(
                             }
                         }
                         if (gameState.winner == 0) {
-                            viewModel.discardCards(idDiscards)
+                            viewModel.discardCards(idDiscards, currentTurn = game.players[gameState.currentPlayerIndex].id)
                             viewModel.setChangingTurn(true)
                         }
                     }
@@ -456,7 +480,7 @@ fun GameDialogs(
     // Diálogo de cambio de turno
     if ((gameState.changingTurn == true) && (gameState.winner != null)) {
         TurnChangeDialog(
-            playerName = game.players[gameState.currentPlayerIndex].name,
+            playerName = game.players[game.players.indexOfFirst{ it.id == game.turn}].name,
             onDismiss = { viewModel.setChangingTurn(false) }
         )
     }
@@ -480,7 +504,7 @@ fun GameDialogs(
             otherPlayers = game.players.filter { it.id != game.players[gameState.currentPlayerIndex].id },
             onConfirm = { infectData ->
                 gameState.infecting = false
-                viewModel.doMoveInfect(gameState.selectedCard, infectData = infectData)
+                viewModel.doMoveInfect(gameState.selectedCard, infectData = infectData, currentTurn = game.players[gameState.currentPlayerIndex].id)
             },
             onCancel = { gameState.infecting = false }
         )
@@ -501,7 +525,8 @@ fun GameDialogs(
                 viewModel.doMoveExchange(
                     gameState.selectedCard,
                     gameState.selectedOrgan!!,
-                    infectData = data
+                    infectData = data,
+                    currentTurn = game.players[gameState.currentPlayerIndex].id
                 )
                 gameState.exchanging = false
                 gameState.selectedOrgan = null
@@ -526,7 +551,8 @@ fun OpponentPlayerSection(
             player = game.players[otherPlayerIndex],
             showChangeButton = game.players.size > 2,
             onPlayerChange = onPlayerChange,
-            current = false
+            current = false,
+            multiplayer = (game.multiplayer && game.players[otherPlayerIndex].id == game.turn)
         )
 
         Body(
@@ -562,7 +588,8 @@ fun CurrentPlayerSection(
             player = game.players[currentPlayerIndex],
             showChangeButton = false,
             onPlayerChange = {},
-            current = true
+            current = true,
+            multiplayer = (game.multiplayer && game.players[currentPlayerIndex].id == game.turn)
         )
         Body(
             myBody = true,
@@ -596,7 +623,8 @@ fun PlayerHeader(
     player: Player,
     showChangeButton: Boolean,
     onPlayerChange: () -> Unit,
-    current: Boolean
+    current: Boolean,
+    multiplayer: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -618,7 +646,12 @@ fun PlayerHeader(
                 modifier = Modifier.clickable(onClick = onPlayerChange)
             )
         }
-
+        if(multiplayer)
+            Icon(
+                painter = painterResource((R.drawable.baseline_star_24)),
+                contentDescription = "TURNO",
+                tint = Color(0xFFFFA500)
+            )
         Text(
             text = player.name,
             modifier = Modifier.padding(end = 20.dp)
@@ -774,7 +807,7 @@ private fun handleCardSelection(
             "organ" -> {
                 gameState.selecting = 0
                 if(game.winner == 0) {
-                    viewModel.doMove(cardIndex)
+                    viewModel.doMove(cardIndex, currentTurn = game.players[gameState.currentPlayerIndex].id)
                 }
             }
             "virus" -> {
@@ -808,7 +841,8 @@ private fun handleActionCard(
             gameState.selecting = 1
         }
         "Discard Cards" -> {
-            viewModel.doMove(cardIndex)
+            viewModel.doMove(cardIndex, currentTurn = game.players[gameState.currentPlayerIndex].id
+            )
         }
         "Infect Player" -> {
             gameState.infecting = true

@@ -3,6 +3,8 @@ from typing import List, Dict, Any, Optional
 from enum import Enum
 from pydantic.fields import Field
 
+from schemas.user import UserBase
+
 
 
 class CardBase(BaseModel):
@@ -40,6 +42,7 @@ class PlayerResponse(PlayerBase):
     id: int  # El ID es obligatorio en la respuesta
     cards: List[PlayerCard]
     organs: List[OrganCard]
+    user: Optional[UserBase] = None  # ID del usuario (opcional)
     
     class Config:
         from_attributes = True  # Permite mapear desde SQLAlchemy

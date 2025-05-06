@@ -22,6 +22,7 @@ def get_game_by_id(game_id: int, db: Session = Depends(get_db)):
     game = get_game(game_id, db)
     if game is None:
         raise HTTPException(status_code=404, detail="Game not found")
+    print(game)
     return game
 
 @router.post("/{game_id}/move", response_model=GameResponse)

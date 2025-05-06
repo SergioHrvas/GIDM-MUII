@@ -96,6 +96,19 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
     val context = LocalContext.current  // Obtén el contexto actual
 
 
+    val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
+    val userJson = sharedPref.getString("user", null)
+    var user: User? = null
+    if(multiplayer) {
+        if (userJson != null) {
+            user = Gson().fromJson(userJson, User::class.java)
+
+            viewModel.onNameChanged(user.id.toString(), 0, user.username)
+        } else {
+            Log.e("USER", "No se encontró usuario en SharedPreferences")
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.getUsers()
     }
@@ -171,23 +184,10 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                     )
                                     else {
                                         var expanded by remember { mutableStateOf(false) }
-                                        val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
-                                        val userJson = sharedPref.getString("user", null)
-                                        var user: User? = null
-                                        if (userJson != null) {
-                                            user = Gson().fromJson(userJson, User::class.java)
-
-                                            viewModel.onNameChanged(user.id.toString(), 0, user.username)
-                                            Log.v("USER_RECUPERADO", user.toString())
-                                        } else {
-                                            Log.e("USER", "No se encontró usuario en SharedPreferences")
-                                        }
-
 
 
                                         OutlinedButton(
-                                            onClick = { println(index)
-                                                println(user.toString())
+                                            onClick = {
                                                 if((user == null) || (index != 0)) {expanded = true}},
                                             modifier = Modifier
                                                 .weight(1f)  // Ocupa todo el espacio disponible
