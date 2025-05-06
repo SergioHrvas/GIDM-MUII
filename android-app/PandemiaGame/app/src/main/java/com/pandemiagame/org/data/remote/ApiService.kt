@@ -4,10 +4,9 @@ import com.google.gson.annotations.SerializedName
 import retrofit2.http.*
 import java.util.Date
 
-data class LoginResponse(val access_token: String)
+data class LoginResponse(val access_token: String, val user: User)
 
 data class User(val id: Int, val username: String, val email: String)
-data class Post(val userId: Int, val title: String, val body: String)
 
 data class GameRequest(val players: List<String>, val status: String, val multiplayer: Boolean)
 
@@ -42,7 +41,7 @@ data class Player(
     @SerializedName("cards") val playerCards: List<CardWrapper>,
     @SerializedName("organs") val organs: List<Organ>
 )
-// Órganos del jugador (ajusta según tu implementación real)
+
 data class Organ(
     @SerializedName("tipo") val tipo: String,
     @SerializedName("virus") val virus: Int,
@@ -50,7 +49,6 @@ data class Organ(
     @SerializedName("magic_organ") val magic_organ: Int
 )
 
-// Modelo de movimiento
 data class Move(
     @SerializedName("action") val action: String,
     @SerializedName("card") val card: Int? = null,
@@ -85,7 +83,6 @@ interface ApiService {
                       @Field("password") password: String,
                       @Field("grant_type") grant_type: String = "password"): LoginResponse
 
-
     @POST("game")
     suspend fun createGame(@Header("Authorization") auth: String, @Body req: GameRequest): GameResponse
 
@@ -94,9 +91,6 @@ interface ApiService {
 
     @GET("user/users")
     suspend fun getUsers(@Header("Authorization") auth: String): List<User>
-
-    @POST("posts")
-    suspend fun createPost(@Body post: Post): Post
 
     @GET("game/{game_id}")
     suspend fun getGame(@Header("Authorization") auth: String, @Path("game_id") gameId: Int): GameResponse

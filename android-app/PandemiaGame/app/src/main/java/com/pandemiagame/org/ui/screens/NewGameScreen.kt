@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -49,12 +50,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.gson.Gson
 import com.pandemiagame.org.R
+import com.pandemiagame.org.data.remote.User
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
@@ -89,6 +93,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
     val scrollState = rememberScrollState()
 
     val multiplayer: Boolean by viewModel.multiplayer.observeAsState(initial=false)
+    val context = LocalContext.current  // Obtén el contexto actual
 
 
     LaunchedEffect(Unit) {
@@ -166,9 +171,24 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                     )
                                     else {
                                         var expanded by remember { mutableStateOf(false) }
+                                        val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
+                                        val userJson = sharedPref.getString("user", null)
+                                        var user: User? = null
+                                        if (userJson != null) {
+                                            user = Gson().fromJson(userJson, User::class.java)
+
+                                            viewModel.onNameChanged(user.id.toString(), 0, user.username)
+                                            Log.v("USER_RECUPERADO", user.toString())
+                                        } else {
+                                            Log.e("USER", "No se encontró usuario en SharedPreferences")
+                                        }
+
+
 
                                         OutlinedButton(
-                                            onClick = { expanded = true},
+                                            onClick = { println(index)
+                                                println(user.toString())
+                                                if((user == null) || (index != 0)) {expanded = true}},
                                             modifier = Modifier
                                                 .weight(1f)  // Ocupa todo el espacio disponible
                                                 .padding(end = 8.dp)  // Espacio entre TextField y Button

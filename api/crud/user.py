@@ -21,6 +21,7 @@ def get_user(db: Session, id: int):
 def login(db: Session, user: UserBase):
     usuario = get_user_by_email(db, user.email)
 
+
     if not usuario:
         return None
     else:
@@ -30,7 +31,8 @@ def login(db: Session, user: UserBase):
             access_token = create_access_token({"sub": usuario.username, "email": user.email})
             return {
                 "access_token": access_token,
-                "token_type": "bearer"
+                "token_type": "bearer",
+                "user": usuario
             }
         else:
             return None

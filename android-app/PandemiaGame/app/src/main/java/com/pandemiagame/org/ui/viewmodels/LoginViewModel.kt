@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,12 @@ class LoginViewModel : ViewModel(){
         return withContext(Dispatchers.IO) {  // Ejecutar en hilo de fondo
             try {
                 val response = RetrofitClient.instance.login(email, password, "password")
+
+                val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
+                with(sharedPref.edit()) {
+                    putString("user", Gson().toJson(response.user))
+                    apply()
+                }
 
                 if (response.access_token.isNotEmpty()) {
                     val tm = TokenManager(context);

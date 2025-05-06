@@ -23,6 +23,7 @@ class UserResponse(UserBase):
 class AuthResponse(BaseModel):
     access_token: str
     token_type: str
+    user: UserResponse
 
 class TokenUser(BaseModel):
     email: Optional[str] = None
