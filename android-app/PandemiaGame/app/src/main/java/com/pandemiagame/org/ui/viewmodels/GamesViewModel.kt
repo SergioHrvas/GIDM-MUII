@@ -27,6 +27,9 @@ class GamesViewModel(private val context: Context) : ViewModel() {
     private val _gamesList = MutableLiveData<List<GameResponse>>()
     val gamesList: LiveData<List<GameResponse>> = _gamesList
 
+    private val _gamesListDisplayed = MutableLiveData<List<GameResponse>>()
+    val gamesListDisplayed: LiveData<List<GameResponse>> = _gamesListDisplayed
+
     private val _navegarADetalle = MutableLiveData<GameResponse?>(null)
     val navegarADetalle: LiveData<GameResponse?> = _navegarADetalle
 
@@ -37,22 +40,20 @@ class GamesViewModel(private val context: Context) : ViewModel() {
     val selectedGame: LiveData<GameResponse> = _selectedGame
 
     init {
-        Log.d("ViewModelDebug", "Init del ViewModel ejecutado") // 👈
         getMyGames()
     }
 
     fun getMyGames() {
-        Log.d("ViewModelDebug", "GETMYGAMES") // 👈
         viewModelScope.launch {
             _isLoading.value = true
             try {
 
                 var token = "Bearer " + tokenManager.getToken()
-                Log.v("token", token)
                 val response = RetrofitClient.instance.getMyGames(token)
-                Log.v("response", response.toString())
+                println(response)
                 if (response.isNotEmpty()) {
                     _gamesList.value = response
+                    _gamesListDisplayed.value = response
                 } else {
                     Log.v("Error", "No se encontraron juegos: $response")
                 }
@@ -73,6 +74,18 @@ class GamesViewModel(private val context: Context) : ViewModel() {
 
     fun navegacionCompletada() {
         _navegarADetalle.value = null
+    }
+
+    fun setGameDisplayed(mode: Int){
+        if(mode == 0){
+            _gamesListDisplayed.value = _gamesList.value
+        }
+        else if(mode == 1){
+            _gamesListDisplayed.value = _gamesList.value?.filter { it.multiplayer == false }
+        }
+        else if(mode == 2){
+            _gamesListDisplayed.value = _gamesList.value?.filter { it.multiplayer == true }
+        }
     }
 
 

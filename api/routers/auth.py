@@ -15,11 +15,6 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     user = UserLogin(email=form_data.username, password=form_data.password)
     result = login(db, user)
 
-    
-
-    
-    print(result)
-
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

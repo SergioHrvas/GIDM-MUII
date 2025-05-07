@@ -196,8 +196,8 @@ def review_winner(db: Session, game):
 def get_player_games(id_user: int, db:Session):
     # Obtenemos los jugadores del usuario
     games = db.query(Game).join(Player, Game.players).filter(Player.user_id == id_user).all()
-
-    return gamesps
+    
+    return games
 
 
 

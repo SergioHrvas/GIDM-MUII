@@ -91,19 +91,6 @@ fun PreviewGame(){
         }    }
 }
 
-data class InfectData(
-    val player1: Int? = null,
-    val organ1: String? = null,
-    val player2: Int? = null,
-    val organ2: String? = null,
-    val player3: Int? = null,
-    val organ3: String? = null,
-    val player4: Int? = null,
-    val organ4: String? = null,
-    val player5: Int? = null,
-    val organ5: String? = null
-)
-
 
 
 @Composable
@@ -119,7 +106,6 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
         modifier = modifier,
         gameState = gameState,
         viewModel = viewModel,
-        navController = navController
     )
 }
 @Composable
@@ -210,7 +196,7 @@ class GameState(
 ) {
     var showWinnerDialog by mutableStateOf(showWinnerDialog)
     var isCardDrawn by mutableStateOf(isCardDrawn)
-    var selecting by mutableStateOf(selecting)
+    var selecting by mutableIntStateOf(selecting)
     var discarting by mutableStateOf(discarting)
     val discards = mutableStateListOf<Int>().apply { addAll(discards) }
     var exchanging by mutableStateOf(exchanging)
@@ -221,7 +207,7 @@ class GameState(
     var selectedCard by mutableIntStateOf(selectedCard)
     val gameResponse by mutableStateOf(gameResponse)
     val changingTurn by mutableStateOf(changingTurn)
-    val currentPlayerIndex by mutableStateOf(currentPlayerIndex)
+    val currentPlayerIndex by mutableIntStateOf(currentPlayerIndex)
     var otherPlayerIndex by mutableIntStateOf(otherPlayerIndex)
     val winner by mutableStateOf(winner)
 }
@@ -356,7 +342,6 @@ fun GameLayout(
     modifier: Modifier = Modifier,
     gameState: GameState,
     viewModel: GameViewModel,
-    navController: NavController
 ) {
     Scaffold(
         topBar = { CustomTopAppBar() },

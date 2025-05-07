@@ -19,6 +19,8 @@ class GameBase(BaseModel):
 class GameResponse(GameBase):
     id: int
     turn: int
+    date: datetime
+    status: str
     num_turns: int
     turns: List[int]  # Para el campo JSONB
     winner: Optional[int] = None

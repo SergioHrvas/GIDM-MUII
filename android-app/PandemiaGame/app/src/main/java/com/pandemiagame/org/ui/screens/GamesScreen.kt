@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import com.pandemiagame.org.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +37,14 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import android.util.Log
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import com.pandemiagame.org.ui.viewmodels.GamesViewModelFactory
 
 @Preview
@@ -64,10 +72,11 @@ fun GamesComp(
         factory = GamesViewModelFactory(context.applicationContext)
     )
 
-    val games by viewModel.gamesList.observeAsState(emptyList())
+    val games by viewModel.gamesListDisplayed.observeAsState(emptyList())
     val selectedGame by viewModel.navegarADetalle.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
 
+    var mode by remember { mutableIntStateOf(0) }
 
     // Observar navegación
     LaunchedEffect(selectedGame) {
@@ -90,6 +99,46 @@ fun GamesComp(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Row {
+                    IconButton(
+                        onClick = {
+                            mode = 0
+                            viewModel.setGameDisplayed(mode)
+                        },
+                        enabled = mode!=0
+                    ){
+                        Icon(
+                            painter = painterResource((R.drawable.baseline_filter_list_off_24)),
+                            contentDescription = "SIN FILTROS",
+                            tint = Color(0xFFFFA500)
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            mode = 1
+                            viewModel.setGameDisplayed(mode)
+                        },
+                        enabled = mode!=1
+                    ){
+                        Icon(
+                            painter = painterResource((R.drawable.baseline_person_24)),
+                            contentDescription = "1 DISPOSITIVO",
+                            tint = Color(0xFFFFA500)
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            mode = 2
+                            viewModel.setGameDisplayed(mode)                        },
+                        enabled = mode!=2
+                    ){
+                        Icon(
+                            painter = painterResource((R.drawable.baseline_people_24)),
+                            contentDescription = "MULTIJUGADOR",
+                            tint = Color(0xFFFFA500)
+                        )
+                    }
+                }
 
                 LazyColumn {
                     items(games) { game ->
@@ -117,8 +166,6 @@ fun formatDateTimeCompat(isoDateTime: String): String {
 // Composable para mostrar cada item del juego
 @Composable
 fun GameItem(game: GameResponse, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    // Implementa cómo quieres mostrar cada juego
-    // Por ejemplo:
     Card(modifier = modifier.fillMaxWidth().padding(8.dp), onClick = {
         onClick()
     }) {
@@ -128,13 +175,20 @@ fun GameItem(game: GameResponse, onClick: () -> Unit, modifier: Modifier = Modif
             ) {
                 Text(text = "Fecha: " + formatDateTimeCompat(game.date))
                 Text(text = "Estado: " + game.status)
-                if(game.winner > 0){
-                    Text(text = "Ganador: " + game.winner)
-                }
+            }
+            if(game.winner > 0){
+                Text(text = "Ganador: " + game.winner)
             }
             Row (
                 horizontalArrangement = Arrangement.spacedBy(16.dp) // Espacio igual entre todos los hijos
             ) {
+                if(game.multiplayer){
+                    Icon(
+                        painter = painterResource((R.drawable.baseline_people_24)),
+                        contentDescription = "TURNO",
+                        tint = Color(0xFFFFA500)
+                    )
+                }
                 Text(text = "Turnos: " + game.numTurns.toString())
                 Text(text = "Jugadores: " + game.turns.size)
 
