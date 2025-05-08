@@ -413,7 +413,9 @@ fun GameLayout(
                         )
                     },
                     onDiscardToggle = {
-                        gameState.discarting = true
+                        if((game.multiplayer == false) || game.players[gameState.currentPlayerIndex].id == game.turn) {
+                            gameState.discarting = true
+                        }
                     },
                     onConfirmDiscard = {
                         gameState.isCardDrawn = true
@@ -672,7 +674,6 @@ fun DeckSection(
             contentDescription = "Mazo de cartas",
             modifier = Modifier
                 .height(110.dp)
-                .clickable(onClick = onCardDrawn)
         )
 
         if (isCardDrawn) {
@@ -783,6 +784,7 @@ private fun handleCardSelection(
     game: GameResponse,
     viewModel: GameViewModel
 ) {
+    if((game.multiplayer == false) || game.players[gameState.currentPlayerIndex].id == game.turn){
     gameState.selectedCard = cardIndex
 
     if (gameState.discarting) {
@@ -806,6 +808,7 @@ private fun handleCardSelection(
             }
         }
     }
+        }
 }
 
 private fun handleActionCard(
