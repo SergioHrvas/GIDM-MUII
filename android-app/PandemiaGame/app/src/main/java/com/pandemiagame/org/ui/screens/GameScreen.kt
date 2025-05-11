@@ -1,5 +1,6 @@
 package com.pandemiagame.org.ui.screens
 
+import android.app.AlertDialog
 import android.content.Context
 import android.util.Log
 import androidx.compose.animation.core.Animatable
@@ -75,6 +76,7 @@ import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.Card
 import com.pandemiagame.org.data.remote.CardWrapper
 import com.pandemiagame.org.data.remote.InfectData
+import com.pandemiagame.org.data.remote.MoveResponse
 import com.pandemiagame.org.data.remote.Player
 import com.pandemiagame.org.data.remote.User
 
@@ -113,12 +115,14 @@ fun rememberGameState(viewModel: GameViewModel): GameState {
     // Estados observados del ViewModel
     val gameResponse by viewModel.game.observeAsState()
     val changingTurn by viewModel.changingTurn.observeAsState()
-
     val context = LocalContext.current
+
+    val moves by viewModel.moves.observeAsState()
 
     val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
     val userJson = sharedPref.getString("user", null)
     var user: User? = null
+
     if(gameResponse?.multiplayer == true) {
         if (userJson != null) {
             user = Gson().fromJson(userJson, User::class.java)
@@ -168,7 +172,8 @@ fun rememberGameState(viewModel: GameViewModel): GameState {
             changingTurn = changingTurn,
             currentPlayerIndex = currentPlayerIndex,
             otherPlayerIndex = otherPlayerIndex,
-            winner = winner
+            winner = winner,
+            seeingMoves = false
         )
     }
 
@@ -192,7 +197,8 @@ class GameState(
     changingTurn: Boolean?,
     currentPlayerIndex: Int,
     otherPlayerIndex: Int,
-    winner: Int?
+    winner: Int?,
+    seeingMoves: Boolean
 ) {
     var showWinnerDialog by mutableStateOf(showWinnerDialog)
     var isCardDrawn by mutableStateOf(isCardDrawn)
@@ -210,6 +216,7 @@ class GameState(
     val currentPlayerIndex by mutableIntStateOf(currentPlayerIndex)
     var otherPlayerIndex by mutableIntStateOf(otherPlayerIndex)
     val winner by mutableStateOf(winner)
+    var seeingMoves by mutableStateOf(seeingMoves)
 }
 @Composable
 fun GameEffects(
@@ -225,6 +232,7 @@ fun GameEffects(
     LaunchedEffect(Unit) {
         viewModel.setChangingTurn(true)
         viewModel.getGame(gameId)
+        viewModel.getMoves(gameId)
     }
 
     // Efecto para manejar el ganador
@@ -360,6 +368,7 @@ fun GameLayout(
                 // Jugador oponente
                 OpponentPlayerSection(
                     game = game,
+                    gameState = gameState,
                     otherPlayerIndex = gameState.otherPlayerIndex,
                     onPlayerChange = {
                         gameState.otherPlayerIndex = (gameState.otherPlayerIndex + 1) % game.players.size
@@ -371,7 +380,8 @@ fun GameLayout(
                         if (gameState.selecting == 1) {
                             gameState.selectedOrgan = organType
                         }
-                    }
+                    },
+                    viewModel = viewModel
                 )
 
                 // Separador con mazo de cartas
@@ -439,7 +449,9 @@ fun GameLayout(
                         if (gameState.selecting == 2 || gameState.exchanging) {
                             gameState.selectedOrgan = organType
                         }
-                    }
+                    },
+                    viewModel = viewModel,
+                    gameState = gameState
                 )
             }
         } ?: Text("Cargando...")
@@ -454,6 +466,15 @@ fun GameDialogs(
 ) {
     val winnerName = remember(gameState.winner) {
         game.players.firstOrNull { it.id == gameState.winner }?.name ?: ""
+    }
+
+    if(gameState.seeingMoves){
+        MovesDialog(
+            moves = viewModel.moves.value,
+            onDismiss = {
+                gameState.seeingMoves = false
+            }
+        )
     }
 
     // Diálogo de ganador
@@ -529,12 +550,16 @@ fun GameDialogs(
 @Composable
 fun OpponentPlayerSection(
     game: GameResponse,
+    gameState: GameState,
     otherPlayerIndex: Int,
     onPlayerChange: () -> Unit,
-    onOrganSelected: (String) -> Unit
+    onOrganSelected: (String) -> Unit,
+    viewModel: GameViewModel
 ) {
     Column(modifier = Modifier.padding(bottom = 2.dp)) {
         PlayerHeader(
+            gameState = gameState,
+            viewModel = viewModel,
             player = game.players[otherPlayerIndex],
             showChangeButton = game.players.size > 2,
             onPlayerChange = onPlayerChange,
@@ -553,6 +578,8 @@ fun OpponentPlayerSection(
 @Composable
 fun CurrentPlayerSection(
     game: GameResponse,
+    gameState: GameState,
+    viewModel: GameViewModel,
     currentPlayerIndex: Int,
     discards: List<Int>,
     discarting: Boolean,
@@ -573,6 +600,8 @@ fun CurrentPlayerSection(
     ) {
         PlayerHeader(
             player = game.players[currentPlayerIndex],
+            viewModel = viewModel,
+            gameState = gameState,
             showChangeButton = false,
             onPlayerChange = {},
             current = true,
@@ -607,6 +636,8 @@ fun CurrentPlayerSection(
 
 @Composable
 fun PlayerHeader(
+    gameState: GameState,
+    viewModel: GameViewModel,
     player: Player,
     showChangeButton: Boolean,
     onPlayerChange: () -> Unit,
@@ -623,7 +654,7 @@ fun PlayerHeader(
         if (!current) Box(modifier = Modifier
             .padding(start = 10.dp)
             .weight(1F)) {
-            MenuButton()
+            MenuButton(gameState = gameState, viewModel = viewModel)
         }
 
         if (showChangeButton) {
@@ -885,6 +916,35 @@ private fun mirarTipo(targetOrgan: Organ, organ: Organ): Boolean {
     }
 }
 
+@Composable
+fun MovesDialog(moves: List<MoveResponse>?, onDismiss: () -> Unit){
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Registro de movimientos",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Column {
+                    moves?.forEach {
+                        if(it.action == "discard"){
+                            Text(text =
+                                "El usuario " + it.player + " ha descartado las cartas"
+                            )                        }
+                        else{
+                            Text(text =
+                                "El usuario " + it.player + " ha jugado la carta " + it.card?.name
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        }
+}
 
 @Composable
 fun WinnerDialog(
@@ -1198,14 +1258,14 @@ fun ExchangeDialog(
 }
 
 @Composable
-fun MenuButton() {
+fun MenuButton(gameState: GameState,
+               viewModel: GameViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val options = listOf("Opción 1", "Opción 2", "Opción 3") // Puedes personalizar estas opciones
-
+    val options = listOf("Registro", "Chat", "Rendirme")
     Box {
         Button(onClick = { expanded = true }) {
             Icon(
-                painter = painterResource(id = R.drawable.menu), // Asegúrate de tener este icono en tus recursos
+                painter = painterResource(id = R.drawable.menu),
                 contentDescription = "Menú"
             )
         }
@@ -1219,11 +1279,13 @@ fun MenuButton() {
                     text = { Text(option) },
                     onClick = {
                         expanded = false
-                        // Aquí puedes manejar la acción para cada opción
                         when (option) {
-                            "Opción 1" -> { /* Acción para opción 1 */ }
-                            "Opción 2" -> { /* Acción para opción 2 */ }
-                            "Opción 3" -> { /* Acción para opción 3 */ }
+                            "Registro" -> {
+                                viewModel.getMoves(viewModel.game.value?.id.toString())
+                                gameState.seeingMoves = true
+                            }
+                            "Chat" -> { /* Acción para opción 2 */ }
+                            "Rendirme" -> { /* Acción para opción 3 */ }
                         }
                     }
                 )

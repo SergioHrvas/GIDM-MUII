@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.InfectData
 import com.pandemiagame.org.data.remote.Move
+import com.pandemiagame.org.data.remote.MoveResponse
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.launch
@@ -30,6 +31,8 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
     private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
 
+    private val _moves = MutableLiveData<List<MoveResponse>>()
+    val moves: LiveData<List<MoveResponse>> = _moves
 
     fun getGame(juegoId: String) {
 
@@ -209,4 +212,28 @@ class GameViewModel(private val context: Context) : ViewModel() {
     fun setGame(game: GameResponse){
         _game.value = game
     }
+
+
+
+    fun getMoves(juegoId: String) {
+        viewModelScope.launch {
+            try {
+
+                var token = "Bearer " + tokenManager.getToken()
+                println(token)
+
+                val response = RetrofitClient.instance.getMoves(token, juegoId.toInt())
+
+                println("movesss: + ${response.toString()}")
+
+                _moves.value = response
+
+            } catch (e: Exception) {
+                // Manejar error
+                Log.v("Error", e.toString())
+            }
+        }
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package com.pandemiagame.org.data.remote
 
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import retrofit2.http.*
 import java.util.Date
@@ -77,6 +78,17 @@ data class InfectData(
 )
 
 
+data class MoveResponse(
+    @SerializedName("action") val action: String,
+    @SerializedName("card") val card: Card? = null,
+    @SerializedName("player_id") val player: Int,
+    @SerializedName("game_id") val game: Int,
+    @SerializedName("date") val date: String? = null,
+    @SerializedName("data") val data: JsonElement? = null
+)
+
+
+
 interface ApiService {
     @FormUrlEncoded
     @POST("token")
@@ -99,4 +111,6 @@ interface ApiService {
     @POST("game/{game_id}/move")
     suspend fun doMove(@Header("Authorization") auth: String,  @Path("game_id") gameId: Int, @Query("player_id") playerId: Int, @Body move: Move): GameResponse
 
+    @GET("game/{game_id}/moves")
+    suspend fun getMoves(@Header("Authorization") auth: String, @Path("game_id") gameId: Int): List<MoveResponse>
 }

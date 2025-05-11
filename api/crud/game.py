@@ -138,12 +138,24 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             elif card.name == "Discard Cards":
                 discard_cards(db, game_id, player_id)
                 done = True
-
-
         
         if done:
             remove_card_from_player(db, player_id, move.card)
             steal_to_deck(db, game, player_id, 1)
+
+    
+            # Creamos el movimiento
+            db_move = MoveModel(
+                player_id=player_id,
+                game_id=game_id,
+                card_id=move.card,
+                date=datetime.now(),
+                action="card",
+                data=move.infect.dict() if move.infect else None
+            )
+            db.add(db_move)
+            db.commit()
+            db.refresh(db_move)
 
     # Revisamos si hay un ganador
     review_winner(db, game)
@@ -152,19 +164,6 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         done = False
 
     if done:
-        # Creamos el movimiento
-        db_move = MoveModel(
-            player_id=player_id,
-            game_id=game_id,
-            card_id=move.card,
-            date=datetime.now(),
-            action="card",
-            data=move.infect.dict() if move.infect else None
-        )
-        db.add(db_move)
-        db.commit()
-        db.refresh(db_move)
-
         # Pasamos el turno al siguiente jugador
         game.num_turns+=1
         num_turns = len(game.turns)
