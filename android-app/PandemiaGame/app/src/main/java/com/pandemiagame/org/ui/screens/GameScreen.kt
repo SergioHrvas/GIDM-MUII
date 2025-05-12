@@ -116,18 +116,14 @@ fun rememberGameState(viewModel: GameViewModel): GameState {
     val gameResponse by viewModel.game.observeAsState()
     val changingTurn by viewModel.changingTurn.observeAsState()
     val context = LocalContext.current
-
-    val moves by viewModel.moves.observeAsState()
-
+    
     val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
     val userJson = sharedPref.getString("user", null)
     var user: User? = null
-
+    
     if(gameResponse?.multiplayer == true) {
         if (userJson != null) {
             user = Gson().fromJson(userJson, User::class.java)
-
-            Log.v("USER_RECUPERADO", user.toString())
         } else {
             Log.e("USER", "No se encontró usuario en SharedPreferences")
         }
@@ -153,6 +149,7 @@ fun rememberGameState(viewModel: GameViewModel): GameState {
             } else 0
         } ?: 0
     }
+
 
     // Creamos el estado con los valores iniciales
     val state = remember(gameResponse, changingTurn) {
@@ -469,8 +466,10 @@ fun GameDialogs(
     }
 
     if(gameState.seeingMoves){
+        val moves by viewModel.moves.observeAsState()
+
         MovesDialog(
-            moves = viewModel.moves.value,
+            moves = moves,
             onDismiss = {
                 gameState.seeingMoves = false
             }
@@ -1281,10 +1280,10 @@ fun MenuButton(gameState: GameState,
                         expanded = false
                         when (option) {
                             "Registro" -> {
-                                viewModel.getMoves(viewModel.game.value?.id.toString())
                                 gameState.seeingMoves = true
+                                viewModel.getMoves(viewModel.game.value?.id.toString())
                             }
-                            "Chat" -> { /* Acción para opción 2 */ }
+                            "Chat" -> { /* No implementado */ }
                             "Rendirme" -> { /* Acción para opción 3 */ }
                         }
                     }
