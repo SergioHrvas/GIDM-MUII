@@ -4,7 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -18,14 +23,12 @@ import com.pandemiagame.org.ui.screens.GameComp
 import com.pandemiagame.org.ui.screens.GamesComp
 import com.pandemiagame.org.ui.screens.LoginComp
 import com.pandemiagame.org.ui.screens.NewGameComp
-import com.pandemiagame.org.ui.screens.Pantalla1
+import com.pandemiagame.org.ui.screens.MainScreen
 import com.pandemiagame.org.ui.screens.Pantalla2
 import com.pandemiagame.org.ui.screens.Pantalla3
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
-import com.pandemiagame.org.ui.viewmodels.GamesViewModel
-import com.pandemiagame.org.ui.viewmodels.GamesViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
 
@@ -35,28 +38,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             PandemiaGameTheme {
                 AppNavigation()
-                /*val navController = rememberNavController()
-
-                Scaffold(
-                    topBar = {
-                        CustomTopAppBar()
-
-                    },
-                    bottomBar = { BottomNavBar(navController) },
-                    floatingActionButton = {
-                        val context = LocalContext.current
-                        val intent = Intent(context, GameActivity::class.java) // Create intent first
-                        FloatingActionButton(onClick = {
-                            context.startActivity(intent) // Start the activity on click
-                        }) {
-                            Icon(Icons.Default.Add, contentDescription = "Start Game")
-                        }
-                    },
-                    floatingActionButtonPosition = FabPosition.Center
-                ) { paddingValues ->
-                    NavGraph(navController, Modifier.padding(paddingValues))
-                }*/
-
             }
         }
     }
@@ -65,55 +46,64 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val currentRoute = currentRoute(navController)
-    val loginViewModel: LoginViewModel = viewModel() // Obtener el ViewModel correctamente
-    val tm = TokenManager(LocalContext.current);
+    val loginViewModel: LoginViewModel = viewModel()
+    val tm = TokenManager(LocalContext.current)
 
+    // Observar cambios en el token
+    var token by remember { mutableStateOf(tm.getToken() ?: "") }
+
+    // Observar el éxito del login
+    val loginSuccess by loginViewModel.loginSuccess.observeAsState()
+
+    // Efecto para manejar éxito de login
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess == true) {
+            token = tm.getToken() ?: ""
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
+
+    // Efecto para manejar cambios en el token
+    LaunchedEffect(token) {
+        if (token.isEmpty()) {
+            navController.navigate("login") {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
 
     val context = LocalContext.current
-    val gameViewModel: GameViewModel = viewModel(
-        factory = GameViewModelFactory(context)
-    )
+    val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(context))
+    val newGameViewModel: NewGameViewModel = viewModel(factory = NewGameViewModelFactory(context))
 
 
-    val newGameViewModel: NewGameViewModel = viewModel(
-        factory = NewGameViewModelFactory(context)
-    )
-    val token = tm.getToken();
-
-    val startDest = if(token.isNullOrEmpty()) "login" else "home"
+    println(token.isNullOrEmpty())
 
     NavHost(
-            navController = navController,
-            startDestination = startDest,
-        ) {
-            composable("login") { LoginComp(navController, loginViewModel) }
-            composable("home") { Pantalla1(navController)}
-            composable("games") { GamesComp(navController = navController) }
-            composable("create-game") { NewGameComp(viewModel = newGameViewModel, navController = navController) }
-
-            composable("game/{game_id}") {
-                    backStackEntry ->
-                GameComp(
-                    viewModel = gameViewModel,
-                    gameId = backStackEntry.arguments?.getString("game_id") ?: "",
-                    navController = navController
-                )
+        navController = navController,
+        startDestination = if (token.isNullOrEmpty()) "login" else "home"
+    ) {
+        composable("login") { LoginComp(navController, loginViewModel) }
+        composable("home") { MainScreen(navController,
+            onLogout = {
+                tm.clearToken()
+                token = ""
+                loginViewModel.resetLoginState() // Resetear estado de login
             }
-            composable("profile") { Pantalla2(navController) }
-            composable("settings") { Pantalla3(navController) }
+        ) }
+        composable("games") { GamesComp(navController = navController) }
+        composable("create-game") { NewGameComp(viewModel = newGameViewModel, navController = navController) }
+        composable("game/{game_id}") { backStackEntry ->
+            GameComp(
+                viewModel = gameViewModel,
+                gameId = backStackEntry.arguments?.getString("game_id") ?: "",
+                navController = navController
+            )
+        }
+        composable("profile") { Pantalla2(navController) }
+        composable("settings") { Pantalla3(navController) }
     }
-}
-
-// Función para obtener la ruta actual
-@Composable
-fun currentRoute(navController: NavController): String? {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    return navBackStackEntry?.destination?.route
-}
-
-
-
-fun ScaffoldTopBar(){
-
 }

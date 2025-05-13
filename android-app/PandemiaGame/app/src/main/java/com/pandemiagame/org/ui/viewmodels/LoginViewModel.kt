@@ -27,8 +27,8 @@ class LoginViewModel : ViewModel(){
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
 
-    private val _token = MutableLiveData<String?>()
-    val token : LiveData<String?> = _token
+    private val _loginSuccess = MutableLiveData<Boolean>(false)
+    val loginSuccess: LiveData<Boolean> = _loginSuccess
 
     fun onLoginChange(email: String, password: String){
         _email.value = email
@@ -46,10 +46,16 @@ class LoginViewModel : ViewModel(){
         viewModelScope.launch {
             _isLoading.value = true
             val result = email.value?.let { password.value?.let { it1 -> login(it, it1, ctx) } }
-            _token.value = result;
+            if (result != null) {
+                _loginSuccess.value = true
+            }
             _isLoading.value = false
         }
 
+    }
+
+    fun resetLoginState() {
+        _loginSuccess.value = false
     }
 
     suspend fun login(email: String, password: String, context: Context): String? {
@@ -67,7 +73,7 @@ class LoginViewModel : ViewModel(){
                     val tm = TokenManager(context);
 
                     tm.saveToken(response.access_token);
-                    
+
                     return@withContext response.access_token
                 } else {
                     return@withContext null
@@ -78,4 +84,5 @@ class LoginViewModel : ViewModel(){
             }
         }
     }
+
 }

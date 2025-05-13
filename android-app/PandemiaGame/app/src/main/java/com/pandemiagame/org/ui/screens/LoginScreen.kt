@@ -58,18 +58,8 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
     val email :String by viewModel.email.observeAsState(initial="")  // Estado para el email
     val password :String by viewModel.password.observeAsState(initial="")  // Estado para la password
     val loginEnable :Boolean by viewModel.loginEnable.observeAsState(initial=false)  // Estado para el boton activado
-    val token: String? by viewModel.token.observeAsState(initial = null) // Estado para el token
-    
-    val isLoading :Boolean by viewModel.isLoading.observeAsState(initial=false) // Estado para el cargando
 
-    // Usa LaunchedEffect para escuchar cambios en el token y navegar solo una vez cuando el token esté disponible
-    LaunchedEffect(token) {
-        if (token != null && token?.isNotEmpty() == true) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true } // Elimina la pantalla de login de la pila de navegación
-            }
-        }
-    }
+    val isLoading :Boolean by viewModel.isLoading.observeAsState(initial=false) // Estado para el cargando
 
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current  // Obtén el contexto actual
