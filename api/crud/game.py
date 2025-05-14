@@ -68,6 +68,26 @@ def create_game(game: GameBase, current_user: int, db: Session):
 def get_game(game_id: int, db: Session):
     return db.query(Game).filter(Game.id == game_id).first()
 
+
+def get_organ_status(db, player_id, organ_type):
+    organ = db.query(Organ).filter(
+        Organ.player_id == player_id,
+        Organ.tipo == organ_type
+    ).first()
+    
+    if not organ:
+        return 0
+    
+    if organ.cure == 3:
+        return 3
+    elif organ.cure in (1, 2):
+        return 2
+    elif organ.virus in (1, 2):
+        return 1
+    else:
+        return 0
+
+
 def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
     # Obtenemos el juego
     game = db.query(Game).filter(Game.id == game_id).first()
@@ -85,6 +105,19 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
 
     card = db.query(Card).filter(Card.id == move.card).first()
 
+    lungs_estado = get_organ_status(db, player_id, 'lungs')
+    intestine_estado = get_organ_status(db, player_id, 'intestine')
+    heart_estado = get_organ_status(db, player_id, 'heart')
+    brain_estado = get_organ_status(db, player_id, 'brain')
+    magic_estado = get_organ_status(db, player_id, 'magic')
+
+    print("Lungs: ", lungs_estado)
+    print("Intestine: ", intestine_estado)
+    print("Heart: ", heart_estado)
+    print("Brain: ", brain_estado)
+    print("Magic: ", magic_estado)
+
+
     if move.action == "discard":
         # Borramos las cartas
         discard_my_cards(db, player_id, move.discards)
@@ -100,10 +133,12 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             date=datetime.now(),
             action="discard",
             data=move.discards,
-            num_virus=db.query(Organ).filter(Organ.player_id == player_id, or_(Organ.virus == 1, Organ.virus == 2)).count(),
-            num_cure=db.query(Organ).filter(Organ.player_id == player_id, or_(Organ.cure == 1, Organ.cure == 2)).count(),
-            num_protected=db.query(Organ).filter(Organ.player_id == player_id, Organ.cure == 3).count(),
-            num_organs=db.query(Organ).filter(Organ.player_id == player_id).count(),
+            lungs_estado=lungs_estado,
+            intestine_estado=intestine_estado,
+            heart_estado=heart_estado,
+            brain_estado=brain_estado,
+            magic_estado=magic_estado,
+
         )
         db.add(db_move)
         db.commit()
@@ -158,10 +193,11 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 date=datetime.now(),
                 action="card",
                 data=move.infect.dict() if move.infect else None,
-                num_virus=db.query(Organ).filter(Organ.player_id == player_id, or_(Organ.virus == 1, Organ.virus == 2)).count(),
-                num_cure=db.query(Organ).filter(Organ.player_id == player_id, or_(Organ.cure == 1, Organ.cure == 2)).count(),
-                num_protected=db.query(Organ).filter(Organ.player_id == player_id, Organ.cure == 3).count(),
-                num_organs=db.query(Organ).filter(Organ.player_id == player_id).count(),
+                lungs_estado=lungs_estado,
+                intestine_estado=intestine_estado,
+                heart_estado=heart_estado,
+                brain_estado=brain_estado,
+                magic_estado=magic_estado,
             )
             db.add(db_move)
             db.commit()

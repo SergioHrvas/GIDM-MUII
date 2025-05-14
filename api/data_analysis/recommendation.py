@@ -19,10 +19,11 @@ def train_move_based_model(db: Session):
         m.card_id,
         c.tipo as tipo,
         ROW_NUMBER() OVER (PARTITION BY m.game_id, m.player_id ORDER BY m.date) as move_sequence,
-        m.num_virus,
-        m.num_cure,
-        m.num_protected,
-        m.num_organs,
+        m.brain_estado,
+        m.lungs_estado,
+        m.intestine_estado,
+        m.heart_estado,
+        m.magic_estado,
         CASE WHEN g.winner = p.id THEN 1 ELSE 0 END as is_win
     FROM moves m
     JOIN games g ON m.game_id = g.id
@@ -60,7 +61,7 @@ def train_move_based_model(db: Session):
     print(df['is_win'].value_counts())
 
     # Preprocesamiento
-    X = df[['card_id', 'tipo', 'move_sequence', 'num_virus', 'num_cure', 'num_protected', 'num_organs']]
+    X = df[['card_id', 'tipo', 'move_sequence', 'brain_estado', 'lungs_estado', 'intestine_estado', 'heart_estado', 'magic_estado']]
     y = df['is_win']
         
     # Transformadores para diferentes tipos de características
@@ -68,7 +69,7 @@ def train_move_based_model(db: Session):
         transformers=[
             ('cat', OneHotEncoder(handle_unknown='ignore'), ['card_id']),
             ('tipo', OneHotEncoder(handle_unknown='ignore'), ['tipo']),
-            ('num', StandardScaler(), ['move_sequence', 'num_virus', 'num_cure', 'num_protected', 'num_organs'])
+            ('num', StandardScaler(), ['move_sequence', 'brain_estado', 'lungs_estado', 'intestine_estado', 'heart_estado', 'magic_estado'])
         ],
     )
     

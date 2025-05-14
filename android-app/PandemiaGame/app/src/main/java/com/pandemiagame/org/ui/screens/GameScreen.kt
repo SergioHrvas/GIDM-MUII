@@ -116,7 +116,8 @@ fun rememberGameState(viewModel: GameViewModel): GameState {
     val gameResponse by viewModel.game.observeAsState()
     val changingTurn by viewModel.changingTurn.observeAsState()
     val context = LocalContext.current
-    
+
+
     val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
     val userJson = sharedPref.getString("user", null)
     var user: User? = null
@@ -224,6 +225,7 @@ fun GameEffects(
 ) {
     val currentPlayerIndex = gameState.currentPlayerIndex
     val gameResponse = gameState.gameResponse
+
 
     // Efecto para cargar el juego inicialmente
     LaunchedEffect(Unit) {
@@ -488,7 +490,8 @@ fun GameDialogs(
     if ((gameState.changingTurn == true) && (gameState.winner != null)) {
         TurnChangeDialog(
             playerName = game.players[game.players.indexOfFirst{ it.id == game.turn}].name,
-            onDismiss = { viewModel.setChangingTurn(false) }
+            onDismiss = { viewModel.setChangingTurn(false)
+            }
         )
     }
 
@@ -597,6 +600,7 @@ fun CurrentPlayerSection(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         PlayerHeader(
             player = game.players[currentPlayerIndex],
             viewModel = viewModel,
@@ -615,12 +619,25 @@ fun CurrentPlayerSection(
                 }
             }
         )
+        val shouldHideOpponentCards by viewModel.shouldHideOpponentCards.observeAsState(false)
 
-        PlayerCardsRow(
-            cards = game.players[currentPlayerIndex].playerCards,
-            discards = discards,
-            onCardSelected = onCardSelected
-        )
+
+        if (shouldHideOpponentCards == false) {
+            PlayerCardsRow(
+                cards = game.players[currentPlayerIndex].playerCards,
+                discards = discards,
+                onCardSelected = onCardSelected
+            )
+        } else {
+            // Muestra cartas boca abajo durante el cambio de turno
+            PlayerCardsRow(
+                cards = List(game.players[currentPlayerIndex].playerCards.size) {
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
+                },
+                discards = discards,
+                onCardSelected = {}
+            )
+        }
 
         PlayerActions(
             discarting = discarting,
@@ -822,10 +839,12 @@ private fun handleCardSelection(
     } else {
         when (game.players[gameState.currentPlayerIndex].playerCards[cardIndex].card.type) {
             "organ" -> {
-                gameState.selecting = 0
                 if(game.winner == 0) {
+
                     viewModel.doMove(cardIndex, currentTurn = game.players[gameState.currentPlayerIndex].id)
                 }
+                gameState.selecting = 0
+
             }
             "virus" -> {
                 gameState.selecting = 1

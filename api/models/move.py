@@ -25,10 +25,18 @@ class Move(Base):
     # Relación inversa con Card
     card = relationship("Card", back_populates="moves")
 
-    # Nuevas columnas para almacenar el número de órganos en el estado correspondiente
-    num_virus = Column(Integer, default=0, nullable=False)  # Número de órganos con virus
-    num_cure = Column(Integer, default=0, nullable=False)  # Número de órganos con cura
-    num_protected = Column(Integer, default=0, nullable=False)  # Número de órganos protegidos
-    num_organs = Column(Integer, default=0, nullable=False)  # Número total de órganos
+    # Lungs (0: none, 1: normal, 2: virus, 3: cure, 4: protected)
+    lungs_estado = Column(Integer, default=0)
 
+    # Intestine (0: none, 1: normal, 2: virus, 3: cure, 4: protected)
+    intestine_estado = Column(Integer, default=0)
+
+    # Heart (0: none, 1: normal, 2: virus, 3: cure, 4: protected)
+    heart_estado = Column(Integer, default=0)
+
+    # Brain (0: none, 1: normal, 2: virus, 3: cure, 4: protected)
+    brain_estado = Column(Integer, default=0)
+
+    # Magic (0: none, 1: normal, 2: virus, 3: cure, 4: protected)
+    magic_estado = Column(Integer, default=0)
 

@@ -53,48 +53,50 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
+
+    private val _shouldHideOpponentCards = MutableLiveData(false)
+    val shouldHideOpponentCards: LiveData<Boolean> = _shouldHideOpponentCards
+
+    fun prepareTurnChange() {
+        _shouldHideOpponentCards.value = true
+    }
+
+    fun completeTurnChange() {
+        _shouldHideOpponentCards.value = false
+    }
+
+    // Modificar las funciones de movimiento para usar el nuevo flujo
+    private suspend fun executeMove(move: Move, currentTurn: Int): GameResponse {
+        val token = "Bearer ${tokenManager.getToken()}"
+        val gameId = _game.value?.id?.toInt() ?: 0
+
+        return RetrofitClient.instance.doMove(token, gameId, currentTurn, move).also { response ->
+            if (_game.value?.turn != response.turn) {
+                prepareTurnChange()
+                _changingTurn.value = true
+            }
+            _game.value = response
+
+        }
+    }
+
     fun doMove(index_card: Int, playerSelected: Int = -1, organ: String = "", currentTurn: Int? = -1) {
         viewModelScope.launch {
             try {
-                var token = "Bearer " + tokenManager.getToken()
-
-                // Encontramos el índice del jugador actual de forma segura
                 val indice = game.value?.players?.indexOfFirst { it.id == game.value?.turn } ?: 0
+                val idCard = game.value?.players?.getOrNull(indice)?.playerCards?.getOrNull(index_card)?.card?.id
 
-                // Obtenemos el ID de la carta con seguridad
-                val idCard = game.value
-                    ?.players
-                    ?.getOrNull(indice)
-                    ?.playerCards
-                    ?.getOrNull(index_card)
-                    ?.card
-                    ?.id
-
-                var infect = if (playerSelected != -1) InfectData(
+                val infect = if (playerSelected != -1) InfectData(
                     player1 = game.value?.players?.getOrNull(playerSelected)?.id,
-                    organ1 = if (organ != "") organ.toString() else null
+                    organ1 = organ.takeIf { it.isNotEmpty() }
                 ) else null
 
-
-                // Creamos el movimiento
-                var move = Move(
-                    action = "card",
-                    card = idCard,
-                    infect = infect,
+                executeMove(
+                    Move(action = "card", card = idCard, infect = infect),
+                    currentTurn ?: 0
                 )
-
-
-                val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
-                    currentTurn ?: 0, move)
-
-                if(_game.value?.turn != response.turn){
-                    _changingTurn.value = true
-                }
-                _game.value = response
-
             } catch (e: Exception) {
-                // Manejar error
-                Log.v("Error", e.toString())
+                Log.e("GameViewModel", "Error in doMove", e)
             }
         }
     }
@@ -102,8 +104,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
     fun doMoveInfect(index_card: Int, infectData: InfectData, currentTurn: Int = -1) {
         viewModelScope.launch {
             try {
-                var token = "Bearer " + tokenManager.getToken()
-
                 // Encontramos el índice del jugador actual de forma segura
                 val indice = game.value?.players?.indexOfFirst { it.id == game.value?.turn } ?: 0
 
@@ -123,15 +123,10 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     infect = infectData,
                 )
 
-                val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
-                    currentTurn, move)
-                Log.v("BEFORE", _game.value.toString())
+                executeMove(
+                    move, currentTurn
+                )
 
-                if(_game.value?.turn != response.turn){
-                    _changingTurn.value = true
-                }
-                _game.value = response
-                Log.v("AFTER", _game.value.toString())
 
             } catch (e: Exception) {
                 // Manejar error
@@ -166,15 +161,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     infect = infectData,
                 )
 
-                val response = RetrofitClient.instance.doMove(token, game.value?.id?.toInt() ?: 0,
-                    currentTurn, move)
-                Log.v("BEFORE", _game.value.toString())
-
-                if(_game.value?.turn != response.turn){
-                    _changingTurn.value = true
-                }
-                _game.value = response
-                Log.v("AFTER", _game.value.toString())
+                executeMove(move, currentTurn)
 
             } catch (e: Exception) {
                 // Manejar error
@@ -206,7 +193,11 @@ class GameViewModel(private val context: Context) : ViewModel() {
     }
 
     fun setChangingTurn(ct: Boolean){
+        if(ct == false){
+            completeTurnChange()
+        }
         _changingTurn.value = ct
+
     }
 
     fun setGame(game: GameResponse){

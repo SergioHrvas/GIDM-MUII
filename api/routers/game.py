@@ -84,16 +84,21 @@ async def recommend_cards(
 
     # Si no hay movimientos aún, usar ceros
     if last_move:
-        num_virus = last_move.num_virus
-        num_cure = last_move.num_cure
-        num_protected = last_move.num_protected
-        num_organs = last_move.num_organs
+        brain_estado = last_move.brain_estado
+        lungs_estado = last_move.lungs_estado
+        intestine_estado = last_move.intestine_estado
+        heart_estado = last_move.heart_estado
+        magic_estado = last_move.magic_estado
         move_sequence = db.query(MoveModel).filter(
             MoveModel.game_id == game.id,
             MoveModel.player_id == player_id
         ).count() + 1
     else:
-        num_virus = num_cure = num_protected = num_organs = 0
+        brain_estado = 0
+        lungs_estado = 0
+        intestine_estado = 0
+        heart_estado = 0
+        magic_estado = 0
         move_sequence = 1
 
 
@@ -106,10 +111,11 @@ async def recommend_cards(
             'card_id': card.id,
             'tipo': str(card.tipo or ''),
             'move_sequence': move_sequence,
-            'num_virus': num_virus,
-            'num_cure': num_cure,
-            'num_protected': num_protected,
-            'num_organs': num_organs
+            'brain_estado': brain_estado,
+            'lungs_estado': lungs_estado,
+            'intestine_estado': intestine_estado,
+            'heart_estado': heart_estado,
+            'magic_estado': magic_estado
         }])
 
         # directamente pasas al pipeline
@@ -130,6 +136,7 @@ async def recommend_cards(
         "player_id": player_id,
         "recommendations": [{
             "card_id": card_id,
+            "card_name": db.query(Card).filter(Card.id == card_id).first().name,
             "win_probability": round(prob, 4)
         } for card_id, prob in recommendations[:3]]
     }
