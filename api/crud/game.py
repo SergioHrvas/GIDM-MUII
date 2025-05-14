@@ -1,3 +1,5 @@
+from operator import or_
+from fastapi import Query
 from sqlalchemy.orm import Session
 from models.user import User
 from schemas.status import StatusEnum
@@ -97,7 +99,11 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             game_id=game_id,
             date=datetime.now(),
             action="discard",
-            data=move.discards
+            data=move.discards,
+            num_virus=db.query(Organ).filter(Organ.player_id == player_id, or_(Organ.virus == 1, Organ.virus == 2)).count(),
+            num_cure=db.query(Organ).filter(Organ.player_id == player_id, or_(Organ.cure == 1, Organ.cure == 2)).count(),
+            num_protected=db.query(Organ).filter(Organ.player_id == player_id, Organ.cure == 3).count(),
+            num_organs=db.query(Organ).filter(Organ.player_id == player_id).count(),
         )
         db.add(db_move)
         db.commit()
@@ -151,7 +157,11 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 card_id=move.card,
                 date=datetime.now(),
                 action="card",
-                data=move.infect.dict() if move.infect else None
+                data=move.infect.dict() if move.infect else None,
+                num_virus=db.query(Organ).filter(Organ.player_id == player_id, or_(Organ.virus == 1, Organ.virus == 2)).count(),
+                num_cure=db.query(Organ).filter(Organ.player_id == player_id, or_(Organ.cure == 1, Organ.cure == 2)).count(),
+                num_protected=db.query(Organ).filter(Organ.player_id == player_id, Organ.cure == 3).count(),
+                num_organs=db.query(Organ).filter(Organ.player_id == player_id).count(),
             )
             db.add(db_move)
             db.commit()
