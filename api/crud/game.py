@@ -96,6 +96,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         return game
     
     done = False
+    print("as")
 
     # Obtenemos el jugador
     player = db.query(Player).filter(Player.id == game.turn).first()
@@ -111,13 +112,11 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
     brain_estado = get_organ_status(db, player_id, 'brain')
     magic_estado = get_organ_status(db, player_id, 'magic')
 
-    print("Lungs: ", lungs_estado)
-    print("Intestine: ", intestine_estado)
-    print("Heart: ", heart_estado)
-    print("Brain: ", brain_estado)
-    print("Magic: ", magic_estado)
-
-
+    if move.action == "surrender":
+        if(len(game.turns) == 2):
+            # El jugador se rinde
+            game.winner = game.turns[(game.turns.index(player_id) + 1) % 2]
+            game.status = StatusEnum('finished')
     if move.action == "discard":
         # Borramos las cartas
         discard_my_cards(db, player_id, move.discards)

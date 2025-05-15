@@ -32,6 +32,7 @@ def train_move_based_model(db: Session):
     WHERE m.card_id IS NOT NULL
     AND g.winner IS NOT NULL
     AND m.action = 'card'
+    AND g.status = 'finished'
     """
     df = pd.read_sql(query, db.bind)
 

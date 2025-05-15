@@ -7,13 +7,56 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.pandemiagame.org.data.remote.Card
+import com.pandemiagame.org.data.remote.CardWrapper
 import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.InfectData
 import com.pandemiagame.org.data.remote.Move
 import com.pandemiagame.org.data.remote.MoveResponse
+import com.pandemiagame.org.data.remote.Player
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.launch
+
+// Función para crear un juego vacío
+private fun createEmptyGame(): GameResponse {
+    return GameResponse(
+        status = "pending",
+        date = "",
+        id = 0,
+        turn = 0,
+        numTurns = 0,
+        turns = listOf(),
+        winner = 0,
+        cards = listOf(),
+        players = listOf(
+            Player(
+                name = "",
+                gameId = 0,
+                id = 0,
+                playerCards = listOf(
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
+                ),
+                organs = listOf()
+            ),
+            Player(
+                name = "",
+                gameId = 0,
+                id = 0,
+                playerCards = listOf(
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
+                    CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
+                ),
+                organs = listOf()
+            )
+        ),
+        multiplayer = false
+    )
+}
+
 
 class GameViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -33,6 +76,11 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
     private val _moves = MutableLiveData<List<MoveResponse>>()
     val moves: LiveData<List<MoveResponse>> = _moves
+
+    override fun onCleared(){
+        setGame(createEmptyGame()) // Usamos createEmptyGame() en lugar de resetGame()
+    }
+
 
     fun getGame(juegoId: String) {
 
@@ -185,6 +233,22 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
                 _game.value = response
 
+            } catch (e: Exception) {
+                // Manejar error
+                Log.v("Error", e.toString())
+            }
+        }
+    }
+
+    fun surrender(currentTurn: Int = -1){
+        viewModelScope.launch {
+            try {
+                // Creamos el movimiento
+                var move = Move(
+                    action = "surrender",
+                )
+
+                executeMove(move, currentTurn)
             } catch (e: Exception) {
                 // Manejar error
                 Log.v("Error", e.toString())

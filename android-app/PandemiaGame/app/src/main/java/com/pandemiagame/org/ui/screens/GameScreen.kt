@@ -57,6 +57,8 @@ import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ButtonDefaults
@@ -68,6 +70,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
@@ -290,49 +293,10 @@ fun GameEffects(
     // Manejador de botón de retroceso
     BackHandler(enabled = true) {
         resetGameState(gameState)
-        viewModel.setGame(createEmptyGame()) // Usamos createEmptyGame() en lugar de resetGame()
         navController.popBackStack("home", inclusive = false)
     }
 }
 
-// Función para crear un juego vacío
-private fun createEmptyGame(): GameResponse {
-    return GameResponse(
-        status = "pending",
-        date = "",
-        id = 0,
-        turn = 0,
-        numTurns = 0,
-        turns = listOf(),
-        winner = 0,
-        cards = listOf(),
-        players = listOf(
-            Player(
-                name = "",
-                gameId = 0,
-                id = 0,
-                playerCards = listOf(
-                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
-                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
-                    CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
-                ),
-                organs = listOf()
-            ),
-            Player(
-                name = "",
-                gameId = 0,
-                id = 0,
-                playerCards = listOf(
-                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
-                    CardWrapper(card = Card(id = 0, name = "BackCard", type = "")),
-                    CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
-                ),
-                organs = listOf()
-            )
-        ),
-        multiplayer = false
-    )
-}
 
 private fun resetGameState(gameState: GameState) {
     gameState.isCardDrawn = false
@@ -386,9 +350,6 @@ fun GameLayout(
                 // Separador con mazo de cartas
                 DeckSection(
                     isCardDrawn = gameState.isCardDrawn,
-                    onCardDrawn = {
-                        gameState.isCardDrawn = true
-                    },
                     onDrawAnimationComplete = {
                         gameState.isCardDrawn = false
                         val idDiscards = mutableListOf<Int>()
@@ -487,7 +448,10 @@ fun GameDialogs(
     }
 
     // Diálogo de cambio de turno
-    if ((gameState.changingTurn == true) && (gameState.winner != null)) {
+    println(gameState.winner)
+    println(gameState.changingTurn)
+
+    if ((gameState.changingTurn == true) && (gameState.winner == 0)) {
         TurnChangeDialog(
             playerName = game.players[game.players.indexOfFirst{ it.id == game.turn}].name,
             onDismiss = { viewModel.setChangingTurn(false)
@@ -566,7 +530,8 @@ fun OpponentPlayerSection(
             showChangeButton = game.players.size > 2,
             onPlayerChange = onPlayerChange,
             current = false,
-            multiplayer = (game.multiplayer && game.players[otherPlayerIndex].id == game.turn)
+            multiplayer = (game.multiplayer && game.players[otherPlayerIndex].id == game.turn),
+            winner = (game.winner != 0 && game.winner == game.players[otherPlayerIndex].id)
         )
 
         Body(
@@ -600,7 +565,6 @@ fun CurrentPlayerSection(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         PlayerHeader(
             player = game.players[currentPlayerIndex],
             viewModel = viewModel,
@@ -608,7 +572,8 @@ fun CurrentPlayerSection(
             showChangeButton = false,
             onPlayerChange = {},
             current = true,
-            multiplayer = (game.multiplayer && game.players[currentPlayerIndex].id == game.turn)
+            multiplayer = (game.multiplayer && game.players[currentPlayerIndex].id == game.turn),
+            winner = (game.winner != 0 && game.winner == game.players[currentPlayerIndex].id)
         )
         Body(
             myBody = true,
@@ -658,7 +623,8 @@ fun PlayerHeader(
     showChangeButton: Boolean,
     onPlayerChange: () -> Unit,
     current: Boolean,
-    multiplayer: Boolean
+    multiplayer: Boolean,
+    winner: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -686,6 +652,12 @@ fun PlayerHeader(
                 contentDescription = "TURNO",
                 tint = Color(0xFFFFA500)
             )
+        if(winner)
+            Icon(
+                painter = painterResource((R.drawable.baseline_star_24)),
+                contentDescription = "TURNO",
+                tint = Color(0xFFFFA500)
+            )
         Text(
             text = player.name,
             modifier = Modifier.padding(end = 20.dp)
@@ -705,7 +677,6 @@ fun PlayerHeader(
 @Composable
 fun DeckSection(
     isCardDrawn: Boolean,
-    onCardDrawn: () -> Unit,
     onDrawAnimationComplete: () -> Unit
 ) {
     Box(
@@ -946,15 +917,20 @@ fun MovesDialog(moves: List<MoveResponse>?, onDismiss: () -> Unit){
                     text = "Registro de movimientos",
                     style = MaterialTheme.typography.titleLarge
                 )
-                Column {
+                Column (
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ){
                     moves?.forEach {
                         if(it.action == "discard"){
                             Text(text =
-                                "El usuario " + it.player + " ha descartado las cartas"
+                                "El usuario " + it.player + " ha descartado las cartas",
+                                fontSize = 10.sp
+
                             )                        }
                         else{
                             Text(text =
-                                "El usuario " + it.player + " ha jugado la carta " + it.card?.name
+                                "El usuario " + it.player + " ha jugado la carta " + it.card?.name,
+                                fontSize = 10.sp
                             )
                         }
                     }
@@ -1279,7 +1255,7 @@ fun ExchangeDialog(
 fun MenuButton(gameState: GameState,
                viewModel: GameViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val options = listOf("Registro", "Chat", "Rendirme")
+    val options = listOf("Registro", "Chat", "Consejo", "Rendirme")
     Box {
         Button(onClick = { expanded = true }) {
             Icon(
@@ -1302,8 +1278,10 @@ fun MenuButton(gameState: GameState,
                                 gameState.seeingMoves = true
                                 viewModel.getMoves(viewModel.game.value?.id.toString())
                             }
+                            "Consejo" -> { /* No implementado */ }
                             "Chat" -> { /* No implementado */ }
-                            "Rendirme" -> { /* Acción para opción 3 */ }
+                            "Rendirme" -> {     val gameResponse = gameState.gameResponse
+                                viewModel.surrender(currentTurn = gameResponse?.players?.getOrNull(gameState.currentPlayerIndex)?.id?: 0) }
                         }
                     }
                 )
