@@ -1,6 +1,7 @@
 package com.pandemiagame.org
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -26,11 +27,13 @@ import com.pandemiagame.org.ui.screens.NewGameComp
 import com.pandemiagame.org.ui.screens.MainScreen
 import com.pandemiagame.org.ui.screens.Pantalla2
 import com.pandemiagame.org.ui.screens.Pantalla3
+import com.pandemiagame.org.ui.screens.SplashScreen
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
+import kotlin.math.log
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,57 +44,61 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+
 }
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val loginViewModel: LoginViewModel = viewModel()
-    val tm = TokenManager(LocalContext.current)
-
-    // Observar cambios en el token
-    var token by remember { mutableStateOf(tm.getToken() ?: "") }
-
-    // Observar el éxito del login
-    val loginSuccess by loginViewModel.loginSuccess.observeAsState()
-
-    // Efecto para manejar éxito de login
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess == true) {
-            token = tm.getToken() ?: ""
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-            }
-        }
-    }
-
-    // Efecto para manejar cambios en el token
-    LaunchedEffect(token) {
-        if (token.isEmpty()) {
-            navController.navigate("login") {
-                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                launchSingleTop = true
-            }
-        }
-    }
-
     val context = LocalContext.current
+    val tm = TokenManager(context)
+
+    LaunchedEffect(Unit) {
+        loginViewModel.checkAuthState(context)
+    }
+
+    val authState by loginViewModel.authState.observeAsState()
+
+
+    LaunchedEffect(authState) {
+        when(authState){
+            is LoginViewModel.AuthState.Authenticated -> {
+                navController.navigate("home") {
+                    popUpTo("splash") { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+            is LoginViewModel.AuthState.Unauthenticated -> {
+                navController.navigate("login"){
+                    popUpTo("splash") { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+            is LoginViewModel.AuthState.Error -> {
+                navController.navigate("login"){
+                    popUpTo("splash") { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+            else -> { }
+        }
+    }
+
     val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(context))
     val newGameViewModel: NewGameViewModel = viewModel(factory = NewGameViewModelFactory(context))
 
-
-    println(token.isNullOrEmpty())
-
     NavHost(
         navController = navController,
-        startDestination = if (token.isNullOrEmpty()) "login" else "home"
+        startDestination = "splash"
     ) {
+        composable("splash") { SplashScreen() }
         composable("login") { LoginComp(navController, loginViewModel) }
         composable("home") { MainScreen(navController,
             onLogout = {
                 tm.clearToken()
-                token = ""
-                loginViewModel.resetLoginState() // Resetear estado de login
+                loginViewModel.checkAuthState(context)
             }
         ) }
         composable("games") { GamesComp(navController = navController) }

@@ -100,14 +100,14 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
                             value = email,
                             onValueChange = {
                                 viewModel.onLoginChange(it, password)
-                            }, // Actualiza el estado con el texto ingresado
+                            },
                             label = { Text("Ingresa tu email") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(
                                     top = 8.dp,
                                     bottom = 16.dp
-                                )// Modificador opcional para ajustar el ancho
+                                )
                         )
                         Text("Contraseña")
                         TextField(
@@ -115,11 +115,11 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
                             visualTransformation = PasswordVisualTransformation(),
                             onValueChange = {
                                 viewModel.onLoginChange(email, it)
-                            }, // Actualiza el estado con el texto ingresado
+                            },
                             label = { Text("Ingresa tu contraseña") },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp), // Modificador opcional para ajustar el ancho
+                                .padding(vertical = 8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
                         LoginButton(loginEnable) { coroutine.launch { viewModel.onLoginSelected(context) } }

@@ -87,7 +87,10 @@ data class MoveResponse(
     @SerializedName("data") val data: JsonElement? = null
 )
 
-
+data class AuthResponse(
+    @SerializedName("valid") val valid: Boolean,
+    @SerializedName("user") val user: User
+)
 
 interface ApiService {
     @FormUrlEncoded
@@ -113,4 +116,7 @@ interface ApiService {
 
     @GET("game/{game_id}/moves")
     suspend fun getMoves(@Header("Authorization") auth: String, @Path("game_id") gameId: Int): List<MoveResponse>
+
+    @GET("/auth/verify")
+    suspend fun verifyToken(@Header("Authorization") auth: String): AuthResponse
 }
