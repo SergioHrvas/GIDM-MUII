@@ -1,22 +1,16 @@
 package com.pandemiagame.org
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
 import com.pandemiagame.org.data.remote.utils.TokenManager
@@ -25,7 +19,7 @@ import com.pandemiagame.org.ui.screens.GamesComp
 import com.pandemiagame.org.ui.screens.LoginComp
 import com.pandemiagame.org.ui.screens.NewGameComp
 import com.pandemiagame.org.ui.screens.MainScreen
-import com.pandemiagame.org.ui.screens.Pantalla2
+import com.pandemiagame.org.ui.screens.Profile
 import com.pandemiagame.org.ui.screens.Pantalla3
 import com.pandemiagame.org.ui.screens.SplashScreen
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
@@ -33,7 +27,6 @@ import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
-import kotlin.math.log
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,7 +103,7 @@ fun AppNavigation() {
                 navController = navController
             )
         }
-        composable("profile") { Pantalla2(navController) }
+        composable("profile") { Profile(navController) }
         composable("settings") { Pantalla3(navController) }
     }
 }

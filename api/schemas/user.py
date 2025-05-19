@@ -17,6 +17,7 @@ class UserCreate(UserBase):
 
 class UserResponse(UserBase):
     id: int
+    winned_games: Optional[int] = None
 
     class Config:
         from_attributes = True

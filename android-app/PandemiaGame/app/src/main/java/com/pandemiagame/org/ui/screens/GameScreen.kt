@@ -447,10 +447,6 @@ fun GameDialogs(
         )
     }
 
-    // Diálogo de cambio de turno
-    println(gameState.winner)
-    println(gameState.changingTurn)
-
     if ((gameState.changingTurn == true) && (gameState.winner == 0)) {
         TurnChangeDialog(
             playerName = game.players[game.players.indexOfFirst{ it.id == game.turn}].name,
@@ -591,6 +587,7 @@ fun CurrentPlayerSection(
             PlayerCardsRow(
                 cards = game.players[currentPlayerIndex].playerCards,
                 discards = discards,
+                selecting = selecting,
                 onCardSelected = onCardSelected
             )
         } else {
@@ -600,6 +597,7 @@ fun CurrentPlayerSection(
                     CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
                 },
                 discards = discards,
+                selecting = selecting,
                 onCardSelected = {}
             )
         }
@@ -704,6 +702,7 @@ fun DeckSection(
 fun PlayerCardsRow(
     cards: List<CardWrapper>,
     discards: List<Int>,
+    selecting: Int,
     onCardSelected: (Int) -> Unit
 ) {
     Row(
@@ -717,7 +716,10 @@ fun PlayerCardsRow(
             PlayerCard(
                 card = cardWrapper.card,
                 isSelected = discards[index] == 1,
-                onClick = { onCardSelected(index) }
+                selecting = selecting,
+                onClick = {
+                    onCardSelected(index)
+                }
             )
         }
     }
@@ -727,19 +729,28 @@ fun PlayerCardsRow(
 fun PlayerCard(
     card: Card,
     isSelected: Boolean,
+    selecting: Int,
     onClick: () -> Unit
 ) {
+    var selected by remember { mutableStateOf(false) }
+    if(selecting == 0){
+        selected = false
+    }
     Image(
         painter = painterResource(id = CardEnum.fromDisplayName(card.name)?.drawable ?: 0),
         contentDescription = "Carta del jugador",
         contentScale = ContentScale.Fit,
         modifier = Modifier
             .width(100.dp)
+            .offset(y = if (isSelected || selected) (-8).dp else 0.dp)
             .border(
                 width = if (isSelected) 3.dp else 0.dp,
                 color = if (isSelected) Color.Gray else Color.Transparent
             )
-            .clickable(onClick = onClick)
+            .clickable(onClick = {
+                onClick()
+                selected = !selected
+            })
     )
 }
 

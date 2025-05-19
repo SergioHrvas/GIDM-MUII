@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from models.player import Player
+from models.game import Game
 from models.user import User
 from schemas.user import UserCreate, UserBase
 from utils.auth import hash_password, verify_password, create_access_token, get_user_by_email
@@ -16,7 +18,22 @@ def create_user(db: Session, user: UserCreate):
     return user
 
 def get_user(db: Session, id: int):
-    return db.query(User).filter(User.id == id).first()
+    # Get a user by ID
+    user = db.query(User).filter(User.id == id).first()
+
+    if user is None:
+        return None
+    
+    
+    # Get number of winned games by players' user (player has a user and a game)
+    winned_games = db.query(Game).join(Player, Game.players).filter(Game.winner == Player.id, Player.user_id == id).count()    
+    
+    print(winned_games)
+
+    # Append number of winned games to user
+    user.winned_games = winned_games
+
+    return user
     
 def login(db: Session, user: UserBase):
     usuario = get_user_by_email(db, user.email)
