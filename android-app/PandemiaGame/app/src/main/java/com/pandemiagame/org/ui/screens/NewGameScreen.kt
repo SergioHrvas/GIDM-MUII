@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -185,10 +186,16 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                     else {
                                         var expanded by remember { mutableStateOf(false) }
 
-
                                         OutlinedButton(
-                                            onClick = {
+                                        enabled = (index != 0),
+                                        onClick = {
                                                 if((user == null) || (index != 0)) {expanded = true}},
+                                            colors = ButtonColors(
+                                                contentColor = Color.Green,
+                                                disabledContainerColor = Color.Gray,
+                                                disabledContentColor = Color.White,
+                                                containerColor = Color.White
+                                            ),
                                             modifier = Modifier
                                                 .weight(1f)  // Ocupa todo el espacio disponible
                                                 .padding(end = 8.dp)  // Espacio entre TextField y Button
@@ -205,13 +212,16 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                             onDismissRequest = { expanded = false }
                                         ) {
                                             viewModel.users.value?.forEach { user ->
-                                                DropdownMenuItem(
-                                                    text = { Text("${user.id} - ${user.username}") },
-                                                    onClick = {
-                                                        viewModel.onNameChanged(user.id.toString(), index, user.username)
-                                                        expanded = false
-                                                    }
-                                                )
+                                                if(user.id.toString() !in viewModel.players){
+                                                    DropdownMenuItem(
+                                                        text = { Text("${user.id} - ${user.username}") },
+                                                        onClick = {
+                                                            viewModel.onNameChanged(user.id.toString(), index, user.username)
+                                                            expanded = false
+                                                        }
+                                                    )
+                                                }
+
                                             }
                                         }
                                     }
@@ -220,11 +230,12 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                         onClick = { viewModel.removePlayer(index) },
                                         enabled = (viewModel.players.size - 1) > 1
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Eliminar jugador",
-                                            modifier = Modifier.size(24.dp)
-                                        )
+                                        if(index != 0 && viewModel.players.size > 2)
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Eliminar jugador",
+                                                modifier = Modifier.size(24.dp)
+                                            )
                                     }
                                 }
                             }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,17 +41,17 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
                 modifier = Modifier.size(220.dp).padding(bottom = 10.dp))
 
             Button(onClick = { navController.navigate("create-game") },
-                modifier = Modifier.padding(bottom = 10.dp)) {
+                modifier = Modifier.padding(bottom = 10.dp).width(240.dp)) {
                 Text(text = "Nueva partida", fontSize = 26.sp)
             }
 
             Button(onClick = { navController.navigate("games") },
-                modifier = Modifier.padding(bottom = 10.dp)) {
+                modifier = Modifier.padding(bottom = 10.dp).width(240.dp)) {
                 Text(text = "Cargar partida", fontSize = 26.sp)
             }
 
             Button(onClick = onLogout,
-                modifier = Modifier.padding(bottom = 10.dp)) {
+                modifier = Modifier.padding(bottom = 10.dp).width(240.dp)) {
                 Text(text = "Cerrar sesión", fontSize = 26.sp)
             }
         }
