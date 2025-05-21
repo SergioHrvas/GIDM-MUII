@@ -219,6 +219,7 @@ class GameState(
     var otherPlayerIndex by mutableIntStateOf(otherPlayerIndex)
     val winner by mutableStateOf(winner)
     var seeingMoves by mutableStateOf(seeingMoves)
+    val cardsSelected = mutableStateListOf(false, false, false)
 }
 @Composable
 fun GameEffects(
@@ -278,6 +279,14 @@ fun GameEffects(
         }
     }
 
+    LaunchedEffect(gameState.discarting, gameState.selecting) {
+        if(gameState.selecting == 0){
+            gameState.cardsSelected[0] = false
+            gameState.cardsSelected[1] = false
+            gameState.cardsSelected[2] = false
+        }
+    }
+
     // Efecto de limpieza al desmontar
     DisposableEffect(Unit) {
         onDispose {
@@ -293,7 +302,6 @@ fun GameEffects(
         }
 
     }
-
 
     // Manejador de botón de retroceso
     BackHandler(enabled = true) {
@@ -403,6 +411,7 @@ fun GameLayout(
                             }
                             gameState.discarting = false
                         }
+
                         if(gameState.selecting > 0) {
                             gameState.selecting = 0
                         }
@@ -592,8 +601,8 @@ fun CurrentPlayerSection(
             PlayerCardsRow(
                 cards = game.players[currentPlayerIndex].playerCards,
                 discards = discards,
-                selecting = selecting,
-                onCardSelected = onCardSelected
+                onCardSelected = onCardSelected,
+                cardsSelected = gameState.cardsSelected,
             )
         } else {
             // Muestra cartas boca abajo durante el cambio de turno
@@ -602,7 +611,7 @@ fun CurrentPlayerSection(
                     CardWrapper(card = Card(id = 0, name = "BackCard", type = ""))
                 },
                 discards = discards,
-                selecting = selecting,
+                cardsSelected = gameState.cardsSelected,
                 onCardSelected = {}
             )
         }
@@ -707,8 +716,8 @@ fun DeckSection(
 fun PlayerCardsRow(
     cards: List<CardWrapper>,
     discards: List<Int>,
-    selecting: Int,
-    onCardSelected: (Int) -> Unit
+    onCardSelected: (Int) -> Unit,
+    cardsSelected: MutableList<Boolean>
 ) {
     Row(
         modifier = Modifier
@@ -721,9 +730,17 @@ fun PlayerCardsRow(
             PlayerCard(
                 card = cardWrapper.card,
                 isSelected = discards[index] == 1,
-                selecting = selecting,
+                selected = cardsSelected[index],
                 onClick = {
                     onCardSelected(index)
+                    if(discards[index] == 0){
+                        cardsSelected[index] = !cardsSelected[index]
+                        if(cardsSelected[index]){
+                            cardsSelected[(index+1)%cardsSelected.size] = false
+                            cardsSelected[(index+2)%cardsSelected.size] = false
+                        }
+                    }
+                    println(cardsSelected)
                 }
             )
         }
@@ -734,13 +751,9 @@ fun PlayerCardsRow(
 fun PlayerCard(
     card: Card,
     isSelected: Boolean,
-    selecting: Int,
+    selected: Boolean,
     onClick: () -> Unit
 ) {
-    var selected by remember { mutableStateOf(false) }
-    if(selecting == 0){
-        selected = false
-    }
     Image(
         painter = painterResource(id = CardEnum.fromDisplayName(card.name)?.drawable ?: 0),
         contentDescription = "Carta del jugador",
@@ -754,7 +767,6 @@ fun PlayerCard(
             )
             .clickable(onClick = {
                 onClick()
-                selected = !selected
             })
     )
 }
