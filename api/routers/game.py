@@ -128,7 +128,6 @@ async def recommend_cards(
     # Filtrar solo las cartas que tiene el jugador en mano
     player_cards = db.query(PlayerCard).filter(PlayerCard.player_id == player_id).all()
     player_cards_ids = [pc.card_id for pc in player_cards]
-    print(recommendations)
 
     recommendations = [(card_id, prob) for card_id, prob in recommendations if card_id in player_cards_ids]
     

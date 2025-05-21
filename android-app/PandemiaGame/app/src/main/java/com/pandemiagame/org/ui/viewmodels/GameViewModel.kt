@@ -19,7 +19,7 @@ import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.launch
 
 // Función para crear un juego vacío
-private fun createEmptyGame(): GameResponse {
+fun createEmptyGame(): GameResponse {
     return GameResponse(
         status = "pending",
         date = "",
@@ -102,7 +102,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
     }
 
 
-    private val _shouldHideOpponentCards = MutableLiveData(false)
+    private val _shouldHideOpponentCards = MutableLiveData(true)
     val shouldHideOpponentCards: LiveData<Boolean> = _shouldHideOpponentCards
 
     fun prepareTurnChange() {

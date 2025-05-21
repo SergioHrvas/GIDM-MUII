@@ -19,11 +19,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-fun getCurrentDateTimeLegacy(): String {
-    val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-    sdf.timeZone = TimeZone.getTimeZone("UTC") // Asegura que sea UTC (Z)
-    return sdf.format(java.util.Date()) // Fecha actual en formato ISO 8601
-}
 
 class NewGameViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

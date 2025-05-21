@@ -82,6 +82,7 @@ import com.pandemiagame.org.data.remote.InfectData
 import com.pandemiagame.org.data.remote.MoveResponse
 import com.pandemiagame.org.data.remote.Player
 import com.pandemiagame.org.data.remote.User
+import com.pandemiagame.org.ui.viewmodels.createEmptyGame
 
 @Preview
 @Composable
@@ -241,6 +242,7 @@ fun GameEffects(
     LaunchedEffect(gameState.winner) {
         if (gameState.winner != null && gameState.winner!! > 0) {
             gameState.showWinnerDialog = true
+            viewModel.completeTurnChange()
         }
     }
 
@@ -286,7 +288,10 @@ fun GameEffects(
             gameState.discards[0] = 0
             gameState.discards[1] = 0
             gameState.discards[2] = 0
+            viewModel.setGame(createEmptyGame())
+
         }
+
     }
 
 

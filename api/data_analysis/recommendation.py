@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.utils import resample
 from sqlalchemy.orm import Session
 import pandas as pd
@@ -31,14 +32,10 @@ def train_move_based_model(db: Session):
     JOIN cards c ON c.id = m.card_id
     WHERE m.card_id IS NOT NULL
     AND g.winner IS NOT NULL
+    AND g.winner != 0
     AND m.action = 'card'
-    AND g.status = 'finished'
     """
     df = pd.read_sql(query, db.bind)
-
-
-    print(df)
-
 
     # Combina las clases mayoritaria y minoritaria
     df_majority = df[df['is_win'] == 0]
@@ -61,19 +58,49 @@ def train_move_based_model(db: Session):
     # Revisar el balance
     print(df['is_win'].value_counts())
 
+    # Convertir columna tipo a entero
+    # df['tipo'] = df['tipo'].astype('category').cat.codes
+
+
+    
+    print(df.head())
+    # Matriz de correlación
+    corr = df.corr()
+    print(corr)
+    # Visualizar la matriz de correlación
+    # import seaborn as sns
+    # import matplotlib.pyplot as plt
+    # plt.figure(figsize=(10, 8))
+    # sns.heatmap(corr, annot=True, fmt=".2f", cmap='coolwarm')
+    # plt.title('Matriz de Correlación')
+    # plt.show()
+
+    # Podemos eliminar la columna 'tipo' si no es relevante o tiene alta correlación con otras variables
+    df.drop(columns=['tipo'], inplace=True)
+
+
+    # Verificar si hay valores nulos
+    if df.isnull().values.any():
+        print("Hay valores nulos en el DataFrame")
+        print(df.isnull().sum())
+    else:
+        print("No hay valores nulos en el DataFrame")
+
     # Preprocesamiento
-    X = df[['card_id', 'tipo', 'move_sequence', 'brain_estado', 'lungs_estado', 'intestine_estado', 'heart_estado', 'magic_estado']]
+    X = df[['card_id', 'move_sequence', 'brain_estado', 'lungs_estado', 'intestine_estado', 'heart_estado', 'magic_estado']]
     y = df['is_win']
         
     # Transformadores para diferentes tipos de características
     preprocessor = ColumnTransformer(
         transformers=[
             ('cat', OneHotEncoder(handle_unknown='ignore'), ['card_id']),
-            ('tipo', OneHotEncoder(handle_unknown='ignore'), ['tipo']),
+            # ('tipo', OneHotEncoder(handle_unknown='ignore'), ['tipo']),
             ('num', StandardScaler(), ['move_sequence', 'brain_estado', 'lungs_estado', 'intestine_estado', 'heart_estado', 'magic_estado'])
         ],
     )
-    
+
+    """
+
     pipeline = Pipeline([
         ('preprocessor', preprocessor),
         ('classifier', GradientBoostingClassifier(
@@ -84,11 +111,35 @@ def train_move_based_model(db: Session):
             random_state=42
         ))
     ])
+    """
+    
+    pipeline = Pipeline([
+        ('preprocessor', preprocessor),
+        ('classifier', RandomForestClassifier(
+            n_estimators=100,
+            max_depth=10,
+            min_samples_split=3,
+            random_state=42
+        ))
+    ])
+
+    """
+
+    pipeline = Pipeline([
+        ('preprocessor', preprocessor),
+        ('classifier', DecisionTreeClassifier(
+            max_depth=3,
+            min_samples_leaf=5,
+            random_state=42
+        ))
+        
+    ])
+    """
 
     # Entrenamiento
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    print(f"X_train: {X_train}")
+    print(f"========== X_train: ==========\n {X_train}")
     pipeline.fit(X_train, y_train)
     
     # Evaluación
