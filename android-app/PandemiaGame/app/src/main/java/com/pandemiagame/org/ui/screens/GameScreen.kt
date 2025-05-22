@@ -951,13 +951,13 @@ fun MovesDialog(moves: List<MoveResponse>?, onDismiss: () -> Unit){
                     moves?.forEach {
                         if(it.action == "discard"){
                             Text(text =
-                                "El usuario " + it.player + " ha descartado las cartas",
+                                "El usuario " + it.player.name + " ha descartado las cartas",
                                 fontSize = 10.sp
 
                             )                        }
                         else{
                             Text(text =
-                                "El usuario " + it.player + " ha jugado la carta " + it.card?.name,
+                                "El usuario " + it.player.name + " ha jugado la carta " + it.card?.name,
                                 fontSize = 10.sp
                             )
                         }

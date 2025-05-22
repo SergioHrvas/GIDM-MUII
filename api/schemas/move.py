@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional, Union
+from schemas.player import PlayerBase
 from schemas.game import CardBase
 from schemas.organtype import OrganType
 from schemas.infect import Infect
@@ -15,8 +16,8 @@ class Move(BaseModel):
 class MoveResponse(BaseModel):
     action: str  # Tipo de acción (card, discard)
     card: Optional[CardBase] = None  # ID de la carta (si aplica)
-    player_id: Optional[int] = None  # ID del jugador (si aplica)
+    player: Optional[PlayerBase] = None  # ID del jugador (si aplica)
     game_id: Optional[int] = None  # ID del juego (si aplica)
     date: Optional[datetime] = None  # Fecha del movimiento (si aplica)
-    action: str  # Acción realizada (ejemplo: "descartar", "carta")
     data: Optional[Union[Dict[str, Any], List[Any]]] = None
+

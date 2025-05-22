@@ -81,7 +81,7 @@ data class InfectData(
 data class MoveResponse(
     @SerializedName("action") val action: String,
     @SerializedName("card") val card: Card? = null,
-    @SerializedName("player_id") val player: Int,
+    @SerializedName("player") val player: Player,
     @SerializedName("game_id") val game: Int,
     @SerializedName("date") val date: String? = null,
     @SerializedName("data") val data: JsonElement? = null

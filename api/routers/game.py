@@ -37,8 +37,6 @@ def get_my_games(current_user: int = Depends(get_current_user), db: Session = De
 @router.get("/{game_id}/moves", response_model=list[MoveResponse])
 def get_moves(game_id: int, db: Session = Depends(get_db)):
     moves = get_game(game_id, db).moves
-
-    print(len(moves))
     if moves is None:
         raise HTTPException(status_code=404, detail="Moves not found")
     return moves
