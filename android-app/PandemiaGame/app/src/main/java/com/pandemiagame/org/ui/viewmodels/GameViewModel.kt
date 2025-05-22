@@ -275,11 +275,8 @@ class GameViewModel(private val context: Context) : ViewModel() {
             try {
 
                 var token = "Bearer " + tokenManager.getToken()
-                println(token)
 
                 val response = RetrofitClient.instance.getMoves(token, juegoId.toInt())
-
-                println("movesss: + ${response.toString()}")
 
                 _moves.value = response
 

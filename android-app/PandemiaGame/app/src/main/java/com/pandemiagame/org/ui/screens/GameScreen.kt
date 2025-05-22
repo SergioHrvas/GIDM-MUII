@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +56,7 @@ import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -68,6 +68,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
@@ -446,10 +447,12 @@ fun GameDialogs(
         val moves by viewModel.moves.observeAsState()
 
         MovesDialog(
+
             moves = moves,
             onDismiss = {
                 gameState.seeingMoves = false
-            }
+            },
+            players = game.players
         )
     }
 
@@ -616,14 +619,16 @@ fun CurrentPlayerSection(
             )
         }
 
-        PlayerActions(
-            discarting = discarting,
-            selecting = selecting,
-            exchanging = exchanging,
-            onDiscardToggle = onDiscardToggle,
-            onConfirmDiscard = onConfirmDiscard,
-            onCancelAction = onCancelAction
-        )
+        if (gameState.winner == 0) {
+            PlayerActions(
+                discarting = discarting,
+                selecting = selecting,
+                exchanging = exchanging,
+                onDiscardToggle = onDiscardToggle,
+                onConfirmDiscard = onConfirmDiscard,
+                onCancelAction = onCancelAction
+            )
+        }
     }
 }
 
@@ -740,7 +745,6 @@ fun PlayerCardsRow(
                             cardsSelected[(index+2)%cardsSelected.size] = false
                         }
                     }
-                    println(cardsSelected)
                 }
             )
         }
@@ -934,33 +938,104 @@ private fun mirarTipo(targetOrgan: Organ, organ: Organ): Boolean {
 }
 
 @Composable
-fun MovesDialog(moves: List<MoveResponse>?, onDismiss: () -> Unit){
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(modifier = Modifier.padding(16.dp)) {
+fun MovesDialog(moves: List<MoveResponse>?, players: List<Player>, onDismiss: () -> Unit){
+    // Iterar y obtener los nombres
+    var playerNames = mutableMapOf<Int, String>()
+    players.forEach { player ->
+        playerNames.put(player.id, player.name)
+    }
+
+    Dialog(onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(modifier = Modifier.fillMaxSize()) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.fillMaxSize().padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = "Registro de movimientos",
                     style = MaterialTheme.typography.titleLarge
                 )
-                Column (
-                    modifier = Modifier.verticalScroll(rememberScrollState())
+                LazyColumn (
+                    modifier = Modifier.fillMaxWidth()
                 ){
                     moves?.forEach {
-                        if(it.action == "discard"){
-                            Text(text =
-                                "El usuario " + it.player.name + " ha descartado las cartas",
-                                fontSize = 10.sp
+                        move -> item {
+                        if(move.action == "discard"){
+                            Row (verticalAlignment = Alignment.CenterVertically) { Icon(
+                                    painter = painterResource(id = R.drawable.baseline_delete_24),
+                                    contentDescription = "Discard",
+                                    modifier = Modifier.padding(end = 3.dp).size(16.dp),
+                                    tint = Color(0xFF4CAF50)
 
-                            )                        }
-                        else{
-                            Text(text =
-                                "El usuario " + it.player.name + " ha jugado la carta " + it.card?.name,
-                                fontSize = 10.sp
                             )
+                                Text(modifier = Modifier.padding(bottom = 2.dp), text =
+                                    "El usuario " + move.player.name + " ha descartado las cartas",
+                                    fontSize = 12.sp
+                                )}
                         }
+                        else{
+                            if(move.card?.type == "organ" || move.card?.type == "cure"){
+                                Text(modifier = Modifier.padding(bottom = 2.dp), text =
+                                    "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            else if(move.card?.type == "virus"){
+                                Text(modifier = Modifier, text =
+                                    "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
+                                    fontSize = 12.sp
+                                )
+                                val jsonObject = move.data?.asJsonObject
+                                var player1 = jsonObject?.get("player1").toString().toInt()
+
+                                Text(modifier = Modifier.padding(bottom = 2.dp), text =
+                                    "infectando al jugador ${playerNames.get(player1)}",
+                                    fontSize = 10.sp
+                                )
+                            }
+                            else if(move.card?.type == "action"){
+                                var texto = ""
+                                val jsonObject = move.data?.asJsonObject
+                                var player1 = jsonObject?.get("player1").toString().toInt()
+
+                                if(move.card.name == "Steal Organ"){
+                                    texto = "robando al jugador ${playerNames?.get(player1)}"
+                                }
+                                else if(move.card.name == "Change Body"){
+                                    texto = "cambiando cuerpo con jugador ${playerNames?.get(player1)}"
+                                }
+                                else if(move.card.name == "Exchange Card"){
+                                    texto = "intercambiando órgano con jugador ${playerNames?.get(player1)}"
+                                }
+
+
+                                Text(modifier = Modifier.padding(bottom = 2.dp), text =
+                                    "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
+                                    fontSize = 12.sp
+                                )
+                                if (texto.isNotEmpty()) {
+                                    Text(
+                                        modifier = Modifier.padding(bottom = 2.dp), text = texto,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                        }
+                }
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Button(
+                        onClick = {
+                            onDismiss()
+                        },
+
+                    ) {
+                        Text("Atrás")
                     }
                 }
             }

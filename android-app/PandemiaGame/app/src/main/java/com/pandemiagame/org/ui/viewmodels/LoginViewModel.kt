@@ -47,7 +47,6 @@ class LoginViewModel : ViewModel(){
             _authState.value = AuthState.Loading
             val tokenManager = TokenManager(context)
             val token = tokenManager.getToken()
-            println("token: $token")
 
             when {
                 token == null -> {
@@ -91,17 +90,14 @@ class LoginViewModel : ViewModel(){
                 android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE),
                 Charsets.UTF_8
             )
-            println(payload)
             val json = Gson().fromJson(payload, Map::class.java)
 
-            println(json)
             // Solución para el problema del tipo de 'exp'
             val exp = when (val expValue = json["exp"]) {
                 is Double -> expValue.toLong()
                 is String -> expValue.toLong()
                 else -> null
             }
-            println("exp: $exp")
 
             exp?.let { expiration ->
                 System.currentTimeMillis() / 1000 >= expiration
