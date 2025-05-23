@@ -71,11 +71,14 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.pandemiagame.org.data.remote.GameResponse
 import com.pandemiagame.org.data.remote.Card
 import com.pandemiagame.org.data.remote.CardWrapper
@@ -940,177 +943,209 @@ private fun mirarTipo(targetOrgan: Organ, organ: Organ): Boolean {
         return false
     }
 }
-
 @Composable
-fun MovesDialog(moves: List<MoveResponse>?, players: List<Player>, onDismiss: () -> Unit){
-    // Iterar y obtener los nombres
-    var playerNames = mutableMapOf<Int, String>()
-    players.forEach { player ->
-        playerNames.put(player.id, player.name)
+fun MovesDialog(
+    moves: List<MoveResponse>?,
+    players: List<Player>,
+    onDismiss: () -> Unit
+) {
+    val playerNames = remember(players) {
+        players.associate { it.id to it.name }
     }
 
-    Dialog(onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(modifier = Modifier.fillMaxSize()) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 32.dp) // Margen vertical para el diálogo
+        ) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
                 Text(
                     text = "Registro de movimientos",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 12.dp)
                 )
-                LazyColumn (
-                    modifier = Modifier.fillMaxWidth()
-                ){
-                    moves?.forEach {
-                        move -> item {
-                        if(move.action == "discard"){
-                            Row (verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_delete_24),
-                                    contentDescription = "Discard",
-                                    modifier = Modifier.padding(end = 3.dp).size(16.dp),
-                                    tint = Color(0xFF4CAF50)
-                                )
-                                Text(modifier = Modifier.padding(bottom = 2.dp), text =
-                                    "El usuario " + move.player.name + " ha descartado las cartas",
-                                    fontSize = 12.sp
-                                )}
-                        }
-                        else{
-                            if(move.card?.type == "organ" || move.card?.type == "cure"){
-                                Row (verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.outline_playing_cards_24),
-                                        contentDescription = "Discard",
-                                        modifier = Modifier.padding(end = 3.dp).size(16.dp),
-                                        tint = Color(0xFF4CAF50)
-                                    )
-                                    Text(
-                                        modifier = Modifier.padding(bottom = 2.dp), text =
-                                            "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
-                                        fontSize = 12.sp
-                                    )
-                                }
-                            }
-                            else if(move.card?.type == "virus"){
-                                Row (verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.outline_playing_cards_24),
-                                        contentDescription = "Discard",
-                                        modifier = Modifier.padding(end = 3.dp).size(16.dp),
-                                        tint = Color(0xFF4CAF50)
-                                    )
-                                    Text(
-                                        modifier = Modifier, text =
-                                            "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
-                                        fontSize = 12.sp
-                                    )
-                                }
-                                val jsonObject = move.data?.asJsonObject
-                                var player1 = jsonObject?.get("player1").toString().toInt()
 
-                                Text(modifier = Modifier.padding(bottom = 2.dp), text =
-                                    "infectando al jugador ${playerNames.get(player1)}",
-                                    fontSize = 10.sp
-                                )
-                            }
-                            else if(move.card?.type == "action"){
-                                var texto = ""
-                                val jsonObject = move.data?.asJsonObject
-                                var player1 = jsonObject?.get("player1").toString().toInt()
-
-
-                                if(move.card.name == "Steal Organ"){
-                                    texto = "robando al jugador ${playerNames?.get(player1)}"
-                                }
-                                else if(move.card.name == "Change Body"){
-                                    texto = "cambiando cuerpo con jugador ${playerNames?.get(player1)}"
-                                }
-                                else if(move.card.name == "Exchange Card"){
-                                    texto = "intercambiando órgano con jugador ${playerNames?.get(player1)}"
-                                }
-                                else if(move.card.name == "Infect Player"){
-                                    texto = "estornudando a jugadores "
-                                    var player2 = 0
-
-                                    if(player1 != 0){
-                                        texto += "${playerNames?.get(player1)}  "
-                                    }
-
-                                    if(jsonObject?.get("player2") != null){
-                                        player2 = jsonObject.get("player2").toString().toInt()
-
-                                        if(player2 != 0){
-                                            texto += "${playerNames.get(player2)}  "
-                                        }
-                                    }
-                                    var player3 = 0
-                                    if(jsonObject?.get("player3") != null){
-                                        player3 = jsonObject.get("player3").toString().toInt()
-                                        if(player3 != 0){
-                                            texto += "${playerNames.get(player3)}  "
-                                        }
-                                    }
-                                    var player4 = 0
-                                    if(jsonObject?.get("player4") != null){
-                                        player4 = jsonObject.get("player4").toString().toInt()
-                                        if(player4 != 0){
-                                            texto += "${playerNames.get(player4)}   "
-                                        }
-                                    }
-                                    var player5 = 0
-                                    if(jsonObject?.get("player5") != null){
-                                        player5 = jsonObject.get("player5").toString().toInt()
-                                        if(player5 != 0){
-                                            texto += "${playerNames.get(player5)}  "
-                                        }
-                                    }
-
-                                    Row (verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.outline_playing_cards_24),
-                                            contentDescription = "Discard",
-                                            modifier = Modifier.padding(end = 3.dp).size(16.dp),
-                                            tint = Color(0xFF4CAF50)
-                                        )
-                                        Text (modifier = Modifier.padding(bottom = 2.dp), text =
-                                        "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
-                                        fontSize = 12.sp
-                                        )
-                                    }
-                                    if (texto.isNotEmpty()) {
-                                        Text(
-                                            modifier = Modifier.padding(bottom = 2.dp), text = texto,
-                                            fontSize = 10.sp
-                                        )
-                                    }
-
-                                }
-
-
-                            }
-                        }
-                    }
-                        }
-                }
+                // Área scrollable con altura máxima definida
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
                 ) {
-                    Button(
-                        onClick = {
-                            onDismiss()
-                        },
-
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Text("Atrás")
+                        moves?.forEach { move ->
+                            item {
+                                MoveItem(move, playerNames)
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                        }
                     }
+                }
+
+                // Botón fijo en la parte inferior
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
+                ) {
+                    Text("Atrás")
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MoveItem(move: MoveResponse, playerNames: Map<Int, String>) {
+    when {
+        move.action == "discard" -> renderDiscardMove(move)
+        move.card?.type == "organ" || move.card?.type == "cure" ->
+            renderOrganOrCureMove(move)
+        move.card?.type == "virus" -> renderVirusMove(move, playerNames)
+        move.card?.type == "action" -> renderActionMove(move, playerNames)
+    }
+}
+
+
+@Composable
+private fun renderDiscardMove(move: MoveResponse) {
+    MoveItem(
+        iconRes = R.drawable.baseline_delete_24,
+        text = "El usuario ${move.player.name} ha descartado las cartas"
+    )
+}
+
+@Composable
+private fun renderOrganOrCureMove(move: MoveResponse) {
+    MoveItem(
+        iconRes = R.drawable.outline_playing_cards_24,
+        text = "El usuario ${move.player.name} ha jugado la carta ${move.card?.name}"
+    )
+}
+
+@Composable
+private fun renderVirusMove(move: MoveResponse, playerNames: Map<Int, String>) {
+    val jsonObject = move.data?.asJsonObject
+    val player1 = jsonObject?.get("player1")?.toString()?.toIntOrNull()
+
+    Column {
+        MoveItem(
+            iconRes = R.drawable.outline_playing_cards_24,
+            text = "El usuario ${move.player.name} ha jugado la carta ${move.card?.name}"
+        )
+        player1?.let {
+            Text(
+                text = "infectando al jugador ${playerNames[it]}",
+                modifier = Modifier.padding(bottom = 2.dp),
+                fontSize = 10.sp
+            )
         }
+    }
+}
+
+@Composable
+private fun renderActionMove(move: MoveResponse, playerNames: Map<Int, String>) {
+    val card = move.card ?: return
+    val jsonObject = move.data?.asJsonObject
+
+    when (card.name) {
+        "Steal Organ", "Change Body", "Exchange Card" -> {
+            val player1 = jsonObject?.get("player1")?.toString()?.toIntOrNull()
+            val actionText = when (card.name) {
+                "Steal Organ" -> "robando al jugador"
+                "Change Body" -> "cambiando cuerpo con jugador"
+                "Exchange Card" -> "intercambiando órgano con jugador"
+                else -> ""
+            }
+
+            Column {
+                MoveItem(
+                    iconRes = R.drawable.outline_playing_cards_24,
+                    text = "El usuario ${move.player.name} ha jugado la carta ${card.name}"
+                )
+                player1?.let {
+                    Text(
+                        text = "$actionText ${playerNames[it]}",
+                        modifier = Modifier.padding(bottom = 2.dp),
+                        fontSize = 10.sp
+                    )
+                }
+            }
+        }
+        "Infect Player" -> renderInfectPlayerMove(move, playerNames, jsonObject)
+    }
+}
+
+@Composable
+private fun renderInfectPlayerMove(
+    move: MoveResponse,
+    playerNames: Map<Int, String>,
+    jsonObject: JsonObject?
+) {
+    val infectedPlayers = (1..5).mapNotNull { i ->
+        jsonObject?.get("player$i")?.toString()?.toIntOrNull()
+    }.filter { it != 0 }.mapNotNull { playerNames[it] }
+
+    Column {
+        MoveItem(
+            iconRes = R.drawable.outline_playing_cards_24,
+            text = "El usuario ${move.player.name} ha jugado la carta ${move.card?.name}"
+        )
+        if (infectedPlayers.isNotEmpty()) {
+            Text(
+                text = "estornudando a jugadores ${infectedPlayers.joinToString()}",
+                modifier = Modifier.padding(bottom = 2.dp),
+                fontSize = 10.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun MoveItem(
+    iconRes: Int,
+    text: String,
+    iconTint: Color = Color(0xFF4CAF50),
+    iconSize: Dp = 16.dp,
+    textSize: TextUnit = 12.sp
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            modifier = Modifier
+                .padding(end = 3.dp)
+                .size(iconSize),
+            tint = iconTint
+        )
+        Text(
+            text = text,
+            modifier = Modifier.padding(bottom = 2.dp),
+            fontSize = textSize
+        )
+    }
+}
+
+@Composable
+private fun DialogFooter(onDismiss: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Button(onClick = onDismiss) {
+            Text("Atrás")
+        }
+    }
 }
 
 @Composable
