@@ -493,7 +493,11 @@ fun GameDialogs(
                 gameState.infecting = false
                 viewModel.doMoveInfect(gameState.selectedCard, infectData = infectData, currentTurn = game.players[gameState.currentPlayerIndex].id)
             },
-            onCancel = { gameState.infecting = false }
+            onCancel = { gameState.infecting = false
+                for(i in 0..gameState.cardsSelected.size -1){
+                    gameState.cardsSelected[i] = false
+                }
+            }
         )
     }
 
@@ -962,13 +966,13 @@ fun MovesDialog(moves: List<MoveResponse>?, players: List<Player>, onDismiss: ()
                     moves?.forEach {
                         move -> item {
                         if(move.action == "discard"){
-                            Row (verticalAlignment = Alignment.CenterVertically) { Icon(
+                            Row (verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
                                     painter = painterResource(id = R.drawable.baseline_delete_24),
                                     contentDescription = "Discard",
                                     modifier = Modifier.padding(end = 3.dp).size(16.dp),
                                     tint = Color(0xFF4CAF50)
-
-                            )
+                                )
                                 Text(modifier = Modifier.padding(bottom = 2.dp), text =
                                     "El usuario " + move.player.name + " ha descartado las cartas",
                                     fontSize = 12.sp
@@ -976,16 +980,34 @@ fun MovesDialog(moves: List<MoveResponse>?, players: List<Player>, onDismiss: ()
                         }
                         else{
                             if(move.card?.type == "organ" || move.card?.type == "cure"){
-                                Text(modifier = Modifier.padding(bottom = 2.dp), text =
-                                    "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
-                                    fontSize = 12.sp
-                                )
+                                Row (verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.outline_playing_cards_24),
+                                        contentDescription = "Discard",
+                                        modifier = Modifier.padding(end = 3.dp).size(16.dp),
+                                        tint = Color(0xFF4CAF50)
+                                    )
+                                    Text(
+                                        modifier = Modifier.padding(bottom = 2.dp), text =
+                                            "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
+                                        fontSize = 12.sp
+                                    )
+                                }
                             }
                             else if(move.card?.type == "virus"){
-                                Text(modifier = Modifier, text =
-                                    "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
-                                    fontSize = 12.sp
-                                )
+                                Row (verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.outline_playing_cards_24),
+                                        contentDescription = "Discard",
+                                        modifier = Modifier.padding(end = 3.dp).size(16.dp),
+                                        tint = Color(0xFF4CAF50)
+                                    )
+                                    Text(
+                                        modifier = Modifier, text =
+                                            "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
+                                        fontSize = 12.sp
+                                    )
+                                }
                                 val jsonObject = move.data?.asJsonObject
                                 var player1 = jsonObject?.get("player1").toString().toInt()
 
@@ -999,6 +1021,7 @@ fun MovesDialog(moves: List<MoveResponse>?, players: List<Player>, onDismiss: ()
                                 val jsonObject = move.data?.asJsonObject
                                 var player1 = jsonObject?.get("player1").toString().toInt()
 
+
                                 if(move.card.name == "Steal Organ"){
                                     texto = "robando al jugador ${playerNames?.get(player1)}"
                                 }
@@ -1008,18 +1031,65 @@ fun MovesDialog(moves: List<MoveResponse>?, players: List<Player>, onDismiss: ()
                                 else if(move.card.name == "Exchange Card"){
                                     texto = "intercambiando órgano con jugador ${playerNames?.get(player1)}"
                                 }
+                                else if(move.card.name == "Infect Player"){
+                                    texto = "estornudando a jugadores "
+                                    var player2 = 0
 
+                                    if(player1 != 0){
+                                        texto += "${playerNames?.get(player1)}  "
+                                    }
 
-                                Text(modifier = Modifier.padding(bottom = 2.dp), text =
-                                    "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
-                                    fontSize = 12.sp
-                                )
-                                if (texto.isNotEmpty()) {
-                                    Text(
-                                        modifier = Modifier.padding(bottom = 2.dp), text = texto,
-                                        fontSize = 10.sp
-                                    )
+                                    if(jsonObject?.get("player2") != null){
+                                        player2 = jsonObject.get("player2").toString().toInt()
+
+                                        if(player2 != 0){
+                                            texto += "${playerNames.get(player2)}  "
+                                        }
+                                    }
+                                    var player3 = 0
+                                    if(jsonObject?.get("player3") != null){
+                                        player3 = jsonObject.get("player3").toString().toInt()
+                                        if(player3 != 0){
+                                            texto += "${playerNames.get(player3)}  "
+                                        }
+                                    }
+                                    var player4 = 0
+                                    if(jsonObject?.get("player4") != null){
+                                        player4 = jsonObject.get("player4").toString().toInt()
+                                        if(player4 != 0){
+                                            texto += "${playerNames.get(player4)}   "
+                                        }
+                                    }
+                                    var player5 = 0
+                                    if(jsonObject?.get("player5") != null){
+                                        player5 = jsonObject.get("player5").toString().toInt()
+                                        if(player5 != 0){
+                                            texto += "${playerNames.get(player5)}  "
+                                        }
+                                    }
+
+                                    Row (verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.outline_playing_cards_24),
+                                            contentDescription = "Discard",
+                                            modifier = Modifier.padding(end = 3.dp).size(16.dp),
+                                            tint = Color(0xFF4CAF50)
+                                        )
+                                        Text (modifier = Modifier.padding(bottom = 2.dp), text =
+                                        "El usuario " + move.player.name + " ha jugado la carta " + move.card.name,
+                                        fontSize = 12.sp
+                                        )
+                                    }
+                                    if (texto.isNotEmpty()) {
+                                        Text(
+                                            modifier = Modifier.padding(bottom = 2.dp), text = texto,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+
                                 }
+
+
                             }
                         }
                     }
@@ -1130,16 +1200,16 @@ fun InfectDialog(
     onConfirm: (InfectData) -> Unit,
     onCancel: () -> Unit
 ) {
+    data class InfectionTarget(var playerId: Int, val organType: String)
+
     // Mapa para guardar las selecciones: órgano -> jugador objetivo
-    val selections = remember {
-        mutableStateMapOf<String, Int?>().apply {
+    var selections = remember {
+        mutableStateMapOf<String, InfectionTarget?>().apply {
             currentPlayer.organs
                 .filter { it.virus == 1 || it.virus == 2 }
                 .forEach { put(it.tipo, null) }
         }
     }
-
-    val organFrom = mutableListOf<String>()
 
     Dialog(onDismissRequest = onCancel) {
         Surface(modifier = Modifier.padding(16.dp)) {
@@ -1156,7 +1226,6 @@ fun InfectDialog(
                 currentPlayer.organs
                     .filter { it.virus == 1 || it.virus == 2 }
                     .forEach { organ ->
-                        organFrom.add(organ.tipo)
                         Column {
 
                             Row(
@@ -1185,7 +1254,7 @@ fun InfectDialog(
                                         onClick = { expanded = true },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(if (selections[organ2]?.toString()?.isEmpty() == false) "$organ2 ${selections[organ2]?.toString() }" else "Seleccionar jugador")
+                                        Text(if (selections[organ.tipo]?.organType.toString().isEmpty() == false) "$organ2" else "Seleccionar órgano")
                                         Icon(
                                             Icons.Default.ArrowDropDown,
                                             contentDescription = null
@@ -1198,10 +1267,10 @@ fun InfectDialog(
                                     ) {
                                         targetPlayerAndOrgans.forEach { (player, targetOrgan) ->
                                             DropdownMenuItem(
-                                                text = { Text("${player.id} ${targetOrgan.tipo}") },
+                                                text = { Text("${targetOrgan.tipo} de ${player.name}") },
                                                 onClick = {
                                                     organ2 = targetOrgan.tipo
-                                                    selections[targetOrgan.tipo] = player.id
+                                                    selections[organ.tipo] = InfectionTarget(player.id, targetOrgan.tipo)
                                                     expanded = false
                                                 }
                                             )
@@ -1221,8 +1290,9 @@ fun InfectDialog(
                     Button(
                         onClick = onCancel,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
+                            containerColor = MaterialTheme.colorScheme.error
+                        ),
+                        enabled = true
                     ) {
                         Text("Cancelar")
                     }
@@ -1236,24 +1306,23 @@ fun InfectDialog(
                             }.take(5)
 
                             val data = InfectData(
-                                player1 = selectedPairs.getOrNull(0)?.second,
-                                organ1 = selectedPairs.getOrNull(0)?.first,
-                                organ1from = organFrom.getOrNull(0),
-                                player2 = selectedPairs.getOrNull(1)?.second,
-                                organ2 = selectedPairs.getOrNull(1)?.first,
-                                organ2from = organFrom.getOrNull(1),
-                                player3 = selectedPairs.getOrNull(2)?.second,
-                                organ3 = selectedPairs.getOrNull(2)?.first,
-                                organ3from = organFrom.getOrNull(2),
-                                player4 = selectedPairs.getOrNull(3)?.second,
-                                organ4 = selectedPairs.getOrNull(3)?.first,
-                                organ4from = organFrom.getOrNull(3),
-                                player5 = selectedPairs.getOrNull(4)?.second,
-                                organ5 = selectedPairs.getOrNull(4)?.first,
-                                organ5from = organFrom.getOrNull(4),
+                                player1 = selectedPairs.getOrNull(0)?.second?.playerId,
+                                organ1 = selectedPairs.getOrNull(0)?.second?.organType,
+                                organ1from = selectedPairs.getOrNull(0)?.first,
+                                player2 = selectedPairs.getOrNull(1)?.second?.playerId,
+                                organ2 = selectedPairs.getOrNull(1)?.second?.organType,
+                                organ2from = selectedPairs.getOrNull(1)?.first,
+                                player3 = selectedPairs.getOrNull(2)?.second?.playerId,
+                                organ3 = selectedPairs.getOrNull(2)?.second?.organType,
+                                organ3from = selectedPairs.getOrNull(2)?.first,
+                                player4 = selectedPairs.getOrNull(3)?.second?.playerId,
+                                organ4 = selectedPairs.getOrNull(3)?.second?.organType,
+                                organ4from = selectedPairs.getOrNull(3)?.first,
+                                player5 = selectedPairs.getOrNull(4)?.second?.playerId,
+                                organ5 = selectedPairs.getOrNull(4)?.second?.organType,
+                                organ5from = selectedPairs.getOrNull(4)?.first,
                             )
 
-                            Log.v("data", data.toString())
                             onConfirm(data)
                         },
                         enabled = selections.values.any { it != null }
@@ -1332,7 +1401,7 @@ fun ExchangeDialog(
                     Button(
                         onClick = onCancel,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
+                            containerColor = MaterialTheme.colorScheme.error
                         )
                     ) {
                         Text("Cancelar")

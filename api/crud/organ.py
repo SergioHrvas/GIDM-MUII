@@ -336,7 +336,7 @@ def infect_players(db: Session, player_id, infect):
             organ_type = organ.tipo
             if organ.virus == 2:
                 organ_type = OrganType.magic
-                
+            
             done[0] = add_virus_to_organ(db, infect.player1, organ_type, infect.organ1)
             if done[0]:
                 remove_virus_to_organ(db, player_id, infect.organ1_from)
