@@ -1019,10 +1019,24 @@ private fun MoveItem(move: MoveResponse, playerNames: Map<Int, String>) {
 
 @Composable
 private fun renderDiscardMove(move: MoveResponse) {
-    MoveItem(
-        iconRes = R.drawable.baseline_delete_24,
-        text = "El usuario ${move.player.name} ha descartado las cartas"
-    )
+    val jsonArray = move.data?.asJsonArray
+
+    Column {
+
+        if (jsonArray?.size() == 0) {
+            MoveItem(
+                iconRes = R.drawable.baseline_delete_24,
+                text = "El usuario ${move.player.name} ha pasado el turno"
+            )
+        }
+        else {
+            MoveItem(
+                iconRes = R.drawable.baseline_delete_24,
+                text = "El usuario ${move.player.name} ha descartado ${jsonArray?.size()} " + if((jsonArray?.size()  ?: 0 ) == 1) "carta" else "cartas"
+            )
+        }
+    }
+
 }
 
 @Composable

@@ -6,6 +6,10 @@ class UserBase(BaseModel):
     username: str
     email: EmailStr
     password: str
+    name: Optional[str] = None
+    last_name: Optional[str] = None
+    image: Optional[str] = None
+
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -18,6 +22,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     winned_games: Optional[int] = None
+    played_games: Optional[int] = None
 
     class Config:
         from_attributes = True

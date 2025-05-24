@@ -7,7 +7,7 @@ import java.util.Date
 
 data class LoginResponse(val access_token: String, val user: User)
 
-data class User(val id: Int, val username: String, val email: String)
+data class User(val id: Int, val username: String, val email: String, val name: String, val last_name: String, var image: String, var winned_games: Int, var played_games: Int)
 
 data class GameRequest(val players: List<String>, val status: String, val multiplayer: Boolean)
 

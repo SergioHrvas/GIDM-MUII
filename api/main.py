@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from database import init_db
 from routers import user, game, player, auth
 from fastapi.middleware.cors import CORSMiddleware  # ¡Para evitar bloqueos CORS!
@@ -7,6 +8,8 @@ app = FastAPI()
 
 # Inicializar la base de datos
 init_db()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Incluir rutas
 app.include_router(user.router, prefix="/user", tags=["User"])

@@ -137,7 +137,6 @@ class LoginViewModel : ViewModel(){
         return withContext(Dispatchers.IO) {  // Ejecutar en hilo de fondo
             try {
                 val response = RetrofitClient.instance.login(email, password, "password")
-
                 val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
                 with(sharedPref.edit()) {
                     putString("user", Gson().toJson(response.user))

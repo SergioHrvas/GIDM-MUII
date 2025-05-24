@@ -28,6 +28,10 @@ def get_user(db: Session, id: int):
     # Get number of winned games by players' user (player has a user and a game)
     winned_games = db.query(Game).join(Player, Game.players).filter(Game.winner == Player.id, Player.user_id == id).count()    
     
+    # Get players' user
+    played_games = db.query(Player).join(Player.user_id, id).count()
+
+    print(played_games)
     print(winned_games)
 
     # Append number of winned games to user
