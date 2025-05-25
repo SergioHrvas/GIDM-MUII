@@ -20,7 +20,7 @@ import com.pandemiagame.org.ui.screens.LoginComp
 import com.pandemiagame.org.ui.screens.NewGameComp
 import com.pandemiagame.org.ui.screens.MainScreen
 import com.pandemiagame.org.ui.screens.Profile
-import com.pandemiagame.org.ui.screens.Pantalla3
+import com.pandemiagame.org.ui.screens.Tutorial
 import com.pandemiagame.org.ui.screens.SplashScreen
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
@@ -104,6 +104,6 @@ fun AppNavigation() {
             )
         }
         composable("profile") { Profile(navController) }
-        composable("settings") { Pantalla3(navController) }
+        composable("tutorial") { Tutorial(navController) }
     }
 }

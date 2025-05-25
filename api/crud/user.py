@@ -31,12 +31,13 @@ def get_user(db: Session, id: int):
     # Get players' user
     played_games = db.query(Player).join(Player.user_id, id).count()
 
-    print(played_games)
-    print(winned_games)
-
     # Append number of winned games to user
     user.winned_games = winned_games
 
+    user.played_games = played_games
+
+    print(f"User {user.username} has {winned_games} winned games and {played_games} played games.")
+    
     return user
     
 def login(db: Session, user: UserBase):
@@ -48,6 +49,16 @@ def login(db: Session, user: UserBase):
     else:
         loged = verify_password(user.password, usuario.password)
 
+        # Get number of winned games by players' user (player has a user and a game)
+        winned_games = db.query(Game).join(Player, Game.players).filter(Game.winner == Player.id, Game.multiplayer == True, Player.user_id == usuario.id).count()    
+        
+        # Get players' user
+        played_games = db.query(Player).join(Player, Game.players).filter(Game.multiplayer == True, Player.user_id == usuario.id).count()
+
+        # Append number of winned games to user
+        usuario.winned_games = winned_games
+
+        usuario.played_games = played_games
         if(loged):
             access_token = create_access_token({"sub": usuario.username, "email": user.email})
             return {

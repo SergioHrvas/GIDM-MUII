@@ -36,8 +36,10 @@ import com.google.gson.Gson
 import com.pandemiagame.org.data.remote.Constants
 import com.pandemiagame.org.ui.navigation.BottomNavBar
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
-import firebase.com.protolitewrapper.BuildConfig
+
 import org.json.JSONObject
+
+
 @Composable
 fun WinRatePieChart(won: Int, total: Int) {
     val percentage = if (total > 0) (won.toFloat() / total.toFloat()) else 0f
@@ -73,58 +75,98 @@ fun WinRatePieChart(won: Int, total: Int) {
         fontWeight = FontWeight.Bold
     )
 }
-
 @Composable
 fun Profile(navController: NavController) {
     val context = LocalContext.current
 
     val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
-    var userString by remember { mutableStateOf(sharedPref.getString("user", null)) }
-    var userJSON = if(userString != null) {
-        JSONObject(userString!!)
-    }
-    else{
-        JSONObject()
-    }
+    val userString by remember { mutableStateOf(sharedPref.getString("user", null)) }
+    val userJSON = userString?.let { JSONObject(it) } ?: JSONObject()
+
+    val baseUrl = Constants.BASE_URL
+    val username = userJSON.optString("username", "")
+    val name = "${userJSON.optString("name", "")} ${userJSON.optString("last_name", "")}"
+    val email = userJSON.optString("email", "")
+    val image = userJSON.optString("image", "default.png")
+    val winnedGames = userJSON.optInt("winned_games", 0)
+    val playedGames = userJSON.optInt("played_games", 0)
+
     Scaffold(
         topBar = { CustomTopAppBar() },
         bottomBar = { BottomNavBar(navController) },
     ) { padding ->
         Column(
-            modifier = Modifier.padding(padding) // Añade el padding del Scaffold
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically, // Alinea verticalmente los elementos
-                modifier = Modifier.fillMaxWidth() // Ocupa todo el ancho disponible
+            // Card de perfil
+            androidx.compose.material3.Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                elevation = androidx.compose.material3.CardDefaults.cardElevation(6.dp)
             ) {
                 Column(
-                    modifier = Modifier.weight(1f) // Toma todo el espacio restante
-                ) {
-                    Text(
-                        text = "${userJSON.get("username")}"
-                    )
-                    Text(
-                        text = "${userJSON.get("name")} ${userJSON.get("last_name")}"
-                    )
-                }
-
-
-                val base_url = Constants.BASE_URL
-
-                Image(
-                    painter = rememberImagePainter("${base_url}static/uploads/${userJSON.get("image")}"),
-                    contentDescription = null,
                     modifier = Modifier
-                        .size(96.dp) // Tamaño fijo para la imagen
-                        .clip(CircleShape) // Para hacerla circular
-                )
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "@$username", fontSize = 14.sp, color = Color.Gray)
+                            Text(text = "Principiante", fontSize = 14.sp)
+                        }
+
+                        Image(
+                            painter = rememberImagePainter("${baseUrl}static/uploads/$image"),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape)
+                        )
+                    }
+
+                    Text(
+                        text = email,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = Color.DarkGray
+                    )
+
+                    // Botón de editar
+                    androidx.compose.material3.Button(
+                        onClick = {
+                            // TODO: Navegar a la pantalla de edición de perfil
+                        },
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .align(Alignment.End)
+                    ) {
+                        Text(text = "Editar Perfil")
+                    }
+                }
             }
 
-            Text(text = "${userJSON.get("email")}")
-            println(userJSON)
-            if(userJSON.get("winned_games") != null && userJSON.get("played_games") != null) {
-                //WinRatePieChart(userJSON.get("winned_games").toString().toInt(), userJSON.get("played_games").toString().toInt())
-                Text(text = "Ganadas ${userJSON.get("winned_games")}/${userJSON.get("played_games")}")
+            // Gráfico Win Rate
+            if (playedGames > 0) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    WinRatePieChart(won = winnedGames, total = playedGames)
+                    Text(
+                        text = "Ganadas $winnedGames/$playedGames",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         }
     }
