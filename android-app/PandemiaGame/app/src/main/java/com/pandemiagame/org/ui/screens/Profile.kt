@@ -141,7 +141,7 @@ fun Profile(navController: NavController) {
                     // Botón de editar
                     androidx.compose.material3.Button(
                         onClick = {
-                            // TODO: Navegar a la pantalla de edición de perfil
+                            navController.navigate("edit-profile")
                         },
                         modifier = Modifier
                             .padding(top = 12.dp)

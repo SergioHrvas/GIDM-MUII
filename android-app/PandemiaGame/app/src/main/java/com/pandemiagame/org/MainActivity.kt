@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
 import com.pandemiagame.org.data.remote.utils.TokenManager
+import com.pandemiagame.org.ui.screens.EditProfileComp
 import com.pandemiagame.org.ui.screens.GameComp
 import com.pandemiagame.org.ui.screens.GamesComp
 import com.pandemiagame.org.ui.screens.LoginComp
@@ -105,5 +106,6 @@ fun AppNavigation() {
         }
         composable("profile") { Profile(navController) }
         composable("tutorial") { Tutorial(navController) }
+        composable("edit-profile") { EditProfileComp(navController) }
     }
 }
