@@ -5,7 +5,7 @@ from models.user import User
 from utils.auth import get_current_user
 from database import SessionLocal, init_db
 from crud.user import get_user, create_user, login
-from schemas.user import UserBase, UserLogin, UserCreate, UserResponse, AuthResponse
+from schemas.user import UserBase, UserLogin, UserResponse, AuthResponse
 from utils.db import get_db
 
 router = APIRouter()
@@ -28,5 +28,4 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 
 @router.get("/auth/verify")
 async def verify_token(current_user: User = Depends(get_current_user)):
-    print(current_user)
     return {"valid": True, "user": current_user}

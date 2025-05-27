@@ -275,8 +275,6 @@ def change_organs(db: Session, player_id, type_from, player_to, type_to):
     has_organ_player_from = db.query(Organ).filter(Organ.player_id == player_id, Organ.tipo == type_to).first()
     has_organ_player_to = db.query(Organ).filter(Organ.player_id == player_to, Organ.tipo == type_from).first()
 
-    print("has_organ_player_from: ", has_organ_player_from)
-    print("has_organ_player_to: ", has_organ_player_to)
 
     if((has_organ_player_from or has_organ_player_to) and type_from != type_to):
         return False

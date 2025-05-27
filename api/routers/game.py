@@ -25,7 +25,6 @@ def create_new_game(game: GameBase, current_user: int = Depends(get_current_user
 def get_my_games(current_user: int = Depends(get_current_user), db: Session = Depends(get_db)):
     games = get_player_games(current_user.id, db)
 
-    print(games[0].date)
     if games is None:
         raise HTTPException(status_code=404, detail="Games not found")
     if len(games) == 0:
