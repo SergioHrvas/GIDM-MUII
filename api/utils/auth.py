@@ -53,8 +53,8 @@ def get_user_by_email(db: Session, email):
     return db.query(User).filter(User.email == email).first();
 
 def get_current_user(token: str = Depends(oauth2_scheme),  db: Session = Depends(get_db)) -> dict:
-    print(token)
     """Obtiene el usuario actual desde el token JWT."""
+    print("token" + token)
     decode_access_token(token)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -65,6 +65,7 @@ def get_current_user(token: str = Depends(oauth2_scheme),  db: Session = Depends
         payload = decode_access_token(token)
         username: str = payload.get("sub")
         email: str = payload.get("email")
+        print(username)
 
         if email is None or username is None:
             raise credentials_exception

@@ -10,15 +10,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -34,38 +37,45 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.Constants
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
-import com.pandemiagame.org.ui.viewmodels.LoginViewModel
-import kotlinx.coroutines.launch
+import com.pandemiagame.org.ui.viewmodels.EditProfileViewModel
 import org.json.JSONObject
 
 
 @Composable
-fun EditProfileComp(navController: NavController) {
+fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel = viewModel()) {
     val context = LocalContext.current
-
-    val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
+    val sharedPref = remember { context.getSharedPreferences("MyPref", Context.MODE_PRIVATE) }
     val userString by remember { mutableStateOf(sharedPref.getString("user", null)) }
+
+    // Obtener la imagen (si no cambia, no necesita ser estado)
     val userJSON = userString?.let { JSONObject(it) } ?: JSONObject()
-
+    val image = userJSON.optString("image", "")
     val baseUrl = Constants.BASE_URL
-    val username = userJSON.optString("username", "")
-    val name = userJSON.optString("name", "")
-    val last_name = userJSON.optString("last_name", "")
-    val email = userJSON.optString("email", "")
-    val image = userJSON.optString("image", "default.png")
 
+    // Efecto para inicializar los datos una vez
+    LaunchedEffect(userString) {
+        userString?.let {
+            val userJSON = JSONObject(it)
+            viewModel.initializeUserData(userJSON)
+        }
+    }
 
+    // Observar los estados del ViewModel
+    val id by viewModel.id.observeAsState(0)
+    val email by viewModel.email.observeAsState("")
+    val password by viewModel.password.observeAsState("")
+    val name by viewModel.name.observeAsState("")
+    val last_name by viewModel.lastname.observeAsState("")
+    val username by viewModel.username.observeAsState("")
 
-    // val email :String by viewModel.email.observeAsState(initial="")  // Estado para el email
-    //val password :String by viewModel.password.observeAsState(initial="")  // Estado para la password
-    val password: String = ""
-    val isLoading: Boolean = false
-    val coroutine = rememberCoroutineScope()
+    val isLoading = false
+    //val image :String by viewModel.image.observeAsState(initial=userJSON.optString("image", ""))  // Estado para la password
 
     Scaffold (
         topBar = { CustomTopAppBar() },
@@ -79,7 +89,10 @@ fun EditProfileComp(navController: NavController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPading)
-                    .padding(top=10.dp),
+                    .padding(top=10.dp)
+                    .verticalScroll(rememberScrollState())
+                ,
+
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -105,7 +118,7 @@ fun EditProfileComp(navController: NavController) {
                         TextField(
                             value = username,
                             onValueChange = {
-
+                                    newValue -> viewModel.onUserNameChange(newValue)
                             },
                             label = { Text("Ingresa tu nombre de usuario") },
                             modifier = Modifier
@@ -119,7 +132,7 @@ fun EditProfileComp(navController: NavController) {
                         TextField(
                             value = name,
                             onValueChange = {
-
+                                    newValue -> viewModel.onNameChange(newValue)
                             },
                             label = { Text("Ingresa tu nombre") },
                             modifier = Modifier
@@ -133,7 +146,7 @@ fun EditProfileComp(navController: NavController) {
                         TextField(
                             value = last_name,
                             onValueChange = {
-
+                                    newValue -> viewModel.onLastNameChange(newValue)
                             },
                             label = { Text("Ingresa tu(s) apellido(s)") },
                             modifier = Modifier
@@ -147,7 +160,7 @@ fun EditProfileComp(navController: NavController) {
                         TextField(
                             value = email,
                             onValueChange = {
-
+                                    newValue -> viewModel.onEmailChange(newValue)
                             },
                             label = { Text("Ingresa tu email") },
                             modifier = Modifier
@@ -162,7 +175,7 @@ fun EditProfileComp(navController: NavController) {
                             value = password,
                             visualTransformation = PasswordVisualTransformation(),
                             onValueChange = {
-
+                                    newValue -> viewModel.onPasswordChange(newValue)
                             },
                             label = { Text("Ingresa tu contraseña") },
                             modifier = Modifier
@@ -170,7 +183,11 @@ fun EditProfileComp(navController: NavController) {
                                 .padding(vertical = 8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
-                        Button (onClick = {}){
+                        Button (onClick = {viewModel.onUpdateSelected(ctx = context)
+                            navController.navigate("profile") {
+                                popUpTo("edit-profile") { inclusive = true }
+                            }
+                        }){
                             Text("Modificar Perfil")
                         }
                     }

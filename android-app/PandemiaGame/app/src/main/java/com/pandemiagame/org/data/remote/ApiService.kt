@@ -8,6 +8,14 @@ import java.util.Date
 data class LoginResponse(val access_token: String, val user: User)
 
 data class User(val id: Int, val username: String, val email: String, val name: String, val last_name: String, var image: String, var winned_games: Int, var played_games: Int)
+data class UserUpdating(
+    var username: String? = null,
+    var email: String? = null,
+    var name: String? = null,
+    @SerializedName("last_name") var lastName: String? = null,
+    var image: String? = null,
+    var password: String? = null
+)
 
 data class GameRequest(val players: List<String>, val status: String, val multiplayer: Boolean)
 
@@ -119,4 +127,7 @@ interface ApiService {
 
     @GET("/auth/verify")
     suspend fun verifyToken(@Header("Authorization") auth: String): AuthResponse
+
+    @PUT("/user/{user_id}")
+    suspend fun updateUser(@Header("Authorization") auth: String, @Path("user_id") userId: Int, @Body user: UserUpdating): User
 }
