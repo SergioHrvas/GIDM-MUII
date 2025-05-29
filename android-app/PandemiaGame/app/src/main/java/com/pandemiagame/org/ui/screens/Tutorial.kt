@@ -161,30 +161,124 @@ fun Tutorial(navController: NavController) {
                 ),
                 subsubsection = listOf<Section>(
                     Section(
+                        imageRes = R.drawable.tutorial_3,
                         title = "INFECTAR",
                         description = "Si usas un virus sobre un órgano libre, añades el virus. Mientras tenga el virus, este órgano no se contará" +
                                 "para completar el cuerpo y ganar"
                     ),
                     Section(
+                        imageRes = R.drawable.tutorial_4,
                         title = "DESTRUIR",
                         description = "Si usas un virus sobre un órgano con virus, el órgano se destruye y desaparece del cuerpo del jugador."
                     ),
                     Section(
+                        imageRes = R.drawable.tutorial_5,
                         title = "QUITAR CURA",
                         description = "Si usas un virus sobre un órgano con cura, la cura desaparece y el órgano queda libre."
                     ),
                     Section(
+                        imageRes = R.drawable.tutorial_6,
                         title = "FALLLO POR INMUNE",
                         description = "No puedes usar un virus sobre un órgano inmunizado (doble cura)."
                     )
 
                 )
             )
+
+
+            TutorialSubsection(
+                section = Section(
+                    title = "Cura",
+                    imageRes = R.drawable.cure_intestine,
+                    description = "Las curas son cartas que se usan sobre tu propio cuerpo para curar y proteger tus órganos. Podrás utilizarlas sobre tu cuerpo siempre y cuando el órgano sea del mismo color."
+                ),
+                subsubsection = listOf<Section>(
+                    Section(
+                        imageRes = R.drawable.tutorial_7,
+                        title = "PROTEGER",
+                        description = "Si usas una cura sobre un órgano libre, añades la cura. Esta cura estará presente hasta que un usuario te la quite por virus."
+                    ),
+                    Section(
+                        imageRes = R.drawable.tutorial_9,
+                        title = "CURAR",
+                        description = "Si usas una cura sobre un órgano con virus, la cura desaparece y el órgano queda libre y sin protección."
+                    ),
+                    Section(
+                        imageRes = R.drawable.tutorial_8,
+                        title = "INMUNIZAR",
+                        description = "Si usas una cura sobre un órgano con cura, el órgano queda inmunizado, siendo imposible de robar, destruir o infectar."
+                    ),
+                )
+            )
+
+            TutorialSubsection(
+                section = Section(
+                    title = "Acciones",
+                    imageRes = R.drawable.steal,
+                    description = "Las acciones son cartas especiales que te ayudarán a ganar mejorando tu cuerpo o empeorando los de tus rivales."
+                ),
+                subsubsection = listOf<Section>(
+                    Section(
+                        imageRes = R.drawable.tutorial_13,
+                        title = "INTERCAMBIO DE ÓRGANO",
+                        description = "Si usas esta carta, podrás intercambiar uno de tus órganos con otro de otro jugador siempre y cuando los jugadores no tengan los órganos a adquirir" +
+                                "y no estén inmunizados."
+                    ),
+                    Section(
+                        imageRes = R.drawable.tutorial_10,
+                        title = "ROBAR ÓRGANO",
+                        description = "Con esta carta podrás robar un órgano a otro jugador siempre y cuando no tengas dicho órgano en tu cuerpo y no esté inmunizado."
+                    ),
+                    Section(
+                        imageRes = R.drawable.tutorial_14,
+                        title = "DESCARTAR CARTAS",
+                        description = "Esta carta obliga a tus oponentes a descartar todas sus cartas en la mano y volver a robar del mazo, volviendo el turno a ti."
+                    ),
+                    Section(
+                        imageRes = R.drawable.tutorial_12,
+                        title = "CAMBIO DE CUERPO",
+                        description = "Si usas esta carta cambiarás tu cuerpo con el del otro jugador, incluyendo todos los órganos, virus y curas." +
+                                " No importa si hay órganos inmunizados: también se cambian."
+                    ),
+                    Section(
+                        imageRes = R.drawable.tutorial_11,
+                        title = "ESTORNUDO",
+                        description = "Con esta carta podrás repartir los virus que tienen tus órganos por los cuerpos del resto de jugadores." +
+                                " No importa si hay órganos inmunizados: también se cambian."
+                    )
+                )
+            )
+
+            TutorialSubsection(
+                section = Section(
+                    title = "Cartas mágicas",
+                    imageRes = R.drawable.cure_intestine,
+                    description = "Las cartas mágicas son un color de carta especial de órgano, virus y cura. Pueden afectar a cualquier color, lo cual les da muchisimo poder; pero también pueden ser muy débiles porque sobre ellas pueden usarse virus de cualquier color."
+                ),
+                subsubsection = listOf<Section>(
+                    Section(
+                        imageRes = R.drawable.tutorial_15,
+                        title = "ÓRGANO MÁGICO",
+                        description = "Puede curarse, protegerse y curarse con cualquier cura, pero también puede infectarse y destruirse con cualquier cura."
+                    ),
+                    Section(
+                        imageRes = R.drawable.tutorial_16,
+                        title = "VIRUS MÁGICO",
+                        description = "Puede usarse sobre cualquier órgano o cura, pero también se puede extirpar (curar) con una cura de cualquier color."
+                    ),
+                    Section(
+                        imageRes = R.drawable.tutorial_17,
+                        title = "CURA MÁGICA",
+                        description = "Puede usarse sobre cualquier órgano o virus, pero también se puede quitar con un virus de cualquier color."
+                    ),
+                )
+            )
+
             TutorialSection(
                 section = Section(
                     title = "🏆 Cómo ganar",
                     imageRes = R.drawable.tutorial_1,
-                    description = "El equipo gana al descubrir las curas de las 4 enfermedades antes de que se agoten las cartas o haya demasiados brotes."
+                    description = "El jugador gana automáticamente al reunir cuatro de los cinco órganos sanos (sin virus)."
                 )
             )
 
@@ -230,20 +324,22 @@ fun TutorialSubsection(
     subsubsection: List<Section>? = null
 ) {
     Column(modifier = Modifier.padding(vertical = 16.dp)) {
-        Row() {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 8.dp)
+        ) {
             if(section.imageRes != null) {
                 Image(
                     painter = painterResource(id = section.imageRes),
                     contentDescription = null,
                     modifier = Modifier
-                        .height(20.dp)
+                        .height(40.dp).padding(end = 5.dp)
                 )
             }
             Text(
                 text = section.title,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
             )
 
         }
@@ -267,13 +363,13 @@ fun TutorialSubsection(
 fun TutorialSubSubsection(
     section: Section
 ) {
-        Row() {
+        Row(modifier = Modifier.padding(bottom = 10.dp)) {
             if(section.imageRes != null) {
                 Image(
                     painter = painterResource(id = section.imageRes),
                     contentDescription = null,
                     modifier = Modifier
-                        .height(20.dp)
+                        .width(90.dp).padding(end = 5.dp)
                 )
             }
             Column () {
