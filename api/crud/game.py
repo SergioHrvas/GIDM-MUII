@@ -1,6 +1,7 @@
 from operator import or_
 from fastapi import Query
 from sqlalchemy.orm import Session
+from models.playercard import PlayerCard
 from models.user import User
 from schemas.status import StatusEnum
 from models.organ import Organ
@@ -176,31 +177,84 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
                 done = change_organs(db, player_id, move.organ_to_pass, move.infect.player1, move.infect.organ1)
 
             elif card.name == "Discard Cards":
-                discard_cards(db, game_id, player_id)
+                # Creamos el movimiento
+                db_move = MoveModel(
+                    player_id=player_id,
+                    game_id=game_id,
+                    card_id=move.card,
+                    date=datetime.now(),
+                    action="card",
+                    data=move.infect.dict() if move.infect else None,
+                    lungs_estado=lungs_estado,
+                    intestine_estado=intestine_estado,
+                    heart_estado=heart_estado,
+                    brain_estado=brain_estado,
+                    magic_estado=magic_estado,
+                )
+                db.add(db_move)
+
+                for p in game.turns:
+                    if p != player_id:
+                        discards = []
+
+                        # Obtenemos las cartas del jugador
+                        player_cards = db.query(PlayerCard).filter(PlayerCard.player_id == p).all()
+                        
+                        for c in player_cards:
+                            discards.append(c.card_id)
+                            
+
+                        discard_my_cards(db, p, discards)
+
+                        steal_to_deck(db, game, p, 3)
+
+                        db_move = MoveModel(
+                            player_id=p,
+                            game_id=game_id,
+                            date=datetime.now(),
+                            action="discard",
+                            data=discards,
+                            lungs_estado=get_organ_status(db, p, 'lungs'),
+                            intestine_estado=get_organ_status(db, p, 'intestine'),
+                            heart_estado=get_organ_status(db, p, 'heart'),
+                            brain_estado=get_organ_status(db, p, 'brain'),
+                            magic_estado=get_organ_status(db, p, 'magic'),
+                        )
+
+                        db.add(db_move)
+                        db.commit()
+                        db.refresh(db_move)
+
+                        
+                # Pasamos el turno al siguiente jugador
+                num_turns = len(game.turns) - 1
+                game.num_turns+=num_turns
+                game.turn = player_id
+                
                 done = True
         
         if done:
             remove_card_from_player(db, player_id, move.card)
             steal_to_deck(db, game, player_id, 1)
 
-    
-            # Creamos el movimiento
-            db_move = MoveModel(
-                player_id=player_id,
-                game_id=game_id,
-                card_id=move.card,
-                date=datetime.now(),
-                action="card",
-                data=move.infect.dict() if move.infect else None,
-                lungs_estado=lungs_estado,
-                intestine_estado=intestine_estado,
-                heart_estado=heart_estado,
-                brain_estado=brain_estado,
-                magic_estado=magic_estado,
-            )
-            db.add(db_move)
-            db.commit()
-            db.refresh(db_move)
+            if card.name != "Discard Cards":
+                # Creamos el movimiento
+                db_move = MoveModel(
+                    player_id=player_id,
+                    game_id=game_id,
+                    card_id=move.card,
+                    date=datetime.now(),
+                    action="card",
+                    data=move.infect.dict() if move.infect else None,
+                    lungs_estado=lungs_estado,
+                    intestine_estado=intestine_estado,
+                    heart_estado=heart_estado,
+                    brain_estado=brain_estado,
+                    magic_estado=magic_estado,
+                )
+                db.add(db_move)
+                db.commit()
+                db.refresh(db_move)
 
     # Revisamos si hay un ganador
     review_winner(db, game)
