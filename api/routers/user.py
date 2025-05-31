@@ -40,8 +40,6 @@ async def update_user(
 ):
     print("Headers recibidos:", request.headers)  # Verifica los headers
     modify_user(db, user_id, user)
-    return get_user(db, user_id)
-    modify_user(db, user_id, user)
 
     db_user = get_user(db, user_id)
 

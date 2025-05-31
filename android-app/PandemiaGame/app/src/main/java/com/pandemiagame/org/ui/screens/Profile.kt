@@ -12,7 +12,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.google.gson.Gson
@@ -80,16 +83,32 @@ fun Profile(navController: NavController) {
     val context = LocalContext.current
 
     val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
-    val userString by remember { mutableStateOf(sharedPref.getString("user", null)) }
+    var userString by remember { mutableStateOf(sharedPref.getString("user", null)) }
     val userJSON = userString?.let { JSONObject(it) } ?: JSONObject()
 
-    val baseUrl = Constants.BASE_URL
-    val username = userJSON.optString("username", "")
-    val name = "${userJSON.optString("name", "")} ${userJSON.optString("last_name", "")}"
-    val email = userJSON.optString("email", "")
-    val image = userJSON.optString("image", "default.png")
-    val winnedGames = userJSON.optInt("winned_games", 0)
-    val playedGames = userJSON.optInt("played_games", 0)
+    var baseUrl = Constants.BASE_URL
+    var username = userJSON.optString("username", "")
+    var name = "${userJSON.optString("name", "")} ${userJSON.optString("last_name", "")}"
+    var email = userJSON.optString("email", "")
+    var image = userJSON.optString("image", "default.png")
+    var winnedGames = userJSON.optInt("winned_games", 0)
+    var playedGames = userJSON.optInt("played_games", 0)
+
+    // Escuchar actualizaciones de navegación
+    val updatedUser by navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getLiveData<String>("updatedUserJson")
+        ?.observeAsState() ?: remember { mutableStateOf(null) }
+
+    println(updatedUser)
+
+    LaunchedEffect(updatedUser) {
+        updatedUser?.let {
+            userString = it
+            navController.currentBackStackEntry?.savedStateHandle?.remove<String>("updatedUserJson")
+        }
+    }
+
 
     Scaffold(
         topBar = { CustomTopAppBar() },

@@ -37,6 +37,8 @@ class EditProfileViewModel : ViewModel(){
     val lastname: LiveData<String> get() = _lastname
     val username: LiveData<String> get() = _username
 
+    private val _updateCompleted = MutableLiveData(false)
+    val updateCompleted: LiveData<Boolean> = _updateCompleted
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
@@ -102,11 +104,16 @@ class EditProfileViewModel : ViewModel(){
                 }
 
                 val response = RetrofitClient.instance.updateUser(token, id, user)
+
                 val sharedPref = ctx.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
+                val updatedUserJsonString = Gson().toJson(response)
+
                 with(sharedPref.edit()) {
-                    putString("user", Gson().toJson(response))
+                    putString("user", updatedUserJsonString)
                     apply()
                 }
+
+                _updateCompleted.value = true
 
             } catch (e: Exception) {
                 Log.e("UpdateProfile", "Error al actualizar perfil: ${e.message}")

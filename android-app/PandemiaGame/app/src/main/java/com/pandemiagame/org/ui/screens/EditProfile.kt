@@ -27,6 +27,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,9 +52,8 @@ import org.json.JSONObject
 fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel = viewModel()) {
     val context = LocalContext.current
     val sharedPref = remember { context.getSharedPreferences("MyPref", Context.MODE_PRIVATE) }
-    val userString by remember { mutableStateOf(sharedPref.getString("user", null)) }
+    var userString by remember { mutableStateOf(sharedPref.getString("user", null)) }
 
-    // Obtener la imagen (si no cambia, no necesita ser estado)
     val userJSON = userString?.let { JSONObject(it) } ?: JSONObject()
     val image = userJSON.optString("image", "")
     val baseUrl = Constants.BASE_URL
@@ -67,15 +67,30 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
     }
 
     // Observar los estados del ViewModel
-    val id by viewModel.id.observeAsState(0)
     val email by viewModel.email.observeAsState("")
     val password by viewModel.password.observeAsState("")
     val name by viewModel.name.observeAsState("")
     val last_name by viewModel.lastname.observeAsState("")
     val username by viewModel.username.observeAsState("")
 
-    val isLoading = false
-    //val image :String by viewModel.image.observeAsState(initial=userJSON.optString("image", ""))  // Estado para la password
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    var navigateBackAfterUpdate by remember { mutableStateOf(false) }
+
+    val updateCompleted by viewModel.updateCompleted.observeAsState(false)
+
+    LaunchedEffect(updateCompleted) {
+        if (updateCompleted) {
+            val updatedUserJsonString = sharedPref.getString("user", null)
+
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("updatedUserJson", updatedUserJsonString)
+
+
+            navController.popBackStack()
+
+        }
+    }
 
     Scaffold (
         topBar = { CustomTopAppBar() },
@@ -183,11 +198,10 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
                                 .padding(vertical = 8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
-                        Button (onClick = {viewModel.onUpdateSelected(ctx = context)
-                            navController.navigate("profile") {
-                                popUpTo("edit-profile") { inclusive = true }
-                            }
-                        }){
+                        Button(onClick = {
+                            navigateBackAfterUpdate = true
+                            viewModel.onUpdateSelected(context)
+                        }) {
                             Text("Modificar Perfil")
                         }
                     }
