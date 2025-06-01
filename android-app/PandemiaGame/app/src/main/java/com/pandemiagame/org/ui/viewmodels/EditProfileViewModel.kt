@@ -37,13 +37,20 @@ class EditProfileViewModel : ViewModel(){
     val lastname: LiveData<String> get() = _lastname
     val username: LiveData<String> get() = _username
 
+
+    private val _formEnable = MutableLiveData<Boolean>()
+    val formEnable : LiveData<Boolean> = _formEnable
+
+
     private val _updateCompleted = MutableLiveData(false)
     val updateCompleted: LiveData<Boolean> = _updateCompleted
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
 
+    private var emailChanged: Boolean = false
 
+    private var passwordChanged: Boolean = false
 
     // Función para inicializar con datos del usuario
     fun initializeUserData(userJSON: JSONObject) {
@@ -56,10 +63,14 @@ class EditProfileViewModel : ViewModel(){
 
     fun onEmailChange(email: String){
         _email.value = email
+        emailChanged = true
+        _formEnable.value = isValidEmail(email) && (!passwordChanged || (passwordChanged && isValidPassword(password.value.toString())))
     }
 
     fun onPasswordChange(password: String){
         _password.value = password
+        passwordChanged = true
+        _formEnable.value = isValidPassword(password) && (!emailChanged || (emailChanged && isValidEmail(email.value.toString())))
     }
 
     fun onNameChange(name: String){

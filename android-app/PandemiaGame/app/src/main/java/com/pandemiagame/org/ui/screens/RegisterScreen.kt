@@ -19,8 +19,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,33 +44,22 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
+import com.pandemiagame.org.ui.viewmodels.RegisterViewModel
 import kotlinx.coroutines.launch
-
-@Preview
 @Composable
-fun Login () {
-    val navController = rememberNavController() // Crear un NavController falso para el preview
-    val viewModel: LoginViewModel = viewModel() // Obtener el ViewModel
-
-    PandemiaGameTheme {
-        LoginComp(navController, viewModel)
-    }
-}
-
-@Composable
-fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
-    val email :String by viewModel.email.observeAsState(initial="")  // Estado para el email
-    val password :String by viewModel.password.observeAsState(initial="")  // Estado para la password
-    val loginEnable :Boolean by viewModel.loginEnable.observeAsState(initial=false)  // Estado para el boton activado
-
-    val isLoading :Boolean by viewModel.isLoading.observeAsState(initial=false) // Estado para el cargando
+fun RegisterComp(navController: NavController, viewModel: RegisterViewModel) {
+    val name: String by viewModel.name.observeAsState(initial = "")
+    val surname: String by viewModel.surname.observeAsState(initial = "")
+    val username: String by viewModel.username.observeAsState(initial = "")
+    val email: String by viewModel.email.observeAsState(initial = "")
+    val password: String by viewModel.password.observeAsState(initial = "")
+    val loginEnable: Boolean by viewModel.registerEnable.observeAsState(initial = false)
+    val isLoading: Boolean by viewModel.isLoading.observeAsState(initial = false)
 
     val coroutine = rememberCoroutineScope()
-    val context = LocalContext.current  // Obtén el contexto actual
+    val context = LocalContext.current
 
-    Scaffold (
-        topBar = { CustomTopAppBar() },
-        ) { innerPading ->
+    Scaffold(topBar = { CustomTopAppBar() }) { innerPadding ->
         if (isLoading) {
             Box(Modifier.fillMaxSize()) {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -77,7 +68,8 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPading),
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -86,6 +78,7 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
                     contentDescription = "Icono vectorial",
                     contentScale = ContentScale.Fit
                 )
+
                 Box(
                     modifier = Modifier
                         .padding(14.dp)
@@ -97,40 +90,87 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
                         .padding(16.dp)
                 ) {
                     Column {
+                        Text("Nombre")
+                        TextField(
+                            value = name,
+                            onValueChange = {
+                                viewModel.onRegisterChange(it, surname, username, email, password)
+                            },
+                            label = { Text("Ingresa tu nombre") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        )
+
+                        Text("Apellidos")
+                        TextField(
+                            value = surname,
+                            onValueChange = {
+                                viewModel.onRegisterChange(name, it, username, email, password)
+                            },
+                            label = { Text("Ingresa tus apellidos") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        )
+
+                        Text("Nombre de usuario")
+                        TextField(
+                            value = username,
+                            onValueChange = {
+                                viewModel.onRegisterChange(name, surname, it, email, password)
+                            },
+                            label = { Text("Ingresa tu nombre de usuario") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        )
+
                         Text("Correo electrónico")
                         TextField(
                             value = email,
                             onValueChange = {
-                                viewModel.onLoginChange(it, password)
+                                viewModel.onRegisterChange(name, surname, username, it, password)
                             },
                             label = { Text("Ingresa tu email") },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(
-                                    top = 8.dp,
-                                    bottom = 16.dp
-                                )
+                                .padding(vertical = 8.dp)
                         )
+
                         Text("Contraseña")
                         TextField(
                             value = password,
-                            visualTransformation = PasswordVisualTransformation(),
                             onValueChange = {
-                                viewModel.onLoginChange(email, it)
+                                viewModel.onRegisterChange(name, surname, username, email, it)
                             },
                             label = { Text("Ingresa tu contraseña") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                                .padding(vertical = 8.dp)
                         )
-                        LoginButton(loginEnable) { coroutine.launch { viewModel.onLoginSelected(context) } }
 
-                        Text(color = Color(0xFF3D8433), fontWeight = FontWeight.Bold, modifier = Modifier.clickable(onClick = {
-                            navController.navigate("register"){
-                                popUpTo("register") { inclusive = true }
+                        RegisterButton(loginEnable) {
+                            coroutine.launch {
+                                viewModel.onRegisterSelected(context)
+                                navController.navigate("login")
                             }
-                        }), text = "¿No tienes cuenta? Regístrate")
+                        }
+
+                        Text(
+                            text = "¿Ya estás registrado? Inicia sesión",
+                            color = Color(0xFF3D8433),
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .padding(top = 10.dp)
+                                .clickable {
+                                    navController.navigate("login"){
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                }
+                        )
                     }
                 }
             }
@@ -138,11 +178,12 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
     }
 }
 
+
 @Composable
-fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit){
+fun RegisterButton(registerEnable: Boolean, onRegisterSelected: () -> Unit){
     Button(
         onClick = {
-            onLoginSelected()},
+            onRegisterSelected()},
         modifier = Modifier
             .fillMaxWidth()
             .height(58.dp)
@@ -153,9 +194,9 @@ fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit){
             disabledContentColor = Color.White,
             contentColor = Color.White,
         ),
-        enabled = loginEnable
+        enabled = registerEnable
     ){
-            Text(text = "Iniciar Sesión")
+            Text(text = "Registrarme")
         }
 }
 

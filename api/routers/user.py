@@ -10,7 +10,7 @@ from utils.db import get_db
 router = APIRouter()
 
 
-@router.post("/", response_model=UserResponse)
+@router.post("/register", response_model=UserResponse)
 def create_new_user(user: UserBase, db: Session = Depends(get_db)):
     return create_user(db, user)
 

@@ -100,12 +100,24 @@ data class AuthResponse(
     @SerializedName("user") val user: User
 )
 
+data class RegisterRequest(
+    val username: String,
+    val password: String,
+    val last_name: String,
+    val email: String,
+    val name: String
+)
+
+
 interface ApiService {
     @FormUrlEncoded
     @POST("token")
-    suspend fun login(@Field("username") username: String,
+    suspend fun login(@Field("username") email: String,
                       @Field("password") password: String,
                       @Field("grant_type") grant_type: String = "password"): LoginResponse
+
+    @POST("user/register")
+    suspend fun register(@Body request: RegisterRequest): User
 
     @POST("game")
     suspend fun createGame(@Header("Authorization") auth: String, @Body req: GameRequest): GameResponse

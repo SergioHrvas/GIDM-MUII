@@ -34,12 +34,11 @@ fun BottomNavBar(navController: NavController) {
                 onClick = {
                     if (currentRoute != screen.route) {
                         navController.navigate(screen.route) {
-                            // Evita que se apilen pantallas
-                            popUpTo(navController.graph.startDestinationId) {
+                            popUpTo(0) {
                                 saveState = true
                             }
                             launchSingleTop = true
-                            restoreState = true
+                            restoreState = false
                         }
                     }
                 },

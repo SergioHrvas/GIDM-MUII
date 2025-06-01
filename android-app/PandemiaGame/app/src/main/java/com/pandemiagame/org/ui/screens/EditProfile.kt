@@ -77,6 +77,7 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
     var navigateBackAfterUpdate by remember { mutableStateOf(false) }
 
     val updateCompleted by viewModel.updateCompleted.observeAsState(false)
+    val formEnable :Boolean by viewModel.formEnable.observeAsState(true)  // Estado para el boton activado
 
     LaunchedEffect(updateCompleted) {
         if (updateCompleted) {
@@ -198,7 +199,9 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
                                 .padding(vertical = 8.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
-                        Button(onClick = {
+                        Button(
+                            enabled = formEnable,
+                            onClick = {
                             navigateBackAfterUpdate = true
                             viewModel.onUpdateSelected(context)
                         }) {

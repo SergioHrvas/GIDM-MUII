@@ -13,7 +13,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @router.post("/token", response_model=AuthResponse)
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = UserLogin(email=form_data.username, password=form_data.password)
+    user = UserLogin(email=form_data.username, password=form_data.password) # Username en realidad es el email
     result = login(db, user)
 
     if result is None:

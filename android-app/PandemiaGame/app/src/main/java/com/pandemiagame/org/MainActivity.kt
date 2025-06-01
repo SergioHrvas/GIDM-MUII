@@ -21,6 +21,7 @@ import com.pandemiagame.org.ui.screens.LoginComp
 import com.pandemiagame.org.ui.screens.NewGameComp
 import com.pandemiagame.org.ui.screens.MainScreen
 import com.pandemiagame.org.ui.screens.Profile
+import com.pandemiagame.org.ui.screens.RegisterComp
 import com.pandemiagame.org.ui.screens.Tutorial
 import com.pandemiagame.org.ui.screens.SplashScreen
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
@@ -28,6 +29,7 @@ import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
+import com.pandemiagame.org.ui.viewmodels.RegisterViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +48,7 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
     val loginViewModel: LoginViewModel = viewModel()
+    val registerViewModel: RegisterViewModel = viewModel()
     val context = LocalContext.current
     val tm = TokenManager(context)
 
@@ -60,7 +63,7 @@ fun AppNavigation() {
         when(authState){
             is LoginViewModel.AuthState.Authenticated -> {
                 navController.navigate("home") {
-                    popUpTo("splash") { inclusive = true }
+                    popUpTo("login") { inclusive = true }
                     launchSingleTop = true
                 }
             }
@@ -89,6 +92,7 @@ fun AppNavigation() {
     ) {
         composable("splash") { SplashScreen() }
         composable("login") { LoginComp(navController, loginViewModel) }
+        composable("register") { RegisterComp(navController, registerViewModel) }
         composable("home") { MainScreen(navController,
             onLogout = {
                 tm.clearToken()
