@@ -59,7 +59,7 @@ def train_move_based_model(db: Session):
     print(df['is_win'].value_counts())
 
     # Convertir columna tipo a entero
-    # df['tipo'] = df['tipo'].astype('category').cat.codes
+    df['tipo'] = df['tipo'].astype('category').cat.codes
 
 
     

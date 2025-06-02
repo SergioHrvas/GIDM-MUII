@@ -83,9 +83,8 @@ class RegisterViewModel : ViewModel() {
                     email = email.value ?: "",
                     password = password.value ?: ""
                 )
-                val response = RetrofitClient.instance.register(request)
 
-                val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
+                val response = RetrofitClient.instance.register(request)
 
             } catch (e: Exception) {
                 Log.e("Register Error", "Error en la petición: ${e.message}")

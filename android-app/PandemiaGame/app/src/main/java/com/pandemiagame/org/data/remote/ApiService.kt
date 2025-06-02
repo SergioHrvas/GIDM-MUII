@@ -108,6 +108,16 @@ data class RegisterRequest(
     val name: String
 )
 
+data class CardProbability(
+    @SerializedName("card_id") val idCard: Int,
+    @SerializedName("card_name") val nameCard: String,
+    @SerializedName("win_probability") val winProb: Double,
+)
+data class Recommendation(
+    @SerializedName("player_id") val idPlayer: Int,
+    @SerializedName("recommendations") val recommendations: List<CardProbability>
+)
+
 
 interface ApiService {
     @FormUrlEncoded
@@ -142,4 +152,7 @@ interface ApiService {
 
     @PUT("/user/{user_id}")
     suspend fun updateUser(@Header("Authorization") auth: String, @Path("user_id") userId: Int, @Body user: UserUpdating): User
+
+    @GET("game/recommend")
+    suspend fun getRecommendations(@Header("Authorization") auth: String,@Query("player_id") playerId: Int): Recommendation
 }

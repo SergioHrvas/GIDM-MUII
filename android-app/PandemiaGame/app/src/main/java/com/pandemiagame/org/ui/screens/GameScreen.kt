@@ -1,6 +1,5 @@
 package com.pandemiagame.org.ui.screens
 
-import android.app.AlertDialog
 import android.content.Context
 import android.util.Log
 import androidx.compose.animation.core.Animatable
@@ -57,8 +56,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ButtonDefaults
@@ -122,6 +119,7 @@ fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: Game
 fun rememberGameState(viewModel: GameViewModel): GameState {
     // Estados observados del ViewModel
     val gameResponse by viewModel.game.observeAsState()
+
     val changingTurn by viewModel.changingTurn.observeAsState()
     val context = LocalContext.current
 
@@ -261,6 +259,7 @@ fun GameEffects(
             } else {
                 gameState.otherPlayerIndex = 0
             }
+            viewModel.clearRecommendation()
         }
     }
 
@@ -578,6 +577,10 @@ fun CurrentPlayerSection(
     onCancelAction: () -> Unit,
     onOrganSelected: (String) -> Unit
 ) {
+    val recommendation by viewModel.recommendation.observeAsState()
+
+    println(recommendation)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -613,6 +616,7 @@ fun CurrentPlayerSection(
                 discards = discards,
                 onCardSelected = onCardSelected,
                 cardsSelected = gameState.cardsSelected,
+                recommendation = recommendation
             )
         } else {
             // Muestra cartas boca abajo durante el cambio de turno
@@ -622,7 +626,7 @@ fun CurrentPlayerSection(
                 },
                 discards = discards,
                 cardsSelected = gameState.cardsSelected,
-                onCardSelected = {}
+                onCardSelected = {},
             )
         }
 
@@ -729,8 +733,10 @@ fun PlayerCardsRow(
     cards: List<CardWrapper>,
     discards: List<Int>,
     onCardSelected: (Int) -> Unit,
-    cardsSelected: MutableList<Boolean>
+    cardsSelected: MutableList<Boolean>,
+    recommendation: Int? = -1
 ) {
+    println("r $recommendation")
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -752,7 +758,8 @@ fun PlayerCardsRow(
                             cardsSelected[(index+2)%cardsSelected.size] = false
                         }
                     }
-                }
+                },
+                recommended = if(recommendation!=null) ((recommendation > 0) && (cards[index].card.id == recommendation)) else false
             )
         }
     }
@@ -763,8 +770,11 @@ fun PlayerCard(
     card: Card,
     isSelected: Boolean,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    recommended: Boolean = false
 ) {
+    println("r $recommended")
+
     Image(
         painter = painterResource(id = CardEnum.fromDisplayName(card.name)?.drawable ?: 0),
         contentDescription = "Carta del jugador",
@@ -773,8 +783,8 @@ fun PlayerCard(
             .width(100.dp)
             .offset(y = if (isSelected || selected) (-8).dp else 0.dp)
             .border(
-                width = if (isSelected) 3.dp else 0.dp,
-                color = if (isSelected) Color.Gray else Color.Transparent
+                width = if (isSelected or recommended) 3.dp else 0.dp,
+                color = if (isSelected) Color.Gray else if(recommended) Color(0xFFF17C00) else Color.Transparent
             )
             .clickable(onClick = {
                 onClick()
@@ -1499,7 +1509,9 @@ fun MenuButton(gameState: GameState,
                                 gameState.seeingMoves = true
                                 viewModel.getMoves(viewModel.game.value?.id.toString())
                             }
-                            "Consejo" -> { /* No implementado */ }
+                            "Consejo" -> {
+                                viewModel.getRecommendations(viewModel.game.value?.turn ?: 0)
+                            }
                             "Chat" -> { /* No implementado */ }
                             "Rendirme" -> {     val gameResponse = gameState.gameResponse
                                 viewModel.surrender(currentTurn = gameResponse?.players?.getOrNull(gameState.currentPlayerIndex)?.id?: 0) }

@@ -32,34 +32,7 @@ def get_my_games(current_user: int = Depends(get_current_user), db: Session = De
     
     return games
 
-
-@router.get("/{game_id}/moves", response_model=list[MoveResponse])
-def get_moves(game_id: int, db: Session = Depends(get_db)):
-    moves = get_game(game_id, db).moves
-    if moves is None:
-        raise HTTPException(status_code=404, detail="Moves not found")
-    return moves
-    
-
-
-@router.get("/{game_id}", response_model=GameResponse)
-def get_game_by_id(game_id: int, db: Session = Depends(get_db)):
-    game = get_game(game_id, db)
-    if game is None:
-        raise HTTPException(status_code=404, detail="Game not found")
-
-    return game
-
-@router.post("/{game_id}/move", response_model=GameResponse)
-def do_move(game_id: int, player_id: int, move: Move, db: Session = Depends(get_db)):
-    do_move_game(game_id, player_id, move, db)
-
-    game = get_game(game_id, db)
-    if game is None:
-        raise HTTPException(status_code=404, detail="Game not found")
-    return game
-
-@router.get("/recommend/cards")
+@router.get("/recommend")
 async def recommend_cards(
     player_id: int,
     db: Session = Depends(get_db),
@@ -136,3 +109,30 @@ async def recommend_cards(
             "win_probability": round(prob, 4)
         } for card_id, prob in recommendations[:3]]
     }
+
+
+@router.get("/{game_id}/moves", response_model=list[MoveResponse])
+def get_moves(game_id: int, db: Session = Depends(get_db)):
+    moves = get_game(game_id, db).moves
+    if moves is None:
+        raise HTTPException(status_code=404, detail="Moves not found")
+    return moves
+    
+
+
+@router.get("/{game_id}", response_model=GameResponse)
+def get_game_by_id(game_id: int, db: Session = Depends(get_db)):
+    game = get_game(game_id, db)
+    if game is None:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+    return game
+
+@router.post("/{game_id}/move", response_model=GameResponse)
+def do_move(game_id: int, player_id: int, move: Move, db: Session = Depends(get_db)):
+    do_move_game(game_id, player_id, move, db)
+
+    game = get_game(game_id, db)
+    if game is None:
+        raise HTTPException(status_code=404, detail="Game not found")
+    return game

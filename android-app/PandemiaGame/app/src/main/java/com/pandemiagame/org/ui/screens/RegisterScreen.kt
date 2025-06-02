@@ -39,13 +39,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
-import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import com.pandemiagame.org.ui.viewmodels.RegisterViewModel
 import kotlinx.coroutines.launch
+
 @Composable
 fun RegisterComp(navController: NavController, viewModel: RegisterViewModel) {
     val name: String by viewModel.name.observeAsState(initial = "")

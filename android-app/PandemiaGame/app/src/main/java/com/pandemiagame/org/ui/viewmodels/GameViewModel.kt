@@ -14,6 +14,7 @@ import com.pandemiagame.org.data.remote.InfectData
 import com.pandemiagame.org.data.remote.Move
 import com.pandemiagame.org.data.remote.MoveResponse
 import com.pandemiagame.org.data.remote.Player
+import com.pandemiagame.org.data.remote.Recommendation
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.launch
@@ -77,6 +78,13 @@ class GameViewModel(private val context: Context) : ViewModel() {
     private val _moves = MutableLiveData<List<MoveResponse>>()
     val moves: LiveData<List<MoveResponse>> = _moves
 
+    private val _recommendation = MutableLiveData<Int>()
+    val recommendation: LiveData<Int> = _recommendation
+
+    fun clearRecommendation(){
+        _recommendation.value = -1
+    }
+
     override fun onCleared(){
         setGame(createEmptyGame()) // Usamos createEmptyGame() en lugar de resetGame()
     }
@@ -128,11 +136,11 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun doMove(index_card: Int, playerSelected: Int = -1, organ: String = "", currentTurn: Int? = -1) {
+    fun doMove(indexCard: Int, playerSelected: Int = -1, organ: String = "", currentTurn: Int? = -1) {
         viewModelScope.launch {
             try {
                 val indice = game.value?.players?.indexOfFirst { it.id == game.value?.turn } ?: 0
-                val idCard = game.value?.players?.getOrNull(indice)?.playerCards?.getOrNull(index_card)?.card?.id
+                val idCard = game.value?.players?.getOrNull(indice)?.playerCards?.getOrNull(indexCard)?.card?.id
 
                 val infect = if (playerSelected != -1) InfectData(
                     player1 = game.value?.players?.getOrNull(playerSelected)?.id,
@@ -149,7 +157,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun doMoveInfect(index_card: Int, infectData: InfectData, currentTurn: Int = -1) {
+    fun doMoveInfect(indexCard: Int, infectData: InfectData, currentTurn: Int = -1) {
         viewModelScope.launch {
             try {
                 // Encontramos el índice del jugador actual de forma segura
@@ -160,7 +168,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     ?.players
                     ?.getOrNull(indice)
                     ?.playerCards
-                    ?.getOrNull(index_card)
+                    ?.getOrNull(indexCard)
                     ?.card
                     ?.id
 
@@ -184,11 +192,9 @@ class GameViewModel(private val context: Context) : ViewModel() {
     }
 
 
-    fun doMoveExchange(index_card: Int, organToPass: String, infectData: InfectData, currentTurn: Int = -1) {
+    fun doMoveExchange(indexCard: Int, organToPass: String, infectData: InfectData, currentTurn: Int = -1) {
         viewModelScope.launch {
             try {
-                var token = "Bearer " + tokenManager.getToken()
-
                 // Encontramos el índice del jugador actual de forma segura
                 val indice = game.value?.players?.indexOfFirst { it.id == game.value?.turn } ?: 0
 
@@ -197,7 +203,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                     ?.players
                     ?.getOrNull(indice)
                     ?.playerCards
-                    ?.getOrNull(index_card)
+                    ?.getOrNull(indexCard)
                     ?.card
                     ?.id
 
@@ -268,8 +274,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
         _game.value = game
     }
 
-
-
     fun getMoves(juegoId: String) {
         viewModelScope.launch {
             try {
@@ -287,5 +291,21 @@ class GameViewModel(private val context: Context) : ViewModel() {
         }
     }
 
+    fun getRecommendations(playerId: Int) {
+        viewModelScope.launch {
+            try {
 
+                var token = "Bearer " + tokenManager.getToken()
+
+                val response = RetrofitClient.instance.getRecommendations(token, playerId)
+                println(response)
+
+                _recommendation.value = response.recommendations[0].idCard
+
+            } catch (e: Exception) {
+                // Manejar error
+                Log.v("Error", e.toString())
+            }
+        }
+    }
 }
