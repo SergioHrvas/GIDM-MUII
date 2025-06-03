@@ -5,9 +5,9 @@ from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 import jwt
-from models.user import User
-from schemas.user import TokenUser
-from utils.db import get_db
+from api.models.user import User
+from api.schemas.user import TokenUser
+from api.utils.db import get_db
 
 # Clave secreta para firmar los tokens JWT
 SECRET_KEY = "tu_clave_secreta"
@@ -54,7 +54,6 @@ def get_user_by_email(db: Session, email):
 
 def get_current_user(token: str = Depends(oauth2_scheme),  db: Session = Depends(get_db)) -> dict:
     """Obtiene el usuario actual desde el token JWT."""
-    print("token" + token)
     decode_access_token(token)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

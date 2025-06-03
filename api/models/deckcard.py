@@ -1,9 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-import random
 
-from database import Base
+from api.database import Base
 
 
 class DeckCard(Base):

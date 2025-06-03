@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
-from models.player import Player
-from models.game import Game
-from models.user import User
-from schemas.user import UserBase, UserUpdate
-from utils.auth import hash_password, verify_password, create_access_token, get_user_by_email
+from api.models.player import Player
+from api.models.game import Game
+from api.models.user import User
+from api.schemas.user import UserBase
+from api.utils.auth import hash_password, verify_password, create_access_token, get_user_by_email
 
 def create_user(db: Session, user: UserBase):
     hashed_password = hash_password(user.password)

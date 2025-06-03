@@ -1,10 +1,10 @@
 from datetime import datetime
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional, Union
-from schemas.player import PlayerBase
-from schemas.game import CardBase
-from schemas.organtype import OrganType
-from schemas.infect import Infect
+from api.schemas.player import PlayerBase
+from api.schemas.game import CardBase
+from api.schemas.organtype import OrganType
+from api.schemas.infect import Infect
 
 class Move(BaseModel):
     action: str  # Tipo de acción (card, discard)

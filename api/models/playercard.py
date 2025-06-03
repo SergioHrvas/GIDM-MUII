@@ -1,12 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.types import Enum as SQLAlchemyEnum
-from database import Base
-from schemas.status import StatusEnum
+from sqlalchemy import Column, Integer, ForeignKey
+from api.database import Base
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
-
-# Primero define Card
-from models.card import Card
 
 # 📌 Tabla intermedia para relación muchos a muchos con ubicación de la carta
 class PlayerCard(Base):

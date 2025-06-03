@@ -1,10 +1,9 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from models.game import Game
-from models.playercard import PlayerCard
-from models.player import Player
-from models.card import Card
-from crud.deckcard import steal_to_deck
+from api.models.game import Game
+from api.models.playercard import PlayerCard
+from api.models.player import Player
+from api.crud.deckcard import steal_to_deck
 from sqlalchemy import select, delete
 
 def remove_card_from_player(db: Session, player_id: int, card_id: int):

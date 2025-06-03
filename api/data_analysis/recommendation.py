@@ -1,16 +1,11 @@
 from sklearn.compose import ColumnTransformer
 from sklearn.discriminant_analysis import StandardScaler
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-import pandas as pd
-import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.utils import resample
 from sqlalchemy.orm import Session
-import pandas as pd
-import numpy as np
 import pandas as pd
 
 def train_move_based_model(db: Session):

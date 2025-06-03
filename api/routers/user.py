@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from models.user import User
-from utils.auth import get_current_user
-from database import SessionLocal, init_db
-from crud.user import get_user, create_user, login, modify_user
-from schemas.user import UserBase, UserLogin, UserResponse, AuthResponse, UserUpdate
-from utils.db import get_db
+from api.models.user import User
+from api.utils.auth import get_current_user
+from api.crud.user import get_user, create_user, modify_user
+from api.schemas.user import UserBase, UserResponse, UserUpdate
+from api.utils.db import get_db
 
 router = APIRouter()
 
@@ -38,7 +37,6 @@ async def update_user(
     db: Session = Depends(get_db),
     current_user: UserBase = Depends(get_current_user)
 ):
-    print("Headers recibidos:", request.headers)  # Verifica los headers
     modify_user(db, user_id, user)
 
     db_user = get_user(db, user_id)

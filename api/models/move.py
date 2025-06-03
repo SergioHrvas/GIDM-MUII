@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from database import Base
+from api.database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
 

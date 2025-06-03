@@ -1,11 +1,7 @@
 from operator import or_
 from sqlalchemy.orm import Session
-from models.playercard import PlayerCard
-from models.organ import Organ
-from models.player import Player
-from models.card import Card
-from schemas.organtype import OrganType
-
+from api.models.organ import Organ
+from api.schemas.organtype import OrganType
 
 def remove_organ_from_player(db: Session, player_id: int, tipo: str):
     # Buscar el registro de player_cards que relaciona el jugador con la carta

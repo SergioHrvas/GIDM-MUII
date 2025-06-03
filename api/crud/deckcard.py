@@ -1,15 +1,15 @@
 from sqlalchemy.orm import Session
 
-from models.playercard import PlayerCard
-from models.player import Player
-from schemas.organtype import OrganType
-from models.card import Card
-from models.deckcard import DeckCard
+from api.models.playercard import PlayerCard
+from api.models.player import Player
+from api.schemas.organtype import OrganType
+from api.models.card import Card
+from api.models.deckcard import DeckCard
 
 from sqlalchemy.orm import Session
 
-from models.card import Card
-from models.game import Game
+from api.models.card import Card
+from api.models.game import Game
 
 import random
 
@@ -28,20 +28,10 @@ def initialize_deck(db: Session, game: Game):
     # Generar el mazo básico (esta función ya debería agregar las cartas a la sesión)
     generate_basic_deck(db, game)
     
-    # No necesitamos db.add_all() aquí porque generate_basic_deck ya lo hace
     db.commit()
     db.refresh(game)
-    
-    # Verificación
-    deck_count = len(game.deck_cards)
-    db_count = db.query(DeckCard).filter(DeckCard.game_id == game.id).count()
-    
-    print(f"Cartas en memoria: {deck_count}")
-    print(f"Cartas en base de datos: {db_count}")
-    
-    if deck_count != db_count:
-        print("¡Advertencia: Hay una discrepancia entre las cartas en memoria y en la base de datos!")
-    
+
+    # Repartimos las cartas
     draw_cards(db, game)
 
 
@@ -54,19 +44,16 @@ def draw_cards(db: Session, game: Game):
 
 
 def steal_to_deck(db: Session, game: Game, player_id, num):
-
     # Refrescamos el juego para asegurarnos de que tenemos la información más reciente
     db.refresh(game)
 
     # Verificamos el número de cartas en el mazo
     current_cards = len(game.deck_cards)
-    print(f"Cartas en mazo: {current_cards}, se quieren robar: {num}")
 
     # Caso 1: No hay suficientes cartas
     if current_cards < num:
-        print("No hay suficientes cartas, regenerando mazo...")
-        
-        # 1. Tomar todas las cartas restantes
+      
+        # Tomamos todas las cartas restantes
         taken = current_cards
 
         cards_to_take = db.query(DeckCard)\
@@ -81,21 +68,21 @@ def steal_to_deck(db: Session, game: Game, player_id, num):
         db.commit()
         db.refresh(game)
         
-        # 2. Regenerar el mazo completo
+        # Regeneramos el mazo completo
         generate_basic_deck(db, game)
         db.commit()
         db.refresh(game)
         
-        # 3. Eliminar UNA copia de cada carta que los jugadores tengan
+        # Eliminamos UNA copia de cada carta que los jugadores tengan
         players = db.query(Player).filter(Player.game_id == game.id).all()
         for player in players:
-            # Obtener IDs de cartas únicas que el jugador tiene
+            # Obtenemos IDs de cartas únicas que el jugador tiene
             unique_card_ids = {pc.card_id for pc in db.query(PlayerCard.card_id)
                                 .filter(PlayerCard.player_id == player.id)
                                 .all()}
             
             for card_id in unique_card_ids:
-                # Eliminar solo una copia de cada carta
+                # Eliminamos solo una copia de cada carta
                 deck_card = db.query(DeckCard)\
                              .filter(
                                  DeckCard.game_id == game.id,
@@ -109,7 +96,7 @@ def steal_to_deck(db: Session, game: Game, player_id, num):
         db.commit()
         db.refresh(game)
         
-        # 4. Tomar las cartas restantes que faltan
+        # Tomamos las cartas restantes que faltan
         remaining = num - taken
         if remaining > 0:
             cards_to_take = db.query(DeckCard)\
@@ -126,7 +113,6 @@ def steal_to_deck(db: Session, game: Game, player_id, num):
     
     # Caso 2: Hay suficientes cartas
     else:
-        print("Hay suficientes cartas, robando normalmente...")
         cards_to_take = db.query(DeckCard)\
                         .filter(DeckCard.game_id == game.id)\
                         .limit(num)\
@@ -141,7 +127,6 @@ def steal_to_deck(db: Session, game: Game, player_id, num):
     
     # Verificación final
     final_count = len(game.deck_cards)
-    print(f"Cartas restantes después de robar: {final_count}")
     return min(num, final_count + num)  # Retorna el número real de cartas robadas
 
 
@@ -189,4 +174,3 @@ def generate_basic_deck(db: Session, game: Game):
     db.add_all(new_deck_cards)
     game.deck_cards = new_deck_cards
     
-    print(f"Total cartas generadas: {len(new_deck_cards)}")

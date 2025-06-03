@@ -1,11 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, CheckConstraint
+from sqlalchemy import Column, Integer, ForeignKey, CheckConstraint
 from sqlalchemy.types import Enum as SQLAlchemyEnum
-from database import Base
-from schemas.status import StatusEnum
+from api.database import Base
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
-from enum import Enum
-from schemas.organtype import OrganType
+from api.schemas.organtype import OrganType
 
 
 

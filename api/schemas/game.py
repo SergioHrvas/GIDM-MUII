@@ -1,10 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, model_validator
 from datetime import datetime
-from models.card import Card
-from schemas.deckcard import DeckBase
-from schemas.player import PlayerResponse
-from schemas.status import StatusEnum
-from typing import Any, Dict, List, Optional
+from api.schemas.player import PlayerResponse
+from typing import List, Optional
 
 class CardBase(BaseModel):
     id: int

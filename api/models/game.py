@@ -1,10 +1,9 @@
 from sqlalchemy import Boolean, Column, Integer, DateTime
 from sqlalchemy.types import Enum as SQLAlchemyEnum
-from database import Base
-from schemas.status import StatusEnum
+from api.database import Base
+from api.schemas.status import StatusEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
-from models.deckcard import DeckCard
 
 class Game(Base):
     __tablename__ = 'games'

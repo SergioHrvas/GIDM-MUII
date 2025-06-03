@@ -1,11 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.types import Enum as SQLAlchemyEnum
-from models.deckcard import DeckCard
-from database import Base
-from schemas.status import StatusEnum
+from api.database import Base
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
-from schemas.organtype import OrganType
+from api.schemas.organtype import OrganType
 
 # 📌 Modelo Carta (Card)
 class Card(Base):

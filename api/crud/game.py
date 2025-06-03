@@ -1,24 +1,23 @@
-from operator import or_
-from fastapi import Query
 from sqlalchemy.orm import Session
-from models.playercard import PlayerCard
-from models.user import User
-from schemas.status import StatusEnum
-from models.organ import Organ
-from models.game import Game
-from models.player import Player
-from models.deckcard import DeckCard
-from models.card import Card
-from schemas.game import GameBase
+from api.data_analysis.recommendation import train_move_based_model
+from api.models.playercard import PlayerCard
+from api.models.user import User
+from api.schemas.status import StatusEnum
+from api.models.organ import Organ
+from api.models.game import Game
+from api.models.player import Player
+from api.models.card import Card
+from api.schemas.game import GameBase
 from datetime import datetime
-from schemas.move import Move
-from models.move import Move as MoveModel
+from api.schemas.move import Move
+from api.models.move import Move as MoveModel
 
 import numpy as np
-from crud.playercard import remove_card_from_player, discard_my_cards, discard_cards
-from crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, player_has_organ_to_cure_infect, steal_card, change_body, change_organs, infect_players
-from crud.deckcard import initialize_deck, steal_to_deck
-import random
+import pandas as pd
+
+from api.crud.playercard import remove_card_from_player, discard_my_cards, discard_cards
+from api.crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, player_has_organ_to_cure_infect, steal_card, change_body, change_organs, infect_players
+from api.crud.deckcard import initialize_deck, steal_to_deck
 
 def create_game(game: GameBase, current_user: int, db: Session):
     if(len(game.players) <= 0):
@@ -97,8 +96,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         return game
     
     done = False
-    print("as")
-
+    
     # Obtenemos el jugador
     player = db.query(Player).filter(Player.id == game.turn).first()
     
@@ -298,5 +296,69 @@ def get_player_games(id_user: int, db:Session):
     return games
 
 
+def get_recommendations(player_id: int, db: Session):
+    # Obtener modelo entrenado (en producción se cargaría desde disco o cache)
+    model, _ = train_move_based_model(db)
 
+    # Obtener todas las cartas posibles
+    all_cards = db.query(Card).all()
 
+    # Obtener el juego del jugador
+    game = db.query(Game).filter(Game.players.any(id=player_id)).first()
+
+    # Obtener el último movimiento del jugador para estimar estado actual
+    last_move = db.query(MoveModel)\
+        .filter(MoveModel.player_id == player_id)\
+        .order_by(MoveModel.date.desc())\
+        .first()
+
+    # Si no hay movimientos aún, usar ceros
+    if last_move:
+        brain_estado = last_move.brain_estado
+        lungs_estado = last_move.lungs_estado
+        intestine_estado = last_move.intestine_estado
+        heart_estado = last_move.heart_estado
+        magic_estado = last_move.magic_estado
+        move_sequence = db.query(MoveModel).filter(
+            MoveModel.game_id == game.id,
+            MoveModel.player_id == player_id
+        ).count() + 1
+    else:
+        brain_estado = 0
+        lungs_estado = 0
+        intestine_estado = 0
+        heart_estado = 0
+        magic_estado = 0
+        move_sequence = 1
+
+    # Predecir probabilidad de victoria para cada carta
+    recommendations = []
+    for card in all_cards:
+        input_data = pd.DataFrame([{
+            'card_id': card.id,
+            'tipo': str(card.tipo or ''),
+            'move_sequence': move_sequence,
+            'brain_estado': brain_estado,
+            'lungs_estado': lungs_estado,
+            'intestine_estado': intestine_estado,
+            'heart_estado': heart_estado,
+            'magic_estado': magic_estado
+        }])
+
+        proba = model.predict_proba(input_data)[0][1]
+        recommendations.append((card.id, proba))
+
+    # Ordenar por probabilidad descendente
+    recommendations.sort(key=lambda x: -x[1])
+
+    # Filtrar solo las cartas que tiene el jugador en mano
+    player_cards = db.query(PlayerCard).filter(PlayerCard.player_id == player_id).all()
+    player_cards_ids = [pc.card_id for pc in player_cards]
+
+    recommendations = [(card_id, prob) for card_id, prob in recommendations if card_id in player_cards_ids]
+    
+    return [{
+        "card_id": card_id,
+        "card_name": db.query(Card).filter(Card.id == card_id).first().name,
+        "win_probability": round(prob, 4)
+    } for card_id, prob in recommendations[:3]]

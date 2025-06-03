@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 # Esquema base sin ID (para crear o actualizar un jugador)
 class DeckBase(BaseModel):

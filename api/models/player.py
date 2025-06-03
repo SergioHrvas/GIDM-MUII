@@ -1,11 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
-from database import Base
+from api.database import Base
 from sqlalchemy.orm import relationship
-
-# Primero define PlayerCard y Organ
-from models.playercard import PlayerCard
-from models.organ import Organ
 
 
 class Player(Base):

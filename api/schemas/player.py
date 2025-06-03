@@ -1,11 +1,7 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from enum import Enum
-from pydantic.fields import Field
-
-from schemas.user import UserBase
-
-
+from api.schemas.user import UserBase
 
 class CardBase(BaseModel):
     id: int
