@@ -10,10 +10,11 @@ from api.utils.db import get_db
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+# POST(/token) - Identificamos al usuario
 @router.post("/token", response_model=AuthResponse)
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = UserLogin(email=form_data.username, password=form_data.password) # Username en realidad es el email
-    result = login(db, user)
+    result = login(db, user) # Iniciar sesión
 
     if result is None:
         raise HTTPException(
@@ -25,6 +26,7 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     return result
 
 
+# Verificamos que el usuario está autentificado
 @router.get("/auth/verify")
 async def verify_token(current_user: User = Depends(get_current_user)):
     return {"valid": True, "user": current_user}

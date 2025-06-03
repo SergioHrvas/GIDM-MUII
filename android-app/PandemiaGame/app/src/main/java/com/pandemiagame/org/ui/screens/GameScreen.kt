@@ -104,7 +104,7 @@ fun PreviewGame(){
 fun GameComp(modifier: Modifier = Modifier, gameId: String = "", viewModel: GameViewModel = viewModel(), navController: NavController) {
     // Estados principales del juego
     val gameState = rememberGameState(viewModel)
-
+    println("gt ${gameState.currentPlayerIndex}")
     // Efectos y lógica principal
     GameEffects(gameState, viewModel, gameId, navController)
 
@@ -142,6 +142,8 @@ fun rememberGameState(viewModel: GameViewModel): GameState {
         if(gameResponse?.multiplayer == false)
             gameResponse?.players?.indexOfFirst { it.id == gameResponse?.turn } ?: 0
         else{
+            println(user?.id)
+            print(gameResponse?.players.toString())
             gameResponse?.players?.indexOfFirst { it.user?.id == user?.id } ?: 0
         }
     }
@@ -579,7 +581,6 @@ fun CurrentPlayerSection(
 ) {
     val recommendation by viewModel.recommendation.observeAsState()
 
-    println(recommendation)
 
     Column(
         modifier = Modifier
@@ -736,7 +737,6 @@ fun PlayerCardsRow(
     cardsSelected: MutableList<Boolean>,
     recommendation: Int? = -1
 ) {
-    println("r $recommendation")
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -773,7 +773,6 @@ fun PlayerCard(
     onClick: () -> Unit,
     recommended: Boolean = false
 ) {
-    println("r $recommended")
 
     Image(
         painter = painterResource(id = CardEnum.fromDisplayName(card.name)?.drawable ?: 0),

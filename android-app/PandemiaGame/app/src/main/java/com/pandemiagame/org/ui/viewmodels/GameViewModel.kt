@@ -94,14 +94,11 @@ class GameViewModel(private val context: Context) : ViewModel() {
 
         viewModelScope.launch {
             try {
-
                 var token = "Bearer " + tokenManager.getToken()
 
                 val response = RetrofitClient.instance.getGame(token, juegoId.toInt())
 
                 _game.value = response
-
-                Log.v("game", _game.value.toString())
             } catch (e: Exception) {
                 // Manejar error
                 Log.v("Error", e.toString())
@@ -298,7 +295,6 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 var token = "Bearer " + tokenManager.getToken()
 
                 val response = RetrofitClient.instance.getRecommendations(token, playerId)
-                println(response)
 
                 _recommendation.value = response.recommendations[0].idCard
 

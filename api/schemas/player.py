@@ -8,12 +8,6 @@ class CardBase(BaseModel):
     name: str
     tipo: str
 
-# Enumeración para los tipos de cartas asociadas a un órgano
-class CardType(str, Enum):
-    VIRUS = "virus"
-    CURE = "cure"
-    NONE = "none"  # Representa que no hay carta asociada
-
 # Esquema para una carta asociada a un órgano
 class OrganCard(BaseModel):
     tipo: str  # Nombre del órgano (corazon, pulmon, estomago, cerebro, multicolor)
