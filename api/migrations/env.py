@@ -7,11 +7,11 @@ from alembic import context
 
 from database import Base
 
+# Importamos los modelos
 from models.game import Game
 from models.user import User
 from models.deckcard import DeckCard
-
-from models.card import Card  # Asegúrate de importar correctamente el modelo Card
+from models.card import Card 
 from models.player import Player
 from models.playercard import PlayerCard
 from models.organ import Organ

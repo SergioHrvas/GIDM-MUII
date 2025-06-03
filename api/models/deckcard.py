@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 
 from api.database import Base
 
-
+# Modelo Carta-Mazo
 class DeckCard(Base):
     __tablename__ = "deck_cards"
 

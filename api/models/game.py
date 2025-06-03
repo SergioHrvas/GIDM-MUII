@@ -5,6 +5,7 @@ from api.schemas.status import StatusEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB  # Usar JSONB en PostgreSQL
 
+# Modelo Partida
 class Game(Base):
     __tablename__ = 'games'
 

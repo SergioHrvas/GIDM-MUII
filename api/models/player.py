@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from api.database import Base
 from sqlalchemy.orm import relationship
 
-
+# Modelo del Jugador
 class Player(Base):
     __tablename__ = 'players'
 

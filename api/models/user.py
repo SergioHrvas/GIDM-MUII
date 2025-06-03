@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String
 from api.database import Base
 from sqlalchemy.orm import relationship
 
+# Modelo Usuario
 class User(Base):
     __tablename__ = 'users'
 
@@ -13,5 +14,5 @@ class User(Base):
     password = Column(String)
     email = Column(String, unique=True)
 
-    # Relación con usuario
+    # Relación con jugadores
     players = relationship("Player", back_populates="user")

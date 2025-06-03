@@ -8,7 +8,6 @@ class CardBase(BaseModel):
     name: str
     tipo: str
 
-
 class GameBase(BaseModel):
     players: List[str]
     multiplayer: bool = False
@@ -19,7 +18,7 @@ class GameResponse(GameBase):
     date: datetime
     status: str
     num_turns: int
-    turns: List[int]  # Para el campo JSONB
+    turns: List[int] # Para el campo JSONB
     winner: Optional[int] = None
     cards: List[CardBase] = Field(default_factory=list)  # Campo calculado
     multiplayer: bool = False
@@ -34,7 +33,7 @@ class GameResponse(GameBase):
             ]
         return self
         
-    players: List[PlayerResponse] = []        # Relación con Player
+    players: List[PlayerResponse] = [] # Relación con Player
 
 
     class Config:

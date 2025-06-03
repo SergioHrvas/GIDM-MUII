@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 from api.database import Base
 from sqlalchemy.orm import relationship
 
-# 📌 Tabla intermedia para relación muchos a muchos con ubicación de la carta
+# Modeo Carta-Jugador
 class PlayerCard(Base):
     __tablename__ = 'player_cards'
 

@@ -45,23 +45,23 @@ def train_move_based_model(db: Session):
         df_majority_downsampled = resample(df_majority, 
                                         replace=False,    # No permite reemplazo
                                         n_samples=len(df_minority),  # Igualamos el número de muestras
-                                        random_state=42)  # Fijamos una semilla para reproducibilidad
+                                        random_state=20)  # Fijamos una semilla para reproducibilidad
 
         # Concatenar las clases
         df = pd.concat([df_majority_downsampled, df_minority])
 
     # Revisar el balance
-    print(df['is_win'].value_counts())
+    # print(df['is_win'].value_counts())
 
     # Convertir columna tipo a entero
     df['tipo'] = df['tipo'].astype('category').cat.codes
 
 
     
-    print(df.head())
+    # print(df.head())
     # Matriz de correlación
-    corr = df.corr()
-    print(corr)
+    # corr = df.corr()
+    # print(corr)
     # Visualizar la matriz de correlación
     # import seaborn as sns
     # import matplotlib.pyplot as plt
@@ -75,11 +75,11 @@ def train_move_based_model(db: Session):
 
 
     # Verificar si hay valores nulos
-    if df.isnull().values.any():
-        print("Hay valores nulos en el DataFrame")
-        print(df.isnull().sum())
-    else:
-        print("No hay valores nulos en el DataFrame")
+    #  if df.isnull().values.any():
+    #      print("Hay valores nulos en el DataFrame")
+    #      print(df.isnull().sum())
+    #  else:
+    #      print("No hay valores nulos en el DataFrame")
 
     # Preprocesamiento
     X = df[['card_id', 'move_sequence', 'brain_estado', 'lungs_estado', 'intestine_estado', 'heart_estado', 'magic_estado']]
@@ -134,16 +134,16 @@ def train_move_based_model(db: Session):
     # Entrenamiento
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    print(f"========== X_train: ==========\n {X_train}")
+    # print(f"========== X_train: ==========\n {X_train}")
     pipeline.fit(X_train, y_train)
     
     # Evaluación
     accuracy = pipeline.score(X_test, y_test)
-    print(f"Model accuracy: {accuracy:.2f}")
+    # print(f"Model accuracy: {accuracy:.2f}")
     
     # Evaluación
-    accuracy_train = pipeline.score(X_train, y_train)
-    print(f"Model accuracy train: {accuracy_train:.2f}")
+    # accuracy_train = pipeline.score(X_train, y_train)
+    # print(f"Model accuracy train: {accuracy_train:.2f}")
     
     return pipeline, accuracy
 

@@ -6,7 +6,7 @@ from api.schemas.organtype import OrganType
 
 
 
-# 📌 Tabla de órganos
+# Modelo de órgano
 class Organ(Base):
     __tablename__ = 'organs'
 
@@ -17,7 +17,7 @@ class Organ(Base):
     cure = Column(Integer)
     magic_organ = Column(Integer, default=0)
 
-    # Relación con Player (ahora directamente, sin BodyPlayer)
+    # Relación con Player
     player = relationship("Player", back_populates="organs")
 
     __table_args__ = (

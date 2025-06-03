@@ -5,6 +5,7 @@ from api.models.user import User
 from api.schemas.user import UserBase
 from api.utils.auth import hash_password, verify_password, create_access_token, get_user_by_email
 
+# Función para crear un usuario
 def create_user(db: Session, user: UserBase):
     hashed_password = hash_password(user.password)
     user = User(
@@ -20,7 +21,9 @@ def create_user(db: Session, user: UserBase):
     db.refresh(user)
     return user
 
+# Función para obtener un usuario a partir de su id
 def get_user(db: Session, id: int):
+
     # Get a user by ID
     user = db.query(User).filter(User.id == id).first()
 
@@ -35,41 +38,45 @@ def get_user(db: Session, id: int):
 
     # Append number of winned games to user
     user.winned_games = winned_games
-
     user.played_games = played_games
     
     return user
     
+# Función para iniciar sesión
 def login(db: Session, user: UserBase):
+    # Obtenemos el usuario por el email
     usuario = get_user_by_email(db, user.email)
-
 
     if not usuario:
         return None
     else:
+        # Verificamos la contraseña
         loged = verify_password(user.password, usuario.password)
-
-        # Get number of winned games by players' user (player has a user and a game)
-        winned_games = db.query(Game).join(Player, Game.players).filter(Game.winner == Player.id, Game.multiplayer == True, Player.user_id == usuario.id).count()    
         
-        # Get players' user
-        played_games = db.query(Player).join(Player, Game.players).filter(Game.multiplayer == True, Player.user_id == usuario.id).count()
-
-        # Append number of winned games to user
-        usuario.winned_games = winned_games
-
-        usuario.played_games = played_games
         if(loged):
+            # Get number of winned games by players' user (player has a user and a game)
+            winned_games = db.query(Game).join(Player, Game.players).filter(Game.winner == Player.id, Game.multiplayer == True, Player.user_id == usuario.id).count()    
+            
+            # Get players' user
+            played_games = db.query(Player).join(Player, Game.players).filter(Game.multiplayer == True, Player.user_id == usuario.id).count()
+
+            # Append number of winned games to user
+            usuario.winned_games = winned_games
+
+            usuario.played_games = played_games
+
             access_token = create_access_token({"sub": usuario.username, "email": user.email})
+
             return {
                 "access_token": access_token,
                 "token_type": "bearer",
                 "user": usuario
             }
+        
         else:
             return None
     
-    
+# Función para modificar los datos de un usuario
 def modify_user(db: Session, user_id: int, user: UserBase):
     db_user = get_user(db, user_id)
     if db_user is None:
@@ -88,7 +95,6 @@ def modify_user(db: Session, user_id: int, user: UserBase):
     if user.image:
         db_user.image = user.image
 
-    
     db.commit()
     db.refresh(db_user)
     

@@ -2,13 +2,14 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from api.database import init_db
 from api.routers import user, game, auth
-from fastapi.middleware.cors import CORSMiddleware  # ¡Para evitar bloqueos CORS!
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 # Inicializar la base de datos
 init_db()
 
+# Para las imágenes
 app.mount("/api/static", StaticFiles(directory="api/static"), name="static")
 
 # Incluir rutas
@@ -31,4 +32,4 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)  # ¡Clave para conexiones externas!s
+    uvicorn.run(app, host="0.0.0.0", port=8000)

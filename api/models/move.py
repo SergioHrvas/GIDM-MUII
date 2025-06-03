@@ -12,9 +12,8 @@ class Move(Base):
     game_id = Column(Integer, ForeignKey("games.id"), nullable=False)
     card_id = Column(Integer, ForeignKey("cards.id"))
     date = Column(DateTime, nullable=False)
-    action = Column(String, nullable=False)  # Acción realizada (ejemplo: "descartar", "carta")
+    action = Column(String, nullable=False)  # Acción realizada ("descartar" o "carta")
     data = Column(JSONB, nullable=True)  # Datos adicionales en formato JSONB
-
 
     # Relación inversa con Player
     player = relationship("Player", back_populates="moves")

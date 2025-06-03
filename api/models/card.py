@@ -4,7 +4,7 @@ from api.database import Base
 from sqlalchemy.orm import relationship
 from api.schemas.organtype import OrganType
 
-# 📌 Modelo Carta (Card)
+# Modelo Carta (Card)
 class Card(Base):
     __tablename__ = 'cards'
 
@@ -12,9 +12,9 @@ class Card(Base):
     
     name = Column(String, nullable=False)
     
-    tipo = Column(String, nullable=False)  # Tipo de carta (ejemplo: virus, órgano)
+    tipo = Column(String, nullable=False) # Tipo de carta (virus, órgano, acción o cura)
 
-    organ_type = Column(SQLAlchemyEnum(OrganType))
+    organ_type = Column(SQLAlchemyEnum(OrganType)) # Tipo de órgano de la carta
 
     # Relación inversa con PlayerCard
     player_cards = relationship("PlayerCard", back_populates="card")
