@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.models.user import User
 from api.utils.auth import get_current_user
@@ -50,7 +50,7 @@ async def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_
 
     # Obtenemos el usuario modificado
     db_user = get_user(db, user_id)
-
+    
     return db_user
 
 

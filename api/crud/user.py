@@ -22,23 +22,28 @@ def create_user(db: Session, user: UserBase):
     return user
 
 # Función para obtener un usuario a partir de su id
-def get_user(db: Session, id: int):
+def get_user(db: Session, user_id: int):
 
     # Get a user by ID
-    user = db.query(User).filter(User.id == id).first()
+    user = db.query(User).filter(User.id == user_id).first()
 
     if user is None:
         return None
     
     # Get number of winned games by players' user (player has a user and a game)
-    winned_games = db.query(Game).join(Player, Game.players).filter(Game.winner == Player.id, Player.user_id == id).count()    
+    winned_games = db.query(Game).join(Player, Player.game_id == Game.id).filter(Game.winner == Player.id, Player.user_id == user_id, Game.multiplayer == True).count()
     
     # Get players' user
-    played_games = db.query(Player).filter(Player.user_id == id).count()
+    played_games = db.query(Game).join(Player, Player.game_id == Game.id).filter(Player.user_id == user_id, Game.multiplayer == True).count()
 
     # Append number of winned games to user
     user.winned_games = winned_games
     user.played_games = played_games
+    
+    # Generar NUEVO token con los datos actualizados
+    nuevo_token = create_access_token({"sub": user.username, "email": user.email})
+    
+    user.token = nuevo_token
     
     return user
     
@@ -54,11 +59,12 @@ def login(db: Session, user: UserBase):
         loged = verify_password(user.password, usuario.password)
         
         if(loged):
+
             # Get number of winned games by players' user (player has a user and a game)
-            winned_games = db.query(Game).join(Player, Game.players).filter(Game.winner == Player.id, Game.multiplayer == True, Player.user_id == usuario.id).count()    
+            winned_games = db.query(Game).join(Player, Game.players).filter(Game.winner == Player.id, Player.user_id == usuario.id, Game.multiplayer == True).count()    
             
             # Get players' user
-            played_games = db.query(Player).join(Player, Game.players).filter(Game.multiplayer == True, Player.user_id == usuario.id).count()
+            played_games = db.query(Game).join(Player, Game.players).filter(Player.user_id == usuario.id, Game.multiplayer == True).count()
 
             # Append number of winned games to user
             usuario.winned_games = winned_games

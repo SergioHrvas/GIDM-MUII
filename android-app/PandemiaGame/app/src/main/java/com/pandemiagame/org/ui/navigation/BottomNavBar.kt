@@ -6,7 +6,6 @@ import androidx.compose.runtime.*
 import androidx.navigation.NavController
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -18,9 +17,9 @@ fun BottomNavBar(navController: NavController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+        // Recorremos los items de navegación
         items.forEach { screen ->
             val isSelected = currentRoute == screen.route
-
             NavigationBarItem(
                 icon = {
                     Icon(

@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.pandemiagame.org.data.remote.GameResponse
+import com.pandemiagame.org.data.remote.models.game.GameResponse
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.launch

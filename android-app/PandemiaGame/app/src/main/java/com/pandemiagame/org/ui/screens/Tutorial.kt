@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.pandemiagame.org.R
-import com.pandemiagame.org.data.remote.models.CardEnum
+import com.pandemiagame.org.data.remote.models.game.CardEnum
 import com.pandemiagame.org.ui.navigation.BottomNavBar
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 

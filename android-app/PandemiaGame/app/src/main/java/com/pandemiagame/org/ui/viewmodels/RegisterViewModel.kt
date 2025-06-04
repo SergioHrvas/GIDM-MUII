@@ -7,10 +7,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
-import com.pandemiagame.org.data.remote.RegisterRequest
+import com.pandemiagame.org.data.remote.models.auth.RegisterRequest
 import com.pandemiagame.org.data.remote.RetrofitClient
-import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.launch
 
 class RegisterViewModel : ViewModel() {

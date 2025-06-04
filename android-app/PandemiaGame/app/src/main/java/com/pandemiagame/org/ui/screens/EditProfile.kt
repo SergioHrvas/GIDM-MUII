@@ -26,23 +26,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
-import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.Constants
+import com.pandemiagame.org.ui.screens.components.FormTextInput
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.EditProfileViewModel
 import org.json.JSONObject
@@ -130,61 +127,37 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
                         .padding(16.dp)
                 ) {
                     Column {
-                        Text("Nombre de usuario")        // Campo de texto para el username
-                        TextField(
+                        FormTextInput(
+                            textContent = "Nombre de usuario",
+                            onValueChange = { newValue ->
+                                viewModel.onUserNameChange(newValue)
+                            },
                             value = username,
-                            onValueChange = {
-                                    newValue -> viewModel.onUserNameChange(newValue)
-                            },
-                            label = { Text("Ingresa tu nombre de usuario") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    top = 8.dp,
-                                    bottom = 16.dp
-                                )
+                            label = "Ingresa tu nombre de usuario"
                         )
-                        Text("Nombre")        // Campo de texto para el nombre
-                        TextField(
+                        FormTextInput(
+                            textContent = "Nombre",
+                            onValueChange = { newValue ->
+                                viewModel.onNameChange(newValue)
+                            },
                             value = name,
-                            onValueChange = {
-                                    newValue -> viewModel.onNameChange(newValue)
-                            },
-                            label = { Text("Ingresa tu nombre") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    top = 8.dp,
-                                    bottom = 16.dp
-                                )
+                            label = "Ingresa tu nombre"
                         )
-                        Text("Apellidos")        // Campo de texto para los apellidos
-                        TextField(
+                        FormTextInput(
+                            textContent = "Apellidos",
+                            onValueChange = { newValue ->
+                                viewModel.onLastNameChange(newValue)
+                            },
                             value = last_name,
-                            onValueChange = {
-                                    newValue -> viewModel.onLastNameChange(newValue)
-                            },
-                            label = { Text("Ingresa tu(s) apellido(s)") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    top = 8.dp,
-                                    bottom = 16.dp
-                                )
+                            label = "Ingresa tus apellidos"
                         )
-                        Text("Correo electrónico")        // Campo de texto para el correo
-                        TextField(
-                            value = email,
-                            onValueChange = {
-                                    newValue -> viewModel.onEmailChange(newValue)
+                        FormTextInput(
+                            textContent = "Correo electrónico",
+                            onValueChange = { newValue ->
+                                viewModel.onEmailChange(newValue)
                             },
-                            label = { Text("Ingresa tu email") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    top = 8.dp,
-                                    bottom = 16.dp
-                                )
+                            value = email,
+                            label = "Ingresa tu email"
                         )
                         Text("Contraseña")
                         TextField(
@@ -202,9 +175,10 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
                         Button(
                             enabled = formEnable,
                             onClick = {
-                            navigateBackAfterUpdate = true
-                            viewModel.onUpdateSelected(context)
-                        }) {
+                                navigateBackAfterUpdate = true
+                                viewModel.onUpdateSelected(context)
+                            }
+                        ) {
                             Text("Modificar Perfil")
                         }
                     }

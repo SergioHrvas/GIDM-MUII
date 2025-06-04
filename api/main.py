@@ -10,7 +10,7 @@ app = FastAPI()
 init_db()
 
 # Para las imágenes
-app.mount("/api/static", StaticFiles(directory="api/static"), name="static")
+app.mount("/static", StaticFiles(directory="api/static"), name="static")
 
 # Incluir rutas
 app.include_router(user.router, prefix="/user", tags=["User"])

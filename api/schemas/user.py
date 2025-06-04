@@ -26,7 +26,8 @@ class UserResponse(UserBase):
     id: int
     winned_games: Optional[int] = None
     played_games: Optional[int] = None
-
+    token: Optional[str] = None
+    
     class Config:
         from_attributes = True
 

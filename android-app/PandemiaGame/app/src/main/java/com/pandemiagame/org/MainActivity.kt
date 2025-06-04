@@ -15,7 +15,6 @@ import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.screens.EditProfileComp
-import com.pandemiagame.org.ui.screens.GameComp
 import com.pandemiagame.org.ui.screens.GamesComp
 import com.pandemiagame.org.ui.screens.LoginComp
 import com.pandemiagame.org.ui.screens.NewGameComp
@@ -24,6 +23,7 @@ import com.pandemiagame.org.ui.screens.Profile
 import com.pandemiagame.org.ui.screens.RegisterComp
 import com.pandemiagame.org.ui.screens.Tutorial
 import com.pandemiagame.org.ui.screens.SplashScreen
+import com.pandemiagame.org.ui.screens.game.GameScreen
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
@@ -102,7 +102,7 @@ fun AppNavigation() {
         composable("games") { GamesComp(navController = navController) }
         composable("create-game") { NewGameComp(viewModel = newGameViewModel, navController = navController) }
         composable("game/{game_id}") { backStackEntry ->
-            GameComp(
+            GameScreen(
                 viewModel = gameViewModel,
                 gameId = backStackEntry.arguments?.getString("game_id") ?: "",
                 navController = navController

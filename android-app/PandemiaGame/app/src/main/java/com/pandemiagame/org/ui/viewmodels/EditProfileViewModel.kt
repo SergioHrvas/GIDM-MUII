@@ -1,9 +1,6 @@
 package com.pandemiagame.org.ui.viewmodels
 
-import androidx.compose.ui.platform.LocalContext
-import com.pandemiagame.org.data.remote.User
-import com.pandemiagame.org.data.remote.UserUpdating
-import retrofit2.Retrofit
+import com.pandemiagame.org.data.remote.models.user.UserUpdating
 
 import android.content.Context
 import android.util.Log
@@ -15,7 +12,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -118,6 +114,11 @@ class EditProfileViewModel : ViewModel(){
 
                 val sharedPref = ctx.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
                 val updatedUserJsonString = Gson().toJson(response)
+
+
+                if(response.token != null)
+                    tm.saveToken(response.token.toString());
+
 
                 with(sharedPref.edit()) {
                     putString("user", updatedUserJsonString)

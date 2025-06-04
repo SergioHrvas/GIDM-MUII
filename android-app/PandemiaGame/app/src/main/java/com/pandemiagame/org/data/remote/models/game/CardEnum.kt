@@ -1,4 +1,4 @@
-package com.pandemiagame.org.data.remote.models
+package com.pandemiagame.org.data.remote.models.game
 
 import com.pandemiagame.org.R
 

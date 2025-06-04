@@ -8,17 +8,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.pandemiagame.org.data.remote.GameRequest
-import com.pandemiagame.org.data.remote.GameResponse
+import com.pandemiagame.org.data.remote.models.game.GameRequest
+import com.pandemiagame.org.data.remote.models.game.GameResponse
 import com.pandemiagame.org.data.remote.RetrofitClient
-import com.pandemiagame.org.data.remote.User
+import com.pandemiagame.org.data.remote.models.user.User
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.screens.MAX_PLAYERS
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
-
 
 class NewGameViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -59,12 +58,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.pandemiagame.org.R
-import com.pandemiagame.org.data.remote.User
+import com.pandemiagame.org.data.remote.models.user.User
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
 import kotlinx.coroutines.launch
-import kotlin.collections.set
 
 const val MAX_PLAYERS = 5
 
