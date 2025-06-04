@@ -15,8 +15,8 @@ from api.models.move import Move as MoveModel
 import numpy as np
 import pandas as pd
 
-from api.crud.playercard import remove_card_from_player, discard_my_cards, discard_cards
-from api.crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, player_has_organ_to_cure_infect, steal_card, change_body, change_organs, infect_players
+from api.crud.playercard import remove_card_from_player, discard_my_cards
+from api.crud.organ import add_organ_to_player, player_has_organ, player_can_steal, add_virus_to_organ, add_cure_to_organ, player_has_organ_to_cure_infect, steal_organ, change_body, change_organs, infect_players
 from api.crud.deckcard import initialize_deck, steal_to_deck
 
 # Función para crear una partida
@@ -175,13 +175,13 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
         
         # Si es tipo virus
         elif card.tipo == "virus":
-            has_organ = player_has_organ_to_cure_infect(db, move.infect.player1, card.organ_type)
+            has_organ = player_has_organ_to_cure_infect(db, move.infect.player1)
             if has_organ == True:
                 done = add_virus_to_organ(db, move.infect.player1, card.organ_type, move.infect.organ1)
         
         # Si es tipo cura
         elif card.tipo == "cure":
-            has_organ = player_has_organ_to_cure_infect(db, player_id, card.organ_type)
+            has_organ = player_has_organ_to_cure_infect(db, player_id)
             if has_organ == True:
                 done = add_cure_to_organ(db, player_id, card.organ_type, move.infect.organ1)
         
@@ -192,7 +192,7 @@ def do_move_game(game_id: int, player_id: int, move: Move, db: Session):
             if card.name == "Steal Organ":
                 can_steal = player_can_steal(db, player_id, move.infect.player1, move.infect.organ1)
                 if can_steal == True:
-                    done = steal_card(db, player_id, move.infect.player1, move.infect.organ1)
+                    done = steal_organ(db, player_id, move.infect.player1, move.infect.organ1)
             
             # Si es cambiar cuerpo
             elif card.name == "Change Body":
