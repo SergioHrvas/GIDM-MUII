@@ -1,4 +1,4 @@
-package com.pandemiagame.org.ui.screens
+package com.pandemiagame.org.ui.screens.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -15,16 +15,12 @@ import com.pandemiagame.org.R
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.getValue
@@ -40,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.screens.profile.components.FormTextInput
+import com.pandemiagame.org.ui.screens.profile.components.LoginButton
 import com.pandemiagame.org.ui.viewmodels.RegisterViewModel
 import kotlinx.coroutines.launch
 
@@ -72,7 +69,7 @@ fun RegisterComp(navController: NavController, viewModel: RegisterViewModel) {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.login),
-                    contentDescription = "Icono vectorial",
+                    contentDescription = stringResource(R.string.login_icon),
                     contentScale = ContentScale.Fit
                 )
 
@@ -119,26 +116,29 @@ fun RegisterComp(navController: NavController, viewModel: RegisterViewModel) {
                                 viewModel.onRegisterChange(name, surname, username, it, password)
                             }
                         )
-                        Text("Contraseña")
+                        Text(stringResource(R.string.password))
                         TextField(
                             value = password,
                             onValueChange = {
                                 viewModel.onRegisterChange(name, surname, username, email, it)
                             },
-                            label = { Text("Ingresa tu contraseña") },
+                            label = { Text(stringResource(R.string.ingresa_password)) },
                             visualTransformation = PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp)
                         )
-
-                        RegisterButton(loginEnable) {
-                            coroutine.launch {
-                                viewModel.onRegisterSelected(context)
-                                navController.navigate("login")
-                            }
-                        }
+                        LoginButton(
+                            loginEnable,
+                            onButtonSelected = {
+                                coroutine.launch {
+                                    viewModel.onRegisterSelected(context)
+                                    navController.navigate("login")
+                                }
+                            },
+                            text = stringResource(R.string.registrarme)
+                        )
 
                         Text(
                             text = stringResource(R.string.registro_si_cuenta),
@@ -157,27 +157,5 @@ fun RegisterComp(navController: NavController, viewModel: RegisterViewModel) {
             }
         }
     }
-}
-
-
-@Composable
-fun RegisterButton(registerEnable: Boolean, onRegisterSelected: () -> Unit){
-    Button(
-        onClick = {
-            onRegisterSelected()},
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(58.dp)
-            .padding(top = 10.dp, bottom = 10.dp),
-        colors = ButtonDefaults.buttonColors(
-            disabledContainerColor = Color.Gray,
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            disabledContentColor = Color.White,
-            contentColor = Color.White,
-        ),
-        enabled = registerEnable
-    ){
-            Text(stringResource(R.string.registrarme))
-        }
 }
 

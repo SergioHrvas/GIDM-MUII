@@ -14,7 +14,7 @@ import com.pandemiagame.org.data.remote.models.game.GameResponse
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.models.user.User
 import com.pandemiagame.org.data.remote.utils.TokenManager
-import com.pandemiagame.org.ui.screens.MAX_PLAYERS
+import com.pandemiagame.org.ui.screens.game.MAX_PLAYERS
 import kotlinx.coroutines.launch
 
 class NewGameViewModelFactory(private val tokenManager: TokenManager) : ViewModelProvider.Factory {

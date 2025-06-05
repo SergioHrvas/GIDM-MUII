@@ -1,4 +1,4 @@
-package com.pandemiagame.org.ui.screens
+package com.pandemiagame.org.ui.screens.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -15,14 +15,10 @@ import com.pandemiagame.org.R
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.getValue
@@ -38,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.screens.profile.components.FormTextInput
+import com.pandemiagame.org.ui.screens.profile.components.LoginButton
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
 import kotlinx.coroutines.launch
 
@@ -69,7 +66,7 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.login),
-                    contentDescription = "Icono vectorial",
+                    contentDescription = stringResource(R.string.login_icon),
                     contentScale = ContentScale.Fit
                 )
                 Box(
@@ -106,7 +103,13 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                         )
 
-                        LoginButton(loginEnable) { coroutine.launch { viewModel.onLoginSelected(context) } }
+                        LoginButton(
+                            loginEnable,
+                            onButtonSelected = {
+                                coroutine.launch { viewModel.onLoginSelected(context) }
+                            },
+                            text = stringResource(R.string.iniciar_sesion)
+                        )
 
                         Text(color = Color(0xFF3D8433), fontWeight = FontWeight.Bold, modifier = Modifier.clickable(onClick = {
                             navController.navigate("register"){
@@ -120,24 +123,4 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
     }
 }
 
-@Composable
-fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit){
-    Button(
-        onClick = {
-            onLoginSelected()},
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(58.dp)
-            .padding(top = 10.dp, bottom = 10.dp),
-        colors = ButtonDefaults.buttonColors(
-            disabledContainerColor = Color.Gray,
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            disabledContentColor = Color.White,
-            contentColor = Color.White,
-        ),
-        enabled = loginEnable
-    ){
-            Text(stringResource(R.string.iniciar_sesion))
-        }
-}
 

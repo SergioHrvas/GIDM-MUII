@@ -1,4 +1,4 @@
-package com.pandemiagame.org.ui.screens
+package com.pandemiagame.org.ui.screens.game
 
 import android.content.Context
 import android.util.Log

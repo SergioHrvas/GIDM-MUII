@@ -63,7 +63,7 @@ fun PlayerHeader(
             )
         if(winner)
             Icon(
-                painter = painterResource((R.drawable.baseline_star_24)),
+                painter = painterResource((R.drawable.sharp_crown_24)),
                 contentDescription = stringResource(R.string.ganador),
                 tint = Color(0xFFFFA500)
             )

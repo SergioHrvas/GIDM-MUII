@@ -1,4 +1,4 @@
-package com.pandemiagame.org.ui.screens
+package com.pandemiagame.org.ui.screens.profile
 
 import android.content.Context
 import androidx.compose.foundation.Canvas
@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -103,7 +107,6 @@ fun Profile(navController: NavController) {
         }
     }
 
-
     Scaffold(
         topBar = { CustomTopAppBar() },
         bottomBar = { BottomNavBar(navController) },
@@ -114,10 +117,10 @@ fun Profile(navController: NavController) {
                 .padding(16.dp)
         ) {
             // Card de perfil
-            androidx.compose.material3.Card(
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                elevation = androidx.compose.material3.CardDefaults.cardElevation(6.dp)
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(6.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -152,7 +155,7 @@ fun Profile(navController: NavController) {
                     )
 
                     // Botón de editar
-                    androidx.compose.material3.Button(
+                    Button(
                         onClick = {
                             navController.navigate("edit-profile")
                         },

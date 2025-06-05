@@ -111,7 +111,7 @@ fun ExchangeDialog(
                         },
                         enabled = otherOrganSelected != null
                     ) {
-                        Text(stringResource(R.string.cancelar))
+                        Text(stringResource(R.string.confirmar))
                     }
                 }
             }

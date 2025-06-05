@@ -1,15 +1,12 @@
-package com.pandemiagame.org.ui.screens
+package com.pandemiagame.org.ui.screens.tutorial
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -23,17 +20,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.game.CardEnum
 import com.pandemiagame.org.ui.navigation.BottomNavBar
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
+import com.pandemiagame.org.ui.screens.tutorial.components.TutorialSection
+import com.pandemiagame.org.ui.screens.tutorial.components.TutorialSubsection
 
 data class Section(
     val imageRes: Int? = null,
@@ -247,103 +243,4 @@ fun Tutorial(navController: NavController) {
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
-}
-
-@Composable
-fun TutorialSection(
-    section: Section
-) {
-    Column(modifier = Modifier.padding(vertical = 16.dp)) {
-        Text(
-            text = section.title,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        if(section.imageRes != null) {
-            Image(
-                painter = painterResource(id = section.imageRes),
-                contentDescription = section.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-            )
-        }
-
-        Text(
-            text = section.description,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-    }
-}
-
-
-@Composable
-fun TutorialSubsection(
-    section: Section,
-    subsubsection: List<Section>? = null
-) {
-    Column(modifier = Modifier.padding(vertical = 16.dp)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
-        ) {
-            if(section.imageRes != null) {
-                Image(
-                    painter = painterResource(id = section.imageRes),
-                    contentDescription = section.title,
-                    modifier = Modifier
-                        .height(40.dp).padding(end = 5.dp)
-                )
-            }
-            Text(
-                text = section.title,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        Text(
-            text = section.description,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        subsubsection?.forEach {
-            TutorialSubSubsection(it)
-        }
-    }
-
-
-}
-
-
-@Composable
-fun TutorialSubSubsection(
-    section: Section
-) {
-        Row(modifier = Modifier.padding(bottom = 10.dp)) {
-            if(section.imageRes != null) {
-                Image(
-                    painter = painterResource(id = section.imageRes),
-                    contentDescription = section.title,
-                    modifier = Modifier
-                        .width(90.dp).padding(end = 5.dp)
-                )
-            }
-            Column {
-                Text(
-                    text = section.title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = section.description,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-        }
 }
