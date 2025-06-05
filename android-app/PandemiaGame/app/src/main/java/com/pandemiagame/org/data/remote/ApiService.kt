@@ -18,7 +18,7 @@ interface ApiService {
     @POST("token")
     suspend fun login(@Field("username") email: String,
                       @Field("password") password: String,
-                      @Field("grant_type") grant_type: String = "password"): LoginResponse
+                      @Field("grant_type") grantType: String = "password"): LoginResponse
 
     @POST("user/register")
     suspend fun register(@Body request: RegisterRequest): User

@@ -3,7 +3,6 @@ package com.pandemiagame.org.ui.screens
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,11 +18,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -52,48 +51,38 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.user.User
+import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
-import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
+import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
 import kotlinx.coroutines.launch
 
 const val MAX_PLAYERS = 5
 
-
-@Preview
-@Composable
-fun PreviewNewGame(){
-    PandemiaGameTheme(darkTheme = false){
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)) {
-            NewGameComp(navController = NavController(
-                context = TODO()
-            ))
-        }    }
-}
-
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavController) {
-    val buttonEnable :Boolean by viewModel.buttonEnable.observeAsState(initial=false)  // Estado para el boton activado
+fun NewGameComp(navController: NavController) {
+    val context = LocalContext.current
+
+    val tokenManager = TokenManager(context)
+    val viewModel: NewGameViewModel = viewModel(
+        factory = NewGameViewModelFactory(tokenManager)
+    )
+
+    val buttonEnable :Boolean by viewModel.buttonEnable.observeAsState(initial=false)  // Estado para el botón activado
 
     val isLoading :Boolean by viewModel.isLoading.observeAsState(initial=false) // Estado para el cargando
     val coroutine = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
     val multiplayer: Boolean by viewModel.multiplayer.observeAsState(initial=false)
-    val context = LocalContext.current  // Obtén el contexto actual
-
 
     val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
     val userJson = sharedPref.getString("user", null)
@@ -104,13 +93,14 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
 
             viewModel.onNameChanged(user.id.toString(), 0, user.username)
         } else {
-            Log.e("USER", "No se encontró usuario en SharedPreferences")
+            Log.e(context.getString(R.string.gen_error), context.getString(R.string.error_usuario_almacenado))
         }
     }
 
     LaunchedEffect(Unit) {
-        viewModel.getUsers()
+        viewModel.getUsers(context)
     }
+
     // Llamamos al estado de la creación del juego
     val gameCreationStatus by viewModel.gameCreationStatus.observeAsState(false)
 
@@ -127,7 +117,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .imePadding() // Esto añade padding cuando el teclado aparece
+                    .imePadding() // Añade padding cuando el teclado aparece
             ) {
                 Column(
                     modifier = Modifier
@@ -141,18 +131,18 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                         onClick = { viewModel.changeMultiplayer() },
                     ) {
                         if(!multiplayer)Icon(
-                            Icons.Default.KeyboardArrowRight,
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null
                         )
                         else
                             Icon(
-                                Icons.Default.KeyboardArrowLeft,
+                                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                                 contentDescription = null
                             )
                     }
                     Image(
-                        painter = painterResource(id = R.drawable.login), // Nombre sin extensión
-                        contentDescription = "Icono vectorial",
+                        painter = painterResource(id = R.drawable.login),
+                        contentDescription = stringResource(R.string.login_icon),
                         contentScale = ContentScale.Fit // Mantiene proporciones sin recortar
                     )
                     Box(
@@ -173,14 +163,15 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                         .padding(vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ){
-                                    if(!multiplayer)TextField(
-                                        value = viewModel.players.getOrElse(index) { "" },
-                                        onValueChange = { newName -> viewModel.onNameChanged(newName, index) },
-                                        label = { Text("Jugador ${index + 1}") },
-                                        modifier = Modifier
-                                            .weight(1f)  // Ocupa todo el espacio disponible
-                                            .padding(end = 8.dp)  // Espacio entre TextField y Button
-                                    )
+                                    if(!multiplayer)
+                                        TextField(
+                                            value = viewModel.players.getOrElse(index) { "" },
+                                            onValueChange = { newName -> viewModel.onNameChanged(newName, index) },
+                                            label = { Text("Jugador ${index + 1}") },
+                                            modifier = Modifier
+                                                .weight(1f)  // Ocupa el espacio disponible
+                                                .padding(end = 8.dp)  // Espacio entre TextField y Button
+                                        )
                                     else {
                                         var expanded by remember { mutableStateOf(false) }
 
@@ -195,7 +186,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                                 containerColor = Color.White
                                             ),
                                             modifier = Modifier
-                                                .weight(1f)  // Ocupa todo el espacio disponible
+                                                .weight(1f)  // Ocupa el espacio disponible
                                                 .padding(end = 8.dp)  // Espacio entre TextField y Button
                                         ) {
                                             Text(if (viewModel.players[index].toString().isEmpty() == false) viewModel.playerNames[index] else " --- ")
@@ -231,7 +222,7 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
                                         if(index != 0 && viewModel.players.size > 2)
                                             Icon(
                                                 imageVector = Icons.Default.Delete,
-                                                contentDescription = "Eliminar jugador",
+                                                contentDescription = stringResource(R.string.eliminar_jugador),
                                                 modifier = Modifier.size(24.dp)
                                             )
                                     }
@@ -260,12 +251,13 @@ fun NewGameComp(viewModel: NewGameViewModel = viewModel(), navController: NavCon
 
                             NewGameButton(buttonEnable) {
                                 coroutine.launch {
-                                    viewModel.onButtonSelected()
+                                    viewModel.onButtonSelected(context)
                                 }
                             }
+
                             // Observamos el estado de la creación y si es exitosa, navegamos
-                            if (gameCreationStatus) {
-                                LaunchedEffect(gameCreationStatus) {
+                            LaunchedEffect(gameCreationStatus) {
+                                if (gameCreationStatus) {
                                     viewModel.notCreating()
                                     navController.navigate("game/${viewModel.game.value?.id}") {
                                         popUpTo("create-game") { inclusive = true }
@@ -299,7 +291,7 @@ fun NewGameButton(buttonEnable: Boolean, onButtonSelected: () -> Unit){
         ),
         enabled = buttonEnable
     ){
-        Text(text = "Crear juego")
+        Text(stringResource(R.string.crear_juego))
     }
 }
 

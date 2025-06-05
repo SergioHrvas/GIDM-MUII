@@ -1,4 +1,4 @@
-package com.pandemiagame.org.ui.screens
+package com.pandemiagame.org.ui.screens.profile
 
 import android.content.Context
 import androidx.compose.foundation.Image
@@ -32,17 +32,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.pandemiagame.org.data.remote.Constants
-import com.pandemiagame.org.ui.screens.components.FormTextInput
+import com.pandemiagame.org.ui.screens.profile.components.FormTextInput
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
 import com.pandemiagame.org.ui.viewmodels.EditProfileViewModel
 import org.json.JSONObject
+import com.pandemiagame.org.R
 
 
 @Composable
@@ -51,31 +53,32 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
     val sharedPref = remember { context.getSharedPreferences("MyPref", Context.MODE_PRIVATE) }
     var userString by remember { mutableStateOf(sharedPref.getString("user", null)) }
 
-    val userJSON = userString?.let { JSONObject(it) } ?: JSONObject()
+    var userJSON = userString?.let { JSONObject(it) } ?: JSONObject()
     val image = userJSON.optString("image", "")
     val baseUrl = Constants.BASE_URL
-
-    // Efecto para inicializar los datos una vez
-    LaunchedEffect(userString) {
-        userString?.let {
-            val userJSON = JSONObject(it)
-            viewModel.initializeUserData(userJSON)
-        }
-    }
 
     // Observar los estados del ViewModel
     val email by viewModel.email.observeAsState("")
     val password by viewModel.password.observeAsState("")
     val name by viewModel.name.observeAsState("")
-    val last_name by viewModel.lastname.observeAsState("")
+    val lastName by viewModel.lastname.observeAsState("")
     val username by viewModel.username.observeAsState("")
-
     val isLoading by viewModel.isLoading.observeAsState(false)
+    val updateCompleted by viewModel.updateCompleted.observeAsState(false)
+    val formEnable :Boolean by viewModel.formEnable.observeAsState(true)  // Estado para el botón activado
+
     var navigateBackAfterUpdate by remember { mutableStateOf(false) }
 
-    val updateCompleted by viewModel.updateCompleted.observeAsState(false)
-    val formEnable :Boolean by viewModel.formEnable.observeAsState(true)  // Estado para el boton activado
 
+    // Efecto para inicializar los datos una vez
+    LaunchedEffect(userString) {
+        userString?.let {
+            userJSON = JSONObject(it)
+            viewModel.initializeUserData(userJSON)
+        }
+    }
+
+    // Efecto para retroceder cuando se pulse el botón de modificar
     LaunchedEffect(updateCompleted) {
         if (updateCompleted) {
             val updatedUserJsonString = sharedPref.getString("user", null)
@@ -84,15 +87,13 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
                 ?.savedStateHandle
                 ?.set("updatedUserJson", updatedUserJsonString)
 
-
             navController.popBackStack()
-
         }
     }
 
     Scaffold (
         topBar = { CustomTopAppBar() },
-    ) { innerPading ->
+    ) { innerPadding ->
         if (isLoading) {
             Box(Modifier.fillMaxSize()) {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -101,16 +102,15 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPading)
+                    .padding(innerPadding)
                     .padding(top=10.dp)
                     .verticalScroll(rememberScrollState())
                 ,
-
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-                    painter = rememberImagePainter("${baseUrl}static/uploads/$image"),
+                    painter = rememberAsyncImagePainter("${baseUrl}static/uploads/$image"),
                     contentDescription = null,
                     modifier = Modifier
                         .size(80.dp)
@@ -128,45 +128,45 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
                 ) {
                     Column {
                         FormTextInput(
-                            textContent = "Nombre de usuario",
+                            textContent = stringResource(R.string.nombre_usuario),
                             onValueChange = { newValue ->
                                 viewModel.onUserNameChange(newValue)
                             },
                             value = username,
-                            label = "Ingresa tu nombre de usuario"
+                            label = stringResource(R.string.ingresa_nombre_usuario)
                         )
                         FormTextInput(
-                            textContent = "Nombre",
+                            textContent = stringResource(R.string.nombre),
                             onValueChange = { newValue ->
                                 viewModel.onNameChange(newValue)
                             },
                             value = name,
-                            label = "Ingresa tu nombre"
+                            label = stringResource(R.string.ingresa_nombre)
                         )
                         FormTextInput(
-                            textContent = "Apellidos",
+                            textContent = stringResource(R.string.apellidos),
                             onValueChange = { newValue ->
                                 viewModel.onLastNameChange(newValue)
                             },
-                            value = last_name,
-                            label = "Ingresa tus apellidos"
+                            value = lastName,
+                            label = stringResource(R.string.ingresa_apellidos)
                         )
                         FormTextInput(
-                            textContent = "Correo electrónico",
+                            textContent = stringResource(R.string.email),
                             onValueChange = { newValue ->
                                 viewModel.onEmailChange(newValue)
                             },
                             value = email,
-                            label = "Ingresa tu email"
+                            label = stringResource(R.string.ingresa_email)
                         )
-                        Text("Contraseña")
+                        Text(stringResource(R.string.password))
                         TextField(
                             value = password,
                             visualTransformation = PasswordVisualTransformation(),
                             onValueChange = {
                                     newValue -> viewModel.onPasswordChange(newValue)
                             },
-                            label = { Text("Ingresa tu contraseña") },
+                            label = { Text(stringResource(R.string.ingresa_password)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
@@ -179,7 +179,7 @@ fun EditProfileComp(navController: NavController,viewModel: EditProfileViewModel
                                 viewModel.onUpdateSelected(context)
                             }
                         ) {
-                            Text("Modificar Perfil")
+                            Text(stringResource(R.string.modificar_perfil))
                         }
                     }
                 }

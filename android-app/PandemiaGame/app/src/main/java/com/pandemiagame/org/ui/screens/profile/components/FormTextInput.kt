@@ -1,4 +1,4 @@
-package com.pandemiagame.org.ui.screens.components
+package com.pandemiagame.org.ui.screens.profile.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

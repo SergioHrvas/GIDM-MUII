@@ -4,6 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.pandemiagame.org.R
 
 
 @Composable
@@ -14,14 +16,14 @@ fun WinnerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "¡Juego Terminado!")
+            Text(stringResource(R.string.juego_terminado))
         },
         text = {
-            Text(text = "Ganador: $winnerName")
+            Text(stringResource(R.string.ganador_nombre, winnerName))
         },
         confirmButton = {
             Button(onClick = onDismiss) {
-                Text("Aceptar")
+                Text(stringResource(R.string.aceptar))
             }
         }
     )

@@ -11,9 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.pandemiagame.org.R
-import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,18 +27,19 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
+import com.pandemiagame.org.ui.screens.profile.components.FormTextInput
 import com.pandemiagame.org.ui.viewmodels.RegisterViewModel
 import kotlinx.coroutines.launch
 
@@ -88,54 +87,38 @@ fun RegisterComp(navController: NavController, viewModel: RegisterViewModel) {
                         .padding(16.dp)
                 ) {
                     Column {
-                        Text("Nombre")
-                        TextField(
+                        FormTextInput(
+                            textContent = stringResource(R.string.nombre),
                             value = name,
+                            label = stringResource(R.string.ingresa_nombre),
                             onValueChange = {
                                 viewModel.onRegisterChange(it, surname, username, email, password)
-                            },
-                            label = { Text("Ingresa tu nombre") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
+                            }
                         )
-
-                        Text("Apellidos")
-                        TextField(
+                        FormTextInput(
+                            textContent = stringResource(R.string.apellidos),
                             value = surname,
+                            label = stringResource(R.string.ingresa_apellidos),
                             onValueChange = {
                                 viewModel.onRegisterChange(name, it, username, email, password)
-                            },
-                            label = { Text("Ingresa tus apellidos") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
+                            }
                         )
-
-                        Text("Nombre de usuario")
-                        TextField(
+                        FormTextInput(
+                            textContent = stringResource(R.string.nombre_usuario),
                             value = username,
+                            label = stringResource(R.string.ingresa_nombre_usuario),
                             onValueChange = {
                                 viewModel.onRegisterChange(name, surname, it, email, password)
-                            },
-                            label = { Text("Ingresa tu nombre de usuario") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
+                            }
                         )
-
-                        Text("Correo electrónico")
-                        TextField(
+                        FormTextInput(
+                            textContent = stringResource(R.string.email),
                             value = email,
+                            label = stringResource(R.string.ingresa_email),
                             onValueChange = {
                                 viewModel.onRegisterChange(name, surname, username, it, password)
-                            },
-                            label = { Text("Ingresa tu email") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
+                            }
                         )
-
                         Text("Contraseña")
                         TextField(
                             value = password,
@@ -158,13 +141,13 @@ fun RegisterComp(navController: NavController, viewModel: RegisterViewModel) {
                         }
 
                         Text(
-                            text = "¿Ya estás registrado? Inicia sesión",
+                            text = stringResource(R.string.registro_si_cuenta),
                             color = Color(0xFF3D8433),
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .padding(top = 10.dp)
                                 .clickable {
-                                    navController.navigate("login"){
+                                    navController.navigate("login") {
                                         popUpTo("login") { inclusive = true }
                                     }
                                 }
@@ -194,7 +177,7 @@ fun RegisterButton(registerEnable: Boolean, onRegisterSelected: () -> Unit){
         ),
         enabled = registerEnable
     ){
-            Text(text = "Registrarme")
+            Text(stringResource(R.string.registrarme))
         }
 }
 

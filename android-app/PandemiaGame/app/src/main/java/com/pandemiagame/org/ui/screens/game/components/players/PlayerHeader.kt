@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.game.Player
@@ -50,20 +51,20 @@ fun PlayerHeader(
         if (showChangeButton) {
             Icon(
                 painter = painterResource(R.drawable.baseline_arrow_right_24),
-                contentDescription = "Cambiar jugador",
+                contentDescription = stringResource(R.string.cambiar_jugador),
                 modifier = Modifier.clickable(onClick = onPlayerChange)
             )
         }
         if(multiplayer)
             Icon(
                 painter = painterResource((R.drawable.baseline_star_24)),
-                contentDescription = "TURNO",
+                contentDescription = stringResource(R.string.turno),
                 tint = Color(0xFFFFA500)
             )
         if(winner)
             Icon(
                 painter = painterResource((R.drawable.baseline_star_24)),
-                contentDescription = "TURNO",
+                contentDescription = stringResource(R.string.ganador),
                 tint = Color(0xFFFFA500)
             )
         Text(
@@ -73,7 +74,7 @@ fun PlayerHeader(
 
         Image(
             painter = painterResource(id = R.drawable.user),
-            contentDescription = "Imagen de perfil",
+            contentDescription = stringResource(R.string.imagen_perfil),
             modifier = Modifier
                 .padding(end = 10.dp)
                 .size(40.dp)

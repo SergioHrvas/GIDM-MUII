@@ -25,8 +25,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.game.GameResponse
 import com.pandemiagame.org.data.remote.models.game.Organ
 
@@ -42,11 +44,11 @@ fun ExchangeDialog(
     Dialog(onDismissRequest = onCancel) {
         Surface(modifier = Modifier.padding(16.dp)) {
             Column {
-                Text(text = "Cambiando $selectedOrgan por...")
+                Text(stringResource(R.string.cambiar_organo_aviso, selectedOrgan))
 
-                val indice = game.players[otherPlayerIndex].organs.indexOfFirst { it.tipo == selectedOrgan }
-                val targetOrgans = if (indice != -1) {
-                    listOf(game.players[otherPlayerIndex].organs[indice])
+                val index = game.players[otherPlayerIndex].organs.indexOfFirst { it.tipo == selectedOrgan }
+                val targetOrgans = if (index != -1) {
+                    listOf(game.players[otherPlayerIndex].organs[index])
                 } else {
                     game.players[otherPlayerIndex].organs.filter {
                         (it.cure != 3) && puedoCambiarlo(
@@ -64,7 +66,7 @@ fun ExchangeDialog(
                     onClick = { expanded = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(otherOrganSelected ?: "Seleccionar órgano")
+                    Text(otherOrganSelected ?: stringResource(R.string.seleccionar_organo))
                     Icon(
                         Icons.Default.ArrowDropDown,
                         contentDescription = null
@@ -98,7 +100,7 @@ fun ExchangeDialog(
                             containerColor = MaterialTheme.colorScheme.error
                         )
                     ) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.cancelar))
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))
@@ -109,7 +111,7 @@ fun ExchangeDialog(
                         },
                         enabled = otherOrganSelected != null
                     ) {
-                        Text("Confirmar")
+                        Text(stringResource(R.string.cancelar))
                     }
                 }
             }

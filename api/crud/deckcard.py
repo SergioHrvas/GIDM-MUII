@@ -153,8 +153,9 @@ def generate_basic_deck(db: Session, game: Game):
 
     # Añadir 4 cartas de cada cura (excepto mágico que es 1)
     for card in cure_cards:
+        print(card.organ_type)
         count = 1 if card.organ_type == OrganType.magic else 4
-        new_deck_cards.extend([DeckCard(game_id=game.id, card_id=card.id) for _ in range(4)])
+        new_deck_cards.extend([DeckCard(game_id=game.id, card_id=card.id) for _ in range(count)])
 
     # Añadir 5 cartas de cada órgano (excepto mágico que es 1)
     for card in organ_cards:

@@ -28,8 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.game.InfectData
 import com.pandemiagame.org.data.remote.models.game.Organ
 import com.pandemiagame.org.data.remote.models.game.Player
@@ -62,7 +64,7 @@ fun InfectDialog(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Seleccionar objetivos de infección",
+                    text = stringResource(R.string.seleccionar_infeccion),
                     style = MaterialTheme.typography.titleLarge
                 )
 
@@ -98,7 +100,7 @@ fun InfectDialog(
                                         onClick = { expanded = true },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(if (selections[organ.tipo]?.organType.toString().isEmpty() == false) organ2 else "Seleccionar órgano")
+                                        Text(if (selections[organ.tipo]?.organType.toString().isEmpty() == false) organ2 else stringResource(R.string.seleccionar_organo))
                                         Icon(
                                             Icons.Default.ArrowDropDown,
                                             contentDescription = null
@@ -138,7 +140,7 @@ fun InfectDialog(
                         ),
                         enabled = true
                     ) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.cancelar))
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))
@@ -171,14 +173,13 @@ fun InfectDialog(
                         },
                         enabled = selections.values.any { it != null }
                     ) {
-                        Text("Confirmar")
+                        Text(stringResource(R.string.confirmar))
                     }
                 }
             }
         }
     }
 }
-
 
 
 private fun mirarTipo(targetOrgan: Organ, organ: Organ): Boolean {

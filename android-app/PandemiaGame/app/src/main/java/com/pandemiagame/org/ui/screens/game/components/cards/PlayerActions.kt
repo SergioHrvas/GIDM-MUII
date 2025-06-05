@@ -8,9 +8,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pandemiagame.org.R
-
 
 @Composable
 fun PlayerActions(
@@ -29,27 +29,26 @@ fun PlayerActions(
         if (discarting) {
             ActionButton(
                 iconResId = R.drawable.confirm,
-                contentDescription = "Confirmar",
+                contentDescription = stringResource(R.string.confirmar),
                 onClick = onConfirmDiscard
             )
         }
         if (!discarting && (selecting == 0) && !exchanging) {
             ActionButton(
                 iconResId = R.drawable.discard,
-                contentDescription = "Descartar cartas",
+                contentDescription = stringResource(R.string.descartar),
                 onClick = onDiscardToggle
             )
         }
         else {
             ActionButton(
                 iconResId = R.drawable.cancel,
-                contentDescription = "Cancelar",
+                contentDescription = stringResource(R.string.cancelar),
                 onClick = onCancelAction
             )
         }
     }
 }
-
 
 @Composable
 fun ActionButton(

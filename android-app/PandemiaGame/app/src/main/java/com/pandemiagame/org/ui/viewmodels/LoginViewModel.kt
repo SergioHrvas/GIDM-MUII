@@ -13,7 +13,7 @@ import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Base64
+import com.pandemiagame.org.R
 
 class LoginViewModel : ViewModel(){
     private val _email = MutableLiveData<String>()
@@ -33,7 +33,7 @@ class LoginViewModel : ViewModel(){
 
     sealed class AuthState {
         object Loading : AuthState()
-        data class Authenticated(val user: String) : AuthState() // Cambia String por tu clase User si es necesario
+        data class Authenticated(val user: String) : AuthState()
         object Unauthenticated : AuthState()
         data class Error(val message: String) : AuthState()
     }
@@ -42,6 +42,7 @@ class LoginViewModel : ViewModel(){
         _authState.value = AuthState.Loading
     }
 
+    // Función para verificar el estado de autenticación
     fun checkAuthState(context: Context) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
@@ -52,7 +53,7 @@ class LoginViewModel : ViewModel(){
                 token == null -> {
                     _authState.value = AuthState.Unauthenticated
                 }
-                isTokenExpiredLocally(token) -> {
+                isTokenExpiredLocally(token, context) -> {
                     tokenManager.clearToken()
                     _authState.value = AuthState.Unauthenticated
                 }
@@ -63,6 +64,7 @@ class LoginViewModel : ViewModel(){
         }
     }
 
+    // Función para verificar token
     private suspend fun verifyTokenWithServer(token: String, context: Context) {
         try {
             val response = RetrofitClient.instance.verifyToken("Bearer $token")
@@ -76,11 +78,12 @@ class LoginViewModel : ViewModel(){
                 _authState.value = AuthState.Unauthenticated
             }
         } catch (e: Exception) {
-            _authState.value = AuthState.Error("Error de conexión: ${e.message}")
+            _authState.value = AuthState.Error("${R.string.gen_error}: ${e.message}")
         }
     }
 
-    private fun isTokenExpiredLocally(token: String): Boolean {
+    // Función que verifica si el token ha expirado
+    private fun isTokenExpiredLocally(token: String, context: Context): Boolean {
         return try {
 
             val parts = token.split(".")
@@ -92,7 +95,6 @@ class LoginViewModel : ViewModel(){
             )
             val json = Gson().fromJson(payload, Map::class.java)
 
-            // Solución para el problema del tipo de 'exp'
             val exp = when (val expValue = json["exp"]) {
                 is Double -> expValue.toLong()
                 is String -> expValue.toLong()
@@ -101,24 +103,29 @@ class LoginViewModel : ViewModel(){
 
             exp?.let { expiration ->
                 System.currentTimeMillis() / 1000 >= expiration
-            } ?: true
+            } != false
         } catch (e: Exception) {
+            Log.e(context.getString(R.string.gen_error), e.toString())
             true
         }
     }
 
+    // Cuando cambia string o password, actualizamos valores del viewModel
     fun onLoginChange(email: String, password: String){
         _email.value = email
         _password.value = password
         _loginEnable.value = isValidEmail(email) && isValidPassword(password)
     }
 
+    // Función para verificar que el email es válido
     fun isValidEmail(email: String): Boolean{
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
+    // Función para verificar que la contraseña es válida
     fun isValidPassword(password: String): Boolean = password.length > 5
 
+    // Función para seleccionar el botón de Iniciar Sesión
     fun onLoginSelected(ctx: Context) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -133,26 +140,30 @@ class LoginViewModel : ViewModel(){
 
     }
 
+    // Función para iniciar sesión
     suspend fun login(email: String, password: String, context: Context): String? {
         return withContext(Dispatchers.IO) {  // Ejecutar en hilo de fondo
             try {
+                // Llamamos a la función de Retrofit
                 val response = RetrofitClient.instance.login(email, password, "password")
+
+                // Guardamos el usuario
                 val sharedPref = context.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
                 with(sharedPref.edit()) {
                     putString("user", Gson().toJson(response.user))
                     apply()
                 }
 
+                // Guardamos el token
                 if (response.access_token.isNotEmpty()) {
-                    val tm = TokenManager(context);
-
-                    tm.saveToken(response.access_token);
+                    val tm = TokenManager(context)
+                    tm.saveToken(response.access_token)
                     return@withContext response.access_token
                 } else {
                     return@withContext null
                 }
             } catch (e: Exception) {
-                Log.e("Login Error", "Error en la petición: ${e.message}")
+                Log.e(context.getString(R.string.gen_error), "${context.getString(R.string.error_peticion)}: ${e.message}")
                 return@withContext null
             }
         }

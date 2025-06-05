@@ -20,11 +20,10 @@ fun GameDialog(
         game.players.firstOrNull { it.id == gameState.winner }?.name ?: ""
     }
 
+    // Diálogo de movimientos
     if(gameState.seeingMoves){
         val moves by viewModel.moves.observeAsState()
-
         MovesDialog(
-
             moves = moves,
             onDismiss = {
                 gameState.seeingMoves = false
@@ -41,6 +40,7 @@ fun GameDialog(
         )
     }
 
+    // Diálogo de cambio de turno
     if ((gameState.changingTurn == true) && (gameState.winner == 0)) {
         TurnChangeDialog(
             playerName = game.players[game.players.indexOfFirst{ it.id == game.turn}].name,

@@ -12,10 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.pandemiagame.org.R
 
 @Composable
 fun TurnChangeDialog(
@@ -42,11 +44,11 @@ fun TurnChangeDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Turno del jugador $playerName",
+                    text = stringResource(R.string.turno_jugador, playerName),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
-                Text("Pulse para jugar su turno", color = Color.White)
+                Text(stringResource(R.string.pulse_jugar_turno), color = Color.White)
             }
         }
     }

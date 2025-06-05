@@ -23,25 +23,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
-import com.google.gson.Gson
+import coil.compose.rememberAsyncImagePainter
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.Constants
 import com.pandemiagame.org.ui.navigation.BottomNavBar
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
-
 import org.json.JSONObject
-
 
 @Composable
 fun WinRatePieChart(won: Int, total: Int) {
@@ -78,6 +73,7 @@ fun WinRatePieChart(won: Int, total: Int) {
         fontWeight = FontWeight.Bold
     )
 }
+
 @Composable
 fun Profile(navController: NavController) {
     val context = LocalContext.current
@@ -99,8 +95,6 @@ fun Profile(navController: NavController) {
         ?.savedStateHandle
         ?.getLiveData<String>("updatedUserJson")
         ?.observeAsState() ?: remember { mutableStateOf(null) }
-
-    println(updatedUser)
 
     LaunchedEffect(updatedUser) {
         updatedUser?.let {
@@ -138,11 +132,11 @@ fun Profile(navController: NavController) {
                         ) {
                             Text(text = name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             Text(text = "@$username", fontSize = 14.sp, color = Color.Gray)
-                            Text(text = "Principiante", fontSize = 14.sp)
+                            Text(text = stringResource(R.string.principiante), fontSize = 14.sp)
                         }
 
                         Image(
-                            painter = rememberImagePainter("${baseUrl}static/uploads/$image"),
+                            painter = rememberAsyncImagePainter("${baseUrl}static/uploads/$image"),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(80.dp)
@@ -166,7 +160,7 @@ fun Profile(navController: NavController) {
                             .padding(top = 12.dp)
                             .align(Alignment.End)
                     ) {
-                        Text(text = "Editar Perfil")
+                        Text(stringResource(R.string.editar_perfil))
                     }
                 }
             }
@@ -181,7 +175,7 @@ fun Profile(navController: NavController) {
                 ) {
                     WinRatePieChart(won = winnedGames, total = playedGames)
                     Text(
-                        text = "Ganadas $winnedGames/$playedGames",
+                        text = stringResource(R.string.ganadas, winnedGames, playedGames),
                         fontSize = 16.sp,
                         modifier = Modifier.padding(top = 8.dp)
                     )

@@ -7,25 +7,25 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.game.GameResponse
 import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.launch
 
 
-class GamesViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class GamesViewModelFactory(private val tokenManager: TokenManager) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return GamesViewModel(context) as T
+        return GamesViewModel(tokenManager) as T
     }
 }
 
-
-class GamesViewModel(private val context: Context) : ViewModel() {
+class GamesViewModel(private val tokenManager: TokenManager) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
     private val _gamesList = MutableLiveData<List<GameResponse>>()
-    val gamesList: LiveData<List<GameResponse>> = _gamesList
 
     private val _gamesListDisplayed = MutableLiveData<List<GameResponse>>()
     val gamesListDisplayed: LiveData<List<GameResponse>> = _gamesListDisplayed
@@ -33,34 +33,23 @@ class GamesViewModel(private val context: Context) : ViewModel() {
     private val _navegarADetalle = MutableLiveData<GameResponse?>(null)
     val navegarADetalle: LiveData<GameResponse?> = _navegarADetalle
 
-    private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
-
-    // Estado para el juego seleccionado
-    private val _selectedGame = MutableLiveData<GameResponse>()
-    val selectedGame: LiveData<GameResponse> = _selectedGame
-
-    init {
-        getMyGames()
-    }
-
-    fun getMyGames() {
+    fun getMyGames(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-
                 var token = "Bearer " + tokenManager.getToken()
                 val response = RetrofitClient.instance.getMyGames(token)
-                println(response)
+
                 if (response.isNotEmpty()) {
                     _gamesList.value = response
                     _gamesListDisplayed.value = response
                 } else {
-                    Log.v("Error", "No se encontraron juegos: $response")
+                    Log.v(context.getString(R.string.gen_error), context.getString(R.string.no_juegos_encontrados, response))
                 }
 
 
             } catch (e: Exception){
-                Log.v("Error", e.message ?: "Error desconocido")
+                Log.v(context.getString(R.string.gen_error), e.message ?: context.getString(R.string.error_peticion))
             } finally {
                 _isLoading.value = false
             }

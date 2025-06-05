@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.pandemiagame.org.R
@@ -30,7 +31,7 @@ fun DeckSection(
 
         Image(
             painter = painterResource(id = R.drawable.backdeck),
-            contentDescription = "Mazo de cartas",
+            contentDescription = stringResource(R.string.mazo),
             modifier = Modifier
                 .height(110.dp)
         )

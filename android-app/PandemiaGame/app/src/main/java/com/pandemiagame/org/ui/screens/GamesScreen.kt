@@ -1,15 +1,11 @@
 package com.pandemiagame.org.ui.screens
 
 import com.pandemiagame.org.R
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.tooling.preview.Preview
-import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +26,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.material3.Icon
@@ -40,21 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.viewmodels.GamesViewModelFactory
-
-@Preview
-@Composable
-fun PreviewGames(){
-    val navController = rememberNavController() // Crear un NavController falso para el preview
-
-    PandemiaGameTheme(darkTheme = false){
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)) {
-            GamesComp(navController=navController)
-        }    }
-}
-
 
 @Composable
 fun GamesComp(
@@ -62,9 +45,9 @@ fun GamesComp(
     navController: NavController,
 ) {
     val context = LocalContext.current
-
+    val tokenManager = TokenManager(context)
     val viewModel: GamesViewModel = viewModel(
-        factory = GamesViewModelFactory(context.applicationContext)
+        factory = GamesViewModelFactory(tokenManager)
     )
 
     val games by viewModel.gamesListDisplayed.observeAsState(emptyList())
@@ -72,6 +55,10 @@ fun GamesComp(
     val isLoading by viewModel.isLoading.observeAsState(false)
 
     var mode by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getMyGames(context)
+    }
 
     // Observar navegación
     LaunchedEffect(selectedGame) {
@@ -104,7 +91,7 @@ fun GamesComp(
                     ){
                         Icon(
                             painter = painterResource((R.drawable.baseline_filter_list_off_24)),
-                            contentDescription = "SIN FILTROS",
+                            contentDescription = stringResource(R.string.sin_filtros),
                             tint = Color(0xFFFFA500)
                         )
                     }
@@ -117,19 +104,20 @@ fun GamesComp(
                     ){
                         Icon(
                             painter = painterResource((R.drawable.baseline_person_24)),
-                            contentDescription = "1 DISPOSITIVO",
+                            contentDescription = stringResource(R.string.un_dispositivo),
                             tint = Color(0xFFFFA500)
                         )
                     }
                     IconButton(
                         onClick = {
                             mode = 2
-                            viewModel.setGameDisplayed(mode)                        },
+                            viewModel.setGameDisplayed(mode)
+                        },
                         enabled = mode!=2
                     ){
                         Icon(
                             painter = painterResource((R.drawable.baseline_people_24)),
-                            contentDescription = "MULTIJUGADOR",
+                            contentDescription = stringResource(R.string.multijugador),
                             tint = Color(0xFFFFA500)
                         )
                     }
@@ -148,31 +136,34 @@ fun GamesComp(
     }
 }
 
-fun formatDateTimeCompat(isoDateTime: String): String {
+fun formatDateTimeCompat(isoDateTime: String, error: String): String {
     val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.getDefault())
     val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     return try {
-        formatter.format(parser.parse(isoDateTime))
-    } catch (e: Exception) {
-        "Fecha inválida"
+        val parsedDate = parser.parse(isoDateTime) ?: throw IllegalArgumentException(error)
+        formatter.format(parsedDate)
+    } catch (_: Exception) {
+        isoDateTime // Fallback
     }
 }
 
 // Composable para mostrar cada item del juego
 @Composable
 fun GameItem(game: GameResponse, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Card(modifier = modifier.fillMaxWidth().padding(8.dp), onClick = {
+    Card(modifier = modifier
+        .fillMaxWidth()
+        .padding(8.dp), onClick = {
         onClick()
     }) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row (
                 horizontalArrangement = Arrangement.spacedBy(16.dp) // Espacio igual entre todos los hijos
             ) {
-                Text(text = "Fecha: " + formatDateTimeCompat(game.date))
-                Text(text = "Estado: " + game.status)
+                Text(stringResource(R.string.fecha, formatDateTimeCompat(game.date, stringResource(R.string.fecha_invalida))))
+                Text(stringResource(R.string.estado, game.status))
             }
             if(game.winner > 0){
-                Text(text = "Ganador: " + game.winner)
+                Text(stringResource(R.string.ganador_nombre, game.winner))
             }
             Row (
                 horizontalArrangement = Arrangement.spacedBy(16.dp) // Espacio igual entre todos los hijos
@@ -180,13 +171,12 @@ fun GameItem(game: GameResponse, onClick: () -> Unit, modifier: Modifier = Modif
                 if(game.multiplayer){
                     Icon(
                         painter = painterResource((R.drawable.baseline_people_24)),
-                        contentDescription = "TURNO",
+                        contentDescription = stringResource(R.string.turno),
                         tint = Color(0xFFFFA500)
                     )
                 }
-                Text(text = "Turnos: " + game.numTurns.toString())
-                Text(text = "Jugadores: " + game.turns.size)
-
+                Text(stringResource(R.string.turnos, game.numTurns.toString()))
+                Text(stringResource(R.string.jugadores, game.turns.size))
             }
         }
     }

@@ -1,3 +1,188 @@
 <resources>
     <string name="app_name">PandemiaGame</string>
+    <string name="nombre_usuario">Nombre de usuario</string>
+    <string name="ingresa_nombre_usuario">Ingresa tu nombre de usuario</string>
+    <string name="nombre">Nombre</string>
+    <string name="ingresa_nombre">Ingresa tu nombre</string>
+    <string name="apellidos">Apellidos</string>
+    <string name="ingresa_apellidos">Ingresa tus apellidos</string>
+    <string name="email">Correo electrónico</string>
+    <string name="ingresa_email">Ingresa tu email</string>
+    <string name="password">Contraseña</string>
+    <string name="ingresa_password">Ingresa tu contraseña</string>
+    <string name="modificar_perfil">Modificar perfil</string>
+    <string name="gen_error">Error</string>
+    <string name="error_peticion">Error en la petición</string>
+    <string name="error_modificar_perfil">Error al actualizar perfil</string>
+    <string name="cargando">Cargando…</string>
+    <string name="cerebro">Cerebro</string>
+    <string name="corazon">Corazon</string>
+    <string name="intestino">Intestino</string>
+    <string name="pulmones">Pulmones</string>
+    <string name="mágico">Mágico</string>
+    <string name="mazo">Mazo de cartas</string>
+    <string name="confirmar">Confirmar</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="descartar">Descartar cartas</string>
+    <string name="carta_jugador">Carta del jugador</string>
+    <string name="cambiar_cuerpo_aviso">Vas a cambiar el cuerpo con el jugador</string>
+    <string name="cambiar_organo_aviso">Cambiando %s por…</string>
+    <string name="seleccionar_organo">Seleccionar órgano</string>
+    <string name="seleccionar_infeccion">Seleccionar objetivos de infección</string>
+    <string name="usuario_juega_carta">El usuario %1$s ha jugado la carta %2$s</string>
+    <string name="estornudando_jugadores">Estornudando a jugadores %s</string>
+    <string name="robando">robando al jugador</string>
+    <string name="infectando">infectando al jugador %s</string>
+    <string name="cambiando_cuerpo">cambiando cuerpo con jugador</string>
+    <string name="intercambiando_organo">intercambiando órgano con jugador</string>
+    <string name="atras">Atrás</string>
+    <string name="registro_movimientos">Registro de movimientos</string>
+    <string name="descartado_cartas">El usuario %1$s ha descartado %2$s %3$s</string>
+    <string name="pasado_turno">"El usuario %s ha pasado el turno</string>
+    <string name="pulse_jugar_turno">Pulse para jugar su turno</string>
+    <string name="turno_jugador">Turno del jugador %s</string>
+    <string name="juego_terminado">¡Juego terminado!</string>
+    <string name="ganador_nombre">Ganador: %s</string>
+    <string name="registro">Registro</string>
+    <string name="chat">Chat</string>
+    <string name="consejo">Consejo</string>
+    <string name="rendirme">Rendirme</string>
+    <string name="menu">Menú</string>
+    <string name="cambiar_jugador">Cambiar jugador</string>
+    <string name="turno">Turno</string>
+    <string name="ganador">Ganador</string>
+    <string name="imagen_perfil">Imagen de perfil</string>
+    <string name="error_usuario_almacenado">No se encontró usuario almacenado</string>
+    <string name="login_no_cuenta">¿No tienes cuenta? Regístrate</string>
+    <string name="registro_si_cuenta">¿Ya estás registrado? Inicia sesión</string>
+    <string name="registrarme">Registrarme</string>
+    <string name="eliminar_jugador">Eliminar jugador</string>
+    <string name="crear_juego">Crear juego</string>
+    <string name="login_icon">Icono login</string>
+    <string name="principiante">Principiante</string>
+    <string name="editar_perfil">Editar Perfil</string>
+    <string name="ganadas">Ganadas %1$s/%2$s</string>
+    <string name="turnos">Turnos: %s</string>
+    <string name="jugadores">Jugadores: %s</string>
+    <string name="fecha">Fecha: %s</string>
+    <string name="estado">Estado: %s</string>
+    <string name="multijugador">MULTIJUGADOR</string>
+    <string name="sin_filtros">SIN FILTROS</string>
+    <string name="un_dispositivo">1 DISPOSITIVO</string>
+    <string name="fecha_invalida">Fecha inválida</string>
+    <string name="iniciar_sesion">Iniciar Sesión</string>
+    <string name="no_juegos_encontrados">No se encontraron juegos: %s</string>
+
+    <!--> TUTORIAL <-->
+    <!-- Títulos y descripciones principales -->
+    <string name="tutorial_title_goal">🎯 Objetivo del juego</string>
+    <string name="tutorial_description_goal">El objetivo del juego es formar un cuerpo humano juntando cuatro órganos sanos y evitando que el resto de jugadores los infecten o roben.</string>
+
+    <string name="tutorial_title_content">🃏 Contenido</string>
+    <string name="tutorial_description_content">Existen 68 cartas entre las que están los siguientes tipos: \n
+    \t ÓRGANOS\n
+    \t\t Mágico (1) \n
+    \t\t Corazón (5) \n
+    \t\t Pulmones (5) \n
+    \t\t Intestino (5) \n
+    \t\t Cerebro (5) \n
+    \t CURA\n
+    \t\t Mágico (1) \n
+    \t\t Corazón (4) \n
+    \t\t Pulmones (4) \n
+    \t\t Intestino (4) \n
+    \t\t Cerebro (4) \n
+    \t VIRUS\n
+    \t\t Mágico (1) \n
+    \t\t Corazón (4) \n
+    \t\t Pulmones (4) \n
+    \t\t Intestino (4) \n
+    \t\t Cerebro (4) \n
+    \t ACCION\n
+    \t\t Estornudo (2) \n
+    \t\t Cambiar órgano (3) \n
+    \t\t Robar órgano (3) \n
+    \t\t Cambio de cuerpo (1) \n
+    \t\t Descarte de cartas (1) \n\n
+    A continuación, se muestran todas las cartas:</string>
+    <string name="carta_seleccionada">Carta seleccionada</string>
+
+    <string name="tutorial_title_mechanics">🌍 Mecánica del juego</string>
+    <string name="tutorial_description_mechanics">Al inicio se reparten 3 cartas a cada jugador. En cada turno se podrá realizar solamente una acción: descartar cartas de la mano o jugar una de esas cartas. Tras la acción, se robarán el número de cartas correspondientes para volver a tener 3. El jugador podrá realizar su acción sobre su cuerpo o sobre el de otro jugador, en función del tipo de carta que utilice. ¡Sé el primero en construir un cuerpo completo sano!</string>
+
+    <string name="tutorial_title_card_types">🏆 Tipos de carta</string>
+    <string name="tutorial_description_card_types">A continuación explicamos detalladamente cada tipo de carta.</string>
+
+    <!-- Sección de Órganos -->
+    <string name="tutorial_title_organs">Órganos</string>
+    <string name="tutorial_description_organs">Los órganos son las partes de un cuerpo. Para completar este y ganar, debes reunir cuatro órganos distintos y sanos. No se pueden tener más de dos órganos iguales. Se pueden tener hasta cinco órganos distintos (cerebro, corazón, intestino, pulmones y mágico.</string>
+
+    <!-- Sección de Virus -->
+    <string name="tutorial_title_virus">Virus</string>
+    <string name="tutorial_description_virus">Los virus son cartas que se usan sobre el cuerpo de otro jugador. Podrás infectar o destruir órganos o quitar medicinas siempre y cuando sean del mismo color.</string>
+
+    <string name="tutorial_subtitle_infectar">INFECTAR</string>
+    <string name="tutorial_description_infectar">Si usas un virus sobre un órgano libre, añades el virus. Mientras tenga el virus, este órgano no se contará para completar el cuerpo y ganar</string>
+
+    <string name="tutorial_subtitle_destruir">DESTRUIR</string>
+    <string name="tutorial_description_destruir">Si usas un virus sobre un órgano con virus, el órgano se destruye y desaparece del cuerpo del jugador.</string>
+
+    <string name="tutorial_subtitle_quitar_cura">QUITAR CURA</string>
+    <string name="tutorial_description_quitar_cura">Si usas un virus sobre un órgano con cura, la cura desaparece y el órgano queda libre.</string>
+
+    <string name="tutorial_subtitle_fallo_inmune">FALLO POR INMUNE</string>
+    <string name="tutorial_description_fallo_inmune">No puedes usar un virus sobre un órgano inmunizado (doble cura).</string>
+
+    <!-- Sección de Curas -->
+    <string name="tutorial_title_cura">Cura</string>
+    <string name="tutorial_description_cura">Las curas son cartas que se usan sobre tu propio cuerpo para curar y proteger tus órganos. Podrás utilizarlas sobre tu cuerpo siempre y cuando el órgano sea del mismo color.</string>
+
+    <string name="tutorial_subtitle_proteger">PROTEGER</string>
+    <string name="tutorial_description_proteger">Si usas una cura sobre un órgano libre, añades la cura. Esta cura estará presente hasta que un usuario te la quite por virus.</string>
+
+    <string name="tutorial_subtitle_curar">CURAR</string>
+    <string name="tutorial_description_curar">Si usas una cura sobre un órgano con virus, el virus desaparece y el órgano queda libre y sin protección.</string>
+
+    <string name="tutorial_subtitle_inmunizar">INMUNIZAR</string>
+    <string name="tutorial_description_inmunizar">Si usas una cura sobre un órgano con cura, el órgano queda inmunizado, siendo imposible de robar, destruir o infectar.</string>
+
+    <!-- Sección de Acciones -->
+    <string name="tutorial_title_acciones">Acciones</string>
+    <string name="tutorial_description_acciones">Las acciones son cartas especiales que te ayudarán a ganar mejorando tu cuerpo o empeorando los de tus rivales.</string>
+
+    <string name="tutorial_subtitle_intercambio">INTERCAMBIO DE ÓRGANO</string>
+    <string name="tutorial_description_intercambio">Si usas esta carta, podrás intercambiar uno de tus órganos con otro de otro jugador siempre y cuando los jugadores no tengan los órganos a adquirir y no estén inmunizados.</string>
+
+    <string name="tutorial_subtitle_robar">ROBAR ÓRGANO</string>
+    <string name="tutorial_description_robar">Con esta carta podrás robar un órgano a otro jugador siempre y cuando no tengas dicho órgano en tu cuerpo y no esté inmunizado.</string>
+
+    <string name="tutorial_subtitle_descartar">DESCARTAR CARTAS</string>
+    <string name="tutorial_description_descartar">Esta carta obliga a tus oponentes a descartar todas sus cartas en la mano y volver a robar del mazo, volviendo el turno a ti.</string>
+
+    <string name="tutorial_subtitle_cambio_cuerpo">CAMBIO DE CUERPO</string>
+    <string name="tutorial_description_cambio_cuerpo">Si usas esta carta cambiarás tu cuerpo con el del otro jugador, incluyendo todos los órganos, virus y curas. No importa si hay órganos inmunizados: también se cambian.</string>
+
+    <string name="tutorial_subtitle_estornudo">ESTORNUDO</string>
+    <string name="tutorial_description_estornudo">Con esta carta podrás repartir los virus que tienen tus órganos por los cuerpos del resto de jugadores. No importa si hay órganos inmunizados: también se cambian.</string>
+
+    <!-- Sección de Cartas Mágicas -->
+    <string name="tutorial_title_magicas">Cartas mágicas</string>
+    <string name="tutorial_description_magicas">Las cartas mágicas son un color de carta especial de órgano, virus y cura. Pueden afectar a cualquier color, lo cual les da muchísimo poder; pero también pueden ser muy débiles porque sobre ellas pueden usarse virus de cualquier color.</string>
+
+    <string name="tutorial_subtitle_organo_magico">ÓRGANO MÁGICO</string>
+    <string name="tutorial_description_organo_magico">Puede curarse, protegerse y curarse con cualquier cura, pero también puede infectarse y destruirse con cualquier cura.</string>
+
+    <string name="tutorial_subtitle_virus_magico">VIRUS MÁGICO</string>
+    <string name="tutorial_description_virus_magico">Puede usarse sobre cualquier órgano o cura, pero también se puede extirpar (curar) con una cura de cualquier color.</string>
+
+    <string name="tutorial_subtitle_cura_magica">CURA MÁGICA</string>
+    <string name="tutorial_description_cura_magica">Puede usarse sobre cualquier órgano o virus, pero también se puede quitar con un virus de cualquier color.</string>
+
+    <!-- Cómo ganar -->
+    <string name="tutorial_title_how_to_win">🏆 Cómo ganar</string>
+    <string name="tutorial_description_how_to_win">El jugador gana automáticamente al reunir cuatro de los cinco órganos sanos (sin virus).</string>
+
+    <!-- Botón del dropdown -->
+    <string name="tutorial_button_select_card">Seleccionar carta</string>
 </resources>

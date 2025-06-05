@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.auth.RegisterRequest
 import com.pandemiagame.org.data.remote.RetrofitClient
 import kotlinx.coroutines.launch
@@ -35,11 +36,9 @@ class RegisterViewModel : ViewModel() {
     val isLoading: LiveData<Boolean> = _isLoading
 
     private val _registerState = MutableLiveData<RegisterState>()
-    val registerState: LiveData<RegisterState> = _registerState
 
     sealed class RegisterState {
         object Loading : RegisterState()
-        data class Registered(val user: String) : RegisterState()
         data class Error(val message: String) : RegisterState()
     }
 
@@ -82,11 +81,11 @@ class RegisterViewModel : ViewModel() {
                     password = password.value ?: ""
                 )
 
-                val response = RetrofitClient.instance.register(request)
+                RetrofitClient.instance.register(request)
 
             } catch (e: Exception) {
-                Log.e("Register Error", "Error en la petición: ${e.message}")
-                _registerState.value = RegisterState.Error("Error en la petición: ${e.message}")
+                Log.e(context.getString(R.string.gen_error), "${context.getString(R.string.error_peticion)}: ${e.message}")
+                _registerState.value = RegisterState.Error("${context.getString(R.string.error_peticion)}: ${e.message}")
             }
 
             _isLoading.value = false

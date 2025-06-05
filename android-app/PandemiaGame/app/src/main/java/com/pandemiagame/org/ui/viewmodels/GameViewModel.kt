@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.game.Card
 import com.pandemiagame.org.data.remote.models.game.CardWrapper
 import com.pandemiagame.org.data.remote.models.game.GameResponse
@@ -58,21 +59,20 @@ fun createEmptyGame(): GameResponse {
 }
 
 
-class GameViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class GameViewModelFactory(private val tokenManager: TokenManager) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return GameViewModel(context) as T
+        return GameViewModel(tokenManager) as T
     }
 }
 
-class GameViewModel(private val context: Context) : ViewModel() {
+class GameViewModel(private val tokenManager: TokenManager) : ViewModel() {
 
     private val _game = MutableLiveData<GameResponse>()
     val game: LiveData<GameResponse> = _game
 
     private val _changingTurn = MutableLiveData<Boolean>()
     val changingTurn: LiveData<Boolean> = _changingTurn
-
-    private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
 
     private val _moves = MutableLiveData<List<MoveResponse>>()
     val moves: LiveData<List<MoveResponse>> = _moves
@@ -85,11 +85,11 @@ class GameViewModel(private val context: Context) : ViewModel() {
     }
 
     override fun onCleared(){
-        setGame(createEmptyGame()) // Usamos createEmptyGame() en lugar de resetGame()
+        setGame(createEmptyGame())
     }
 
 
-    fun getGame(juegoId: String) {
+    fun getGame(juegoId: String, context: Context) {
 
         viewModelScope.launch {
             try {
@@ -100,7 +100,7 @@ class GameViewModel(private val context: Context) : ViewModel() {
                 _game.value = response
             } catch (e: Exception) {
                 // Manejar error
-                Log.v("Error", e.toString())
+                Log.v(context.getString(R.string.gen_error), e.toString())
             }
         }
     }

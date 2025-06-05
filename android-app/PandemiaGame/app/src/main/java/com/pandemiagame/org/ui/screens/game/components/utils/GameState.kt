@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.google.gson.Gson
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.game.GameResponse
 import com.pandemiagame.org.data.remote.models.user.User
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
@@ -33,7 +34,7 @@ fun rememberGameState(viewModel: GameViewModel): GameState {
         if (userJson != null) {
             user = Gson().fromJson(userJson, User::class.java)
         } else {
-            Log.e("USER", "No se encontró usuario en SharedPreferences")
+            Log.e(context.getString(R.string.gen_error), context.getString(R.string.error_usuario_almacenado))
         }
     }
 

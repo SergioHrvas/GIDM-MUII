@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.game.GameRequest
 import com.pandemiagame.org.data.remote.models.game.GameResponse
 import com.pandemiagame.org.data.remote.RetrofitClient
@@ -16,19 +17,16 @@ import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.screens.MAX_PLAYERS
 import kotlinx.coroutines.launch
 
-class NewGameViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class NewGameViewModelFactory(private val tokenManager: TokenManager) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return NewGameViewModel(context) as T
+        @Suppress("UNCHECKED_CAST")
+        return NewGameViewModel(tokenManager) as T
     }
 }
 
-
-class NewGameViewModel(private val context: Context) : ViewModel(){
+class NewGameViewModel(private val tokenManager: TokenManager) : ViewModel(){
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading : LiveData<Boolean> = _isLoading
-
-    private val _numPlayers = MutableLiveData<String>()
-    val numPlayers : LiveData<String> = _numPlayers
 
     private val _buttonEnable = MutableLiveData<Boolean>()
     val buttonEnable : LiveData<Boolean> = _buttonEnable
@@ -57,28 +55,22 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
     val playerNames: List<String> = _playerNames
 
 
-    private val tokenManager by lazy { TokenManager(context) } // Lazy initialization
-
-    fun getUsers() {
+    fun getUsers(context: Context) {
 
         viewModelScope.launch {
             try {
-
                 var token = "Bearer " + tokenManager.getToken()
-
                 val response = RetrofitClient.instance.getUsers(token)
-
                 _users.value = response
-
             } catch (e: Exception) {
                 // Manejar error
-                Log.v("Error", e.toString())
+                Log.v(context.getString(R.string.gen_error), e.toString())
             }
         }
     }
 
 
-    fun createGame(mp: Boolean) {
+    fun createGame(mp: Boolean, context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
 
@@ -94,23 +86,17 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
 
                 if (response.id > 0) {
                     _game.value = response
-                    // Si la creación fue exitosa, actualizamos el estado
                     _gameCreationStatus.value = true
                 } else {
-                    Log.e("Error", response.toString())
+                    Log.e(context.getString(R.string.gen_error), response.toString())
                     _gameCreationStatus.value = false
                 }
-
-
             } catch (e: Exception){
-                Log.e("Error", e.message ?: "Error desconocido")
+                Log.e(context.getString(R.string.gen_error), e.message ?: context.getString(R.string.error_peticion))
                 _gameCreationStatus.value = false
-
-
             } finally {
                 _isLoading.value = false
             }
-
         }
     }
 
@@ -125,10 +111,10 @@ class NewGameViewModel(private val context: Context) : ViewModel(){
         _buttonEnable.value = (_players.size > 1) && (_players[0].isNotEmpty() == true) && (_players[1].isNotEmpty() == true)
     }
 
-    fun onButtonSelected() {
+    fun onButtonSelected(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
-            createGame(multiplayer.value == true)
+            createGame(multiplayer.value == true, context)
             _isLoading.value = false
         }
     }

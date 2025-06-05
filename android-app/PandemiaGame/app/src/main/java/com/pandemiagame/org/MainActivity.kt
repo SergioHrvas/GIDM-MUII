@@ -14,7 +14,7 @@ import androidx.navigation.compose.composable
 import com.pandemiagame.org.ui.theme.PandemiaGameTheme
 import androidx.navigation.compose.rememberNavController
 import com.pandemiagame.org.data.remote.utils.TokenManager
-import com.pandemiagame.org.ui.screens.EditProfileComp
+import com.pandemiagame.org.ui.screens.profile.EditProfileComp
 import com.pandemiagame.org.ui.screens.GamesComp
 import com.pandemiagame.org.ui.screens.LoginComp
 import com.pandemiagame.org.ui.screens.NewGameComp
@@ -24,11 +24,7 @@ import com.pandemiagame.org.ui.screens.RegisterComp
 import com.pandemiagame.org.ui.screens.Tutorial
 import com.pandemiagame.org.ui.screens.SplashScreen
 import com.pandemiagame.org.ui.screens.game.GameScreen
-import com.pandemiagame.org.ui.viewmodels.GameViewModel
-import com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
-import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
 import com.pandemiagame.org.ui.viewmodels.LoginViewModel
-import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
 import com.pandemiagame.org.ui.viewmodels.RegisterViewModel
 
 class MainActivity : ComponentActivity() {
@@ -47,8 +43,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+
     val loginViewModel: LoginViewModel = viewModel()
     val registerViewModel: RegisterViewModel = viewModel()
+
     val context = LocalContext.current
     val tm = TokenManager(context)
 
@@ -83,8 +81,6 @@ fun AppNavigation() {
         }
     }
 
-    val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(context))
-    val newGameViewModel: NewGameViewModel = viewModel(factory = NewGameViewModelFactory(context))
 
     NavHost(
         navController = navController,
@@ -100,10 +96,9 @@ fun AppNavigation() {
             }
         ) }
         composable("games") { GamesComp(navController = navController) }
-        composable("create-game") { NewGameComp(viewModel = newGameViewModel, navController = navController) }
+        composable("create-game") { NewGameComp(navController = navController) }
         composable("game/{game_id}") { backStackEntry ->
             GameScreen(
-                viewModel = gameViewModel,
                 gameId = backStackEntry.arguments?.getString("game_id") ?: "",
                 navController = navController
             )

@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -59,7 +60,7 @@ fun MovesDialog(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Registro de movimientos",
+                    text = stringResource(R.string.registro_movimientos),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -89,7 +90,7 @@ fun MovesDialog(
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                 ) {
-                    Text("Atrás")
+                    Text(stringResource(R.string.atras))
                 }
             }
         }
@@ -143,13 +144,13 @@ private fun RenderDiscardMove(move: MoveResponse) {
         if (jsonArray?.size() == 0) {
             MoveItem(
                 iconRes = R.drawable.baseline_delete_24,
-                text = "El usuario ${move.player.name} ha pasado el turno"
+                text = stringResource(R.string.pasado_turno, move.player.name)
             )
         }
         else {
             MoveItem(
                 iconRes = R.drawable.baseline_delete_24,
-                text = "El usuario ${move.player.name} ha descartado ${jsonArray?.size()} " + if((jsonArray?.size()  ?: 0 ) == 1) "carta" else "cartas"
+                text = stringResource(R.string.descartado_cartas, move.player.name, jsonArray?.size() ?: 0, if((jsonArray?.size() ?: 0) == 1 ) "carta" else "cartas")
             )
         }
     }
@@ -160,7 +161,7 @@ private fun RenderDiscardMove(move: MoveResponse) {
 private fun RenderOrganOrCureMove(move: MoveResponse) {
     MoveItem(
         iconRes = R.drawable.outline_playing_cards_24,
-        text = "El usuario ${move.player.name} ha jugado la carta ${move.card?.name}"
+        text = stringResource(R.string.usuario_juega_carta, move.player.name, move.card?.name ?: "")
     )
 }
 
@@ -172,11 +173,11 @@ private fun RenderVirusMove(move: MoveResponse, playerNames: Map<Int, String>) {
     Column {
         MoveItem(
             iconRes = R.drawable.outline_playing_cards_24,
-            text = "El usuario ${move.player.name} ha jugado la carta ${move.card?.name}"
+            text = stringResource(R.string.usuario_juega_carta, move.player.name, move.card?.name ?: "")
         )
         player1?.let {
             Text(
-                text = "infectando al jugador ${playerNames[it]}",
+                text = stringResource(R.string.infectando, playerNames[it] ?: ""),
                 modifier = Modifier.padding(bottom = 2.dp),
                 fontSize = 10.sp
             )
@@ -193,16 +194,16 @@ private fun RenderActionMove(move: MoveResponse, playerNames: Map<Int, String>) 
         "Steal Organ", "Change Body", "Exchange Card" -> {
             val player1 = jsonObject?.get("player1")?.toString()?.toIntOrNull()
             val actionText = when (card.name) {
-                "Steal Organ" -> "robando al jugador"
-                "Change Body" -> "cambiando cuerpo con jugador"
-                "Exchange Card" -> "intercambiando órgano con jugador"
+                "Steal Organ" -> stringResource(R.string.robando)
+                "Change Body" -> stringResource(R.string.cambiando_cuerpo)
+                "Exchange Card" -> stringResource(R.string.intercambiando_organo)
                 else -> ""
             }
 
             Column {
                 MoveItem(
                     iconRes = R.drawable.outline_playing_cards_24,
-                    text = "El usuario ${move.player.name} ha jugado la carta ${card.name}"
+                    text = stringResource(R.string.usuario_juega_carta, move.player.name, card.name)
                 )
                 player1?.let {
                     Text(
@@ -230,11 +231,11 @@ private fun RenderInfectPlayerMove(
     Column {
         MoveItem(
             iconRes = R.drawable.outline_playing_cards_24,
-            text = "El usuario ${move.player.name} ha jugado la carta ${move.card?.name}"
+            text = stringResource(R.string.usuario_juega_carta, move.player.name, move.card?.name ?: "")
         )
         if (infectedPlayers.isNotEmpty()) {
             Text(
-                text = "estornudando a jugadores ${infectedPlayers.joinToString()}",
+                text = stringResource(R.string.estornudando_jugadores, infectedPlayers.joinToString()),
                 modifier = Modifier.padding(bottom = 2.dp),
                 fontSize = 10.sp
             )

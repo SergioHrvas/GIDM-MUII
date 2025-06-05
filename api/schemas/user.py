@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 class UserBase(BaseModel):
-    id: int
+    id: Optional[int] = None
     username: str
     email: EmailStr
     password: str
@@ -23,7 +23,6 @@ class UserLogin(BaseModel):
     password: str
 
 class UserResponse(UserBase):
-    id: int
     winned_games: Optional[int] = None
     played_games: Optional[int] = None
     token: Optional[str] = None

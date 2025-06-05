@@ -14,6 +14,7 @@ import com.pandemiagame.org.data.remote.RetrofitClient
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import com.pandemiagame.org.R
 
 
 class EditProfileViewModel : ViewModel(){
@@ -37,7 +38,6 @@ class EditProfileViewModel : ViewModel(){
     private val _formEnable = MutableLiveData<Boolean>()
     val formEnable : LiveData<Boolean> = _formEnable
 
-
     private val _updateCompleted = MutableLiveData(false)
     val updateCompleted: LiveData<Boolean> = _updateCompleted
 
@@ -45,7 +45,6 @@ class EditProfileViewModel : ViewModel(){
     val isLoading : LiveData<Boolean> = _isLoading
 
     private var emailChanged: Boolean = false
-
     private var passwordChanged: Boolean = false
 
     // Función para inicializar con datos del usuario
@@ -57,47 +56,55 @@ class EditProfileViewModel : ViewModel(){
         _username.value = userJSON.optString("username", "")
     }
 
+    // Función para cuando cambia el email
     fun onEmailChange(email: String){
         _email.value = email
         emailChanged = true
-        _formEnable.value = isValidEmail(email) && (!passwordChanged || (passwordChanged && isValidPassword(password.value.toString())))
+        _formEnable.value = isValidEmail(email) && (!passwordChanged || isValidPassword(password.value.toString()))
     }
 
+    // Función para cuando cambia la contraseña
     fun onPasswordChange(password: String){
         _password.value = password
         passwordChanged = true
-        _formEnable.value = isValidPassword(password) && (!emailChanged || (emailChanged && isValidEmail(email.value.toString())))
+        _formEnable.value = isValidPassword(password) && (!emailChanged || isValidEmail(email.value.toString()))
     }
 
+    // Función para cuando cambia el nombre
     fun onNameChange(name: String){
         _name.value = name
     }
 
+    // Función para cuando cambia el apellido
     fun onLastNameChange(lastName: String){
         _lastname.value = lastName
     }
 
+    // Función para cuando cambia el nombre de usuario
     fun onUserNameChange(username: String){
         _username.value = username
     }
 
-
+    // Función para verificar que el email es válido
     fun isValidEmail(email: String): Boolean{
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
+    // Función para verificar que la contraseña es válida
     fun isValidPassword(password: String): Boolean = password.length > 5
+
+    // Función para cuando se pulsa el botón de actualizar
     fun onUpdateSelected(ctx: Context) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
 
+                // Preparamos el token
                 val tm = TokenManager(ctx)
                 var token = "Bearer " + tm.getToken()
                 val id = _id.value
 
-
-                if (token == null || id == null) {
+                if (id == null) {
                     return@launch
                 }
 
@@ -110,15 +117,15 @@ class EditProfileViewModel : ViewModel(){
                     _lastname.value.takeIf { it!!.isNotEmpty() }?.let { lastName = it }
                 }
 
+                // Llamamos a la función de Retrofit
                 val response = RetrofitClient.instance.updateUser(token, id, user)
 
+                // Guardamos el nuevo token y nuevo usuario
                 val sharedPref = ctx.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
                 val updatedUserJsonString = Gson().toJson(response)
 
-
                 if(response.token != null)
-                    tm.saveToken(response.token.toString());
-
+                    tm.saveToken(response.token.toString())
 
                 with(sharedPref.edit()) {
                     putString("user", updatedUserJsonString)
@@ -128,7 +135,7 @@ class EditProfileViewModel : ViewModel(){
                 _updateCompleted.value = true
 
             } catch (e: Exception) {
-                Log.e("UpdateProfile", "Error al actualizar perfil: ${e.message}")
+                Log.e(ctx.getString(R.string.gen_error), "${ctx.getString(R.string.error_modificar_perfil)}: ${e.message}")
             } finally {
                 _isLoading.value = false
             }

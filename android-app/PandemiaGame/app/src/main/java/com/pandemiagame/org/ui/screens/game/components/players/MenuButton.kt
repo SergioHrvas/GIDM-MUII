@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.pandemiagame.org.R
 import com.pandemiagame.org.ui.screens.game.components.utils.GameState
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
@@ -20,12 +21,12 @@ import com.pandemiagame.org.ui.viewmodels.GameViewModel
 fun MenuButton(gameState: GameState,
                viewModel: GameViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val options = listOf("Registro", "Chat", "Consejo", "Rendirme")
+    val options = listOf(stringResource(R.string.registro), stringResource(R.string.consejo), stringResource(R.string.chat), stringResource(R.string.rendirme))
     Box {
         Button(onClick = { expanded = true }) {
             Icon(
                 painter = painterResource(id = R.drawable.menu),
-                contentDescription = "Menú"
+                contentDescription = stringResource(R.string.menu)
             )
         }
 

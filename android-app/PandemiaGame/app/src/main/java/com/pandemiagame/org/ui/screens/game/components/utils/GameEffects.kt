@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.pandemiagame.org.ui.viewmodels.GameViewModel
 import com.pandemiagame.org.ui.viewmodels.createEmptyGame
@@ -18,11 +19,12 @@ fun GameEffects(
     val currentPlayerIndex = gameState.currentPlayerIndex
     val gameResponse = gameState.gameResponse
 
+    val context = LocalContext.current
 
     // Efecto para cargar el juego inicialmente
     LaunchedEffect(Unit) {
         viewModel.setChangingTurn(true)
-        viewModel.getGame(gameId)
+        viewModel.getGame(gameId, context)
         viewModel.getMoves(gameId)
     }
 

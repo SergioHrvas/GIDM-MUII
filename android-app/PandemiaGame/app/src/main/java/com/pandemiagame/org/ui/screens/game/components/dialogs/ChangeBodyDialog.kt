@@ -4,6 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.pandemiagame.org.R
 
 
 @Composable
@@ -15,16 +17,16 @@ fun ChangeBodyDialog(
     AlertDialog(
         onDismissRequest = onCancel,
         title = {
-            Text(text = "Vas a cambiar el cuerpo con el jugador $otherPlayerName")
+            Text(text = "${stringResource(R.string.cambiar_cuerpo_aviso)} $otherPlayerName")
         },
         confirmButton = {
             Button(onClick = onConfirm) {
-                Text("Aceptar")
+                Text(stringResource(R.string.aceptar))
             }
         },
         dismissButton = {
             Button(onClick = onCancel) {
-                Text("Cancelar")
+                Text(stringResource(R.string.cancelar))
             }
         }
     )
