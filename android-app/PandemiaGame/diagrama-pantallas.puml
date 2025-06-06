@@ -1,0 +1,74 @@
+@startuml
+package "Navigation" {
+  class Screen$Home
+  class Screen$Profile
+  class Screen$Tutorial
+  class BottomNavBar
+}
+
+package "remote.models" {
+}
+
+package "ui"{
+  class MainActivity
+}
+
+package "ui.viewmodels" {
+
+}
+
+package "ui.screens" {
+    class MainScreen
+}
+
+package "ui.screens.game" {
+    class GameScreen
+    class GamesScreen
+    class NewGameScreen
+}
+
+package "ui.screens.game.components" {
+}
+
+package "ui.screens.profile" {
+    class EditProfile
+    class LoginScreen
+    class Profile
+    class RegisterScreen
+}
+package "ui.screens.profile.components" {
+}
+
+
+
+package "ui.screens.tutorial" {
+    class Tutorial
+}
+
+package "ui.screens.tutorial.components" {
+    class TutorialSection
+    class TutorialSubSection
+    class TutorialSubSubSection
+}
+
+Screen$Home -> MainScreen
+Screen$Profile -> Profile
+Screen$Tutorial -> Tutorial
+Tutorial --> TutorialSection
+Tutorial --> TutorialSubSection
+TutorialSubSection --> TutorialSubSubSection
+MainActivity --> BottomNavBar
+EditProfile --> "ui.screens.profile.components"
+LoginScreen --> "ui.screens.profile.components"
+EditProfile --> "ui.screens.profile.components"
+Profile --> "ui.screens.profile.components"
+
+
+GameScreen --> "ui.screens.game.components"
+GamesScreen --> "ui.screens.game.components"
+NewGameScreen --> "ui.screens.game.components"
+
+"ui.viewmodels" --> "remote.models"
+
+
+@enduml

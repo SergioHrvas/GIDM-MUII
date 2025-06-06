@@ -1,0 +1,59 @@
+@startuml
+package "Navigation" {
+  class Screen
+  class Screen$Home
+  class Screen$Profile
+  class Screen$Settings
+  Screen <|-- Screen$Home
+  Screen <|-- Screen$Profile
+  Screen <|-- Screen$Settings
+  class BottomNavBar
+}
+
+package "remote.models" {
+  class User
+  class LoginResponse
+  class RegisterRequest
+  class GameResponse
+  class Move
+}
+
+package "ui"{
+  class MainActivity
+}
+
+package "ui.viewmodels" {
+  class EditProfileViewModel
+  class LoginViewModel
+  class RegisterViewModel
+  class GameViewModel
+  class GamesViewModel
+  class NewGameViewModel
+}
+
+package "remote"{
+  class ApiService
+  class RetrofitClient
+}
+
+MainActivity --> BottomNavBar
+BottomNavBar --> Screen
+"ui.viewmodels" --> ApiService
+ApiService --> RetrofitClient
+EditProfileViewModel --> User
+LoginViewModel --> LoginResponse
+RegisterViewModel --> RegisterRequest
+GameViewModel --> GameResponse
+GameViewModel --> Move
+GamesViewModel --> GameResponse
+NewGameViewModel --> GameResponse
+NewGameViewModel --> User
+
+class "androidx.lifecycle.ViewModel" as ViewModel
+ViewModel <|-- EditProfileViewModel
+ViewModel <|-- LoginViewModel
+ViewModel <|-- RegisterViewModel
+ViewModel <|-- GameViewModel
+ViewModel <|-- GamesViewModel
+ViewModel <|-- NewGameViewModel
+@enduml

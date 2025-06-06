@@ -1,0 +1,50 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+top to bottom direction
+
+package "ui" {
+  class MainActivity
+}
+
+package "ui.viewmodels" {
+    class NewGameViewModel
+    class GamesViewModel
+    class GameViewModel
+}
+
+package "ui.screens" {
+    class MainScreen
+}
+
+package "ui.screens.profile" {
+}
+
+package "ui.screens.tutorial" {
+}
+
+package "ui.screens.game" {
+    class GameScreen
+    class GamesScreen
+    class NewGameScreen
+}
+
+package "ui.screens.game.components" {
+    class ButtonFilterGames
+    class GameItem
+    class NewGameButton
+}
+
+
+
+GamesScreen -> ButtonFilterGames
+GameScreen -> GameItem
+NewGameScreen -> NewGameButton
+
+GamesScreen -> GamesViewModel
+NewGameScreen -> NewGameViewModel
+' Relaciones principales para disposición vertical
+
+
+@enduml

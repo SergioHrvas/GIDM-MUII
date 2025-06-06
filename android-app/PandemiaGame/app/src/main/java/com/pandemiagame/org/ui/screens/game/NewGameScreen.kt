@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,9 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -60,6 +57,7 @@ import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.models.user.User
 import com.pandemiagame.org.data.remote.utils.TokenManager
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
+import com.pandemiagame.org.ui.screens.game.components.NewGameButton
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModel
 import com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
 import kotlinx.coroutines.launch
@@ -274,24 +272,5 @@ fun NewGameComp(navController: NavController) {
 
 
 
-@Composable
-fun NewGameButton(buttonEnable: Boolean, onButtonSelected: () -> Unit){
-    Button(
-        onClick = {
-            onButtonSelected()},
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(58.dp)
-            .padding(top = 10.dp),
-        colors = ButtonDefaults.buttonColors(
-            disabledContainerColor = Color.Gray,
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            disabledContentColor = Color.White,
-            contentColor = Color.White,
-        ),
-        enabled = buttonEnable
-    ){
-        Text(stringResource(R.string.crear_juego))
-    }
-}
+
 

@@ -1,0 +1,622 @@
+@startuml
+class com.pandemiagame.org.ui.navigation.Screen$Home {
+}
+class com.pandemiagame.org.ui.navigation.Screen$Profile {
+}
+class com.pandemiagame.org.ui.navigation.Screen$Settings {
+}
+class com.pandemiagame.org.ui.navigation.Screen {
++ <<Create>> Screen(String,String,ImageVector)
+}
+
+package "com.pandemiagame.org.ui.screens.game" {
+  class GameScreen {
+    + {static} @Composable GameScreen(
+      gameId: String,
+      navController: NavController
+    )
+  }
+}
+
+' Add relationships
+com.pandemiagame.org.ui.screens.game.GameScreen --> com.pandemiagame.org.ui.viewmodels.GameViewModel
+com.pandemiagame.org.ui.screens.game.GameScreen --> com.pandemiagame.org.data.remote.utils.TokenManager
+com.pandemiagame.org.ui.screens.game.GameScreen --> com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
+com.pandemiagame.org.ui.screens.game.GameScreen --> com.pandemiagame.org.ui.screens.game.components.utils.GameEffects
+com.pandemiagame.org.ui.screens.game.GameScreen --> com.pandemiagame.org.ui.screens.game.components.utils.rememberGameState
+com.pandemiagame.org.ui.screens.game.GameScreen --> com.pandemiagame.org.ui.screens.game.components.GameLayout
+com.pandemiagame.org.ui.screens.game.GameScreen --> androidx.navigation.NavController
+
+'
+
+
+package "com.pandemiagame.org.ui.screens.game.components" {
+  class GameLayout {
+    + {static} @Composable GameLayout(
+      gameState: GameState,
+      viewModel: GameViewModel
+    )
+    + {static} handleCardSelection(
+      cardIndex: Int,
+      gameState: GameState,
+      game: GameResponse,
+      viewModel: GameViewModel
+    )
+    + {static} handleActionCard(
+      cardIndex: Int,
+      gameState: GameState,
+      game: GameResponse,
+      viewModel: GameViewModel
+    )
+  }
+
+    class GameItem {
+      + {static} @Composable GameItem(
+        game: GameResponse,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier
+      )
+      + {static} formatDateTimeCompat(
+        isoDateTime: String,
+        error: String
+      ): String
+    }
+
+    class ButtonFilterGames {
+      + {static} @Composable ButtonFilterGames(
+        onClick: () -> Unit,
+        enabled: Boolean,
+        painterResource: Int,
+        stringResource: Int
+      )
+    }
+}
+
+package "com.pandemiagame.org.ui.screens.game.components.players" {
+  class Body {
+    + {static} @Composable Body(
+      myBody: Boolean,
+      organs: List<Organ>,
+      onOrganSelected: (String) -> Unit = {}
+    )
+  }
+
+  class CurrentPlayerSection {
+    + {static} @Composable CurrentPlayerSection(
+      game: GameResponse,
+      gameState: GameState,
+      viewModel: GameViewModel,
+      currentPlayerIndex: Int,
+      discards: List<Int>,
+      discarting: Boolean,
+      selecting: Int,
+      exchanging: Boolean,
+      onCardSelected: (Int) -> Unit,
+      onDiscardToggle: () -> Unit,
+      onConfirmDiscard: () -> Unit,
+      onCancelAction: () -> Unit,
+      onOrganSelected: (String) -> Unit
+    )
+  }
+
+  class MenuButton {
+    + {static} @Composable MenuButton(
+      gameState: GameState,
+      viewModel: GameViewModel
+    )
+  }
+
+  class OpponentPlayerSection {
+    + {static} @Composable OpponentPlayerSection(
+      game: GameResponse,
+      gameState: GameState,
+      otherPlayerIndex: Int,
+      onPlayerChange: () -> Unit,
+      onOrganSelected: (String) -> Unit,
+      viewModel: GameViewModel
+    )
+  }
+}
+
+
+' Add relationships
+com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection --> com.pandemiagame.org.ui.screens.game.components.players.Body
+com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection --> com.pandemiagame.org.ui.screens.game.components.players.PlayerHeader
+com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection --> com.pandemiagame.org.ui.screens.game.components.cards.PlayerCardsRow
+com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection --> com.pandemiagame.org.ui.screens.game.components.cards.PlayerActions
+com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection --> com.pandemiagame.org.ui.viewmodels.GameViewModel
+com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection --> com.pandemiagame.org.data.remote.models.game.GameResponse
+com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection --> com.pandemiagame.org.ui.screens.game.components.utils.GameState
+com.pandemiagame.org.ui.screens.game.components.players.Body --> com.pandemiagame.org.data.remote.models.game.Organ
+com.pandemiagame.org.ui.screens.game.components.players.MenuButton --> com.pandemiagame.org.ui.screens.game.components.utils.GameState
+com.pandemiagame.org.ui.screens.game.components.players.MenuButton --> com.pandemiagame.org.ui.viewmodels.GameViewModel
+
+note top of com.pandemiagame.org.ui.screens.game.components.players.Body
+  Displays a player's body with organs that can be:
+  - Healthy (1)
+  - Cured (2)
+  - Magically cured (3)
+  - Protected (4)
+  - Infected (-1)
+  - Magically infected (-2)
+  Handles organ selection logic
+end note
+
+note top of com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection
+  Shows the current player's:
+  - Header with info
+  - Body with organs
+  - Cards in hand
+  - Available actions
+  Handles turn state and recommendations
+end note
+
+note top of com.pandemiagame.org.ui.screens.game.components.players.MenuButton
+  Provides additional game options:
+  - Move history
+  - Recommendations
+  - Chat
+  - Surrender
+end note
+
+package "com.pandemiagame.org.ui.screens.game.components.cards" {
+  class DeckSection {
+    + {static} @Composable DeckSection(
+      isCardDrawn: Boolean,
+      onDrawAnimationComplete: () -> Unit
+    )
+  }
+}
+
+package "com.pandemiagame.org.ui.screens.game.components.dialogs" {
+  class GameDialog {
+    + {static} @Composable GameDialog(
+      gameState: GameState,
+      game: GameResponse,
+      viewModel: GameViewModel
+    )
+  }
+}
+
+' Add relationships
+com.pandemiagame.org.ui.screens.game.GameScreen --> com.pandemiagame.org.ui.screens.game.components.GameLayout
+com.pandemiagame.org.ui.screens.game.components.GameLayout --> com.pandemiagame.org.ui.screens.game.components.utils.GameState
+com.pandemiagame.org.ui.screens.game.components.GameLayout --> com.pandemiagame.org.ui.viewmodels.GameViewModel
+com.pandemiagame.org.ui.screens.game.components.GameLayout --> com.pandemiagame.org.ui.screens.game.components.players.CurrentPlayerSection
+com.pandemiagame.org.ui.screens.game.components.GameLayout --> com.pandemiagame.org.ui.screens.game.components.players.OpponentPlayerSection
+com.pandemiagame.org.ui.screens.game.components.GameLayout --> com.pandemiagame.org.ui.screens.game.components.cards.DeckSection
+com.pandemiagame.org.ui.screens.game.components.GameLayout --> com.pandemiagame.org.ui.screens.game.components.dialogs.GameDialog
+com.pandemiagame.org.ui.screens.game.components.GameLayout --> com.pandemiagame.org.ui.navigation.CustomTopAppBar
+com.pandemiagame.org.ui.screens.game.components.GameLayout --> com.pandemiagame.org.data.remote.models.game.GameResponse
+com.pandemiagame.org.ui.screens.game.components.GameItem --> androidx.compose.ui.Modifier
+com.pandemiagame.org.ui.screens.game.components.GameItem --> androidx.compose.foundation.layout.Row
+com.pandemiagame.org.ui.screens.game.components.GameItem --> androidx.compose.foundation.layout.Column
+com.pandemiagame.org.ui.screens.game.components.GameItem --> androidx.compose.material3.Card
+com.pandemiagame.org.ui.screens.game.components.GameItem --> com.pandemiagame.org.data.remote.models.game.GameResponse
+com.pandemiagame.org.ui.screens.game.components.GameItem --> androidx.compose.material3.Text
+com.pandemiagame.org.ui.screens.game.components.GameItem --> androidx.compose.material3.Icon
+
+  note top of com.pandemiagame.org.ui.screens.game.components.GameItem
+    Formats and displays game information including:
+    - Date
+    - Status
+    - Winner (if any)
+    - Multiplayer indicator
+    - Turn count
+    - Player count
+  end note
+package "com.pandemiagame.org.ui.screens.game.components.utils" {
+  class GameState {
+    + showWinnerDialog
+    + isCardDrawn
+    + selecting
+    + discarting
+    + discards
+    + exchanging
+    + changingBody
+    + readyToChange
+    + infecting
+    + selectedOrgan
+    + selectedCard
+    + gameResponse
+    + changingTurn
+    + currentPlayerIndex
+    + otherPlayerIndex
+    + winner
+    + seeingMoves
+    + cardsSelected
+  }
+
+
+  class GameEffects {
+    + {static} @Composable GameEffects(
+      GameState,
+      GameViewModel,
+      String,
+      NavController
+    )
+    + {static} resetGameState(GameState)
+  }
+
+  class DrawCardAnimation {
+    + {static} @Composable DrawCardAnimation(
+      onAnimationEnd: () -> Unit
+    )
+  }
+
+}
+
+
+class com.pandemiagame.org.data.remote.models.user.User {
++ <<Create>> User(Int,String,String,String,String,String,Int,Int,String?)
+}
+
+class com.pandemiagame.org.ui.viewmodels.EditProfileViewModel {
+-  _id
+-  _email
+-  _password
+-  _name
+-  _lastname
+-  _username
++ LiveData<Int> id
++ LiveData<String> email
++ LiveData<String> password
++ LiveData<String> name
++ LiveData<String> lastname
++ LiveData<String> username
+-  _formEnable
++ LiveData<Boolean> formEnable
+-  _updateCompleted
++ LiveData<Boolean> updateCompleted
+-  _isLoading
++ LiveData<Boolean> isLoading
+- Boolean emailChanged
+- Boolean passwordChanged
++ void initializeUserData(JSONObject)
++ void onEmailChange(String)
++ void onPasswordChange(String)
++ void onNameChange(String)
++ void onLastNameChange(String)
++ void onUserNameChange(String)
++ Boolean isValidEmail(String)
++ Boolean isValidPassword(String)
++ void onUpdateSelected(Context)
+}
+
+
+class com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Loading {
+}
+class com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Authenticated {
++ <<Create>> Authenticated(String)
+}
+
+class com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Unauthenticated {
+}
+class com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Error {
++ <<Create>> Error(String)
+}
+
+class com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState {
+}
+class com.pandemiagame.org.ui.viewmodels.LoginViewModel {
+-  _email
++ LiveData<String> email
+-  _password
++ LiveData<String> password
+-  _loginEnable
++ LiveData<Boolean> loginEnable
+-  _isLoading
++ LiveData<Boolean> isLoading
+-  _authState
++ LiveData<AuthState> authState
++ void checkAuthState(Context)
+- void verifyTokenWithServer(String,Context)
+- Boolean isTokenExpiredLocally(String,Context)
++ void onLoginChange(String,String)
++ Boolean isValidEmail(String)
++ Boolean isValidPassword(String)
++ void onLoginSelected(Context)
++ String? login(String,String,Context)
+}
+
+
+class com.pandemiagame.org.data.remote.RetrofitClient {
+-  BASE_URL
++ ApiService instance
+}
+
+class com.pandemiagame.org.data.remote.models.game.InfectData {
++ <<Create>> InfectData(Int?,String?,String?,Int?,String?,String?,Int?,String?,String?,Int?,String?,String?,Int?,String?,String?)
+}
+
+class com.pandemiagame.org.data.remote.models.game.CardWrapper {
++ <<Create>> CardWrapper(Card)
+}
+
+class com.pandemiagame.org.data.remote.models.game.GameResponse {
++ <<Create>> GameResponse(String,String,Int,Int,Int,List<Int>,Int,List<Card>,List<Player>,Boolean)
+}
+
+class com.pandemiagame.org.data.remote.models.game.Card {
++ <<Create>> Card(Int,String,String)
+}
+
+class com.pandemiagame.org.data.remote.models.auth.LoginResponse {
++ <<Create>> LoginResponse(String,User)
+}
+
+class com.pandemiagame.org.data.remote.models.game.Move {
++ <<Create>> Move(String,Int?,List<Int>?,String?,InfectData?)
+}
+
+class com.pandemiagame.org.data.remote.models.user.UserUpdating {
++ <<Create>> UserUpdating(String?,String?,String?,String?,String?,String?)
+}
+
+class com.pandemiagame.org.data.remote.utils.TokenManager {
+-  masterKeyAlias
+-  sharedPreferences
++ <<Create>> TokenManager(Context)
++ void saveToken(String)
++ String? getToken()
++ void clearToken()
+}
+
+
+class com.pandemiagame.org.data.remote.models.game.CardProbability {
++ <<Create>> CardProbability(Int,String,Double)
+}
+
+class com.pandemiagame.org.data.remote.models.game.Recommendation {
++ <<Create>> Recommendation(Int,List<CardProbability>)
+}
+
+class com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState$Loading {
+}
+class com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState$Error {
++ <<Create>> Error(String)
+}
+
+class com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState {
+}
+class com.pandemiagame.org.ui.viewmodels.RegisterViewModel {
+-  _name
++ LiveData<String> name
+-  _surname
++ LiveData<String> surname
+-  _username
++ LiveData<String> username
+-  _email
++ LiveData<String> email
+-  _password
++ LiveData<String> password
+-  _registerEnable
++ LiveData<Boolean> registerEnable
+-  _isLoading
++ LiveData<Boolean> isLoading
+-  _registerState
++ void onRegisterChange(String,String,String,String,String)
++ Boolean isValidName(String)
++ Boolean isValidUsername(String)
++ Boolean isValidEmail(String)
++ Boolean isValidPassword(String)
++ void onRegisterSelected(Context)
+}
+
+
+class com.pandemiagame.org.data.remote.models.auth.RegisterRequest {
++ <<Create>> RegisterRequest(String,String,String,String,String)
+}
+
+class com.pandemiagame.org.ui.screens.game.components.dialogs.InfectionTarget {
++ <<Create>> InfectionTarget(Int,String)
+}
+
+class com.pandemiagame.org.MainActivity {
++ void onCreate(Bundle?)
+}
+
+class com.pandemiagame.org.data.remote.models.game.Organ {
++ <<Create>> Organ(String,Int,Int,Int)
+}
+
+interface com.pandemiagame.org.data.remote.ApiService {
++ LoginResponse login(String,String,String)
++ User register(RegisterRequest)
++ GameResponse createGame(String,GameRequest)
++ GameResponse doMove(String,Int,Int,Move)
++ List<MoveResponse> getMoves(String,Int)
++ AuthResponse verifyToken(String)
++ List<GameResponse> getMyGames(String)
++ List<User> getUsers(String)
++ GameResponse getGame(String,Int)
++ Recommendation getRecommendations(String,Int)
++ User updateUser(String,Int,UserUpdating)
+}
+
+class com.pandemiagame.org.data.remote.models.game.GameRequest {
++ <<Create>> GameRequest(List<String>,String,Boolean)
+}
+
+class com.pandemiagame.org.data.remote.models.game.CardEnum$Companion {
+-  nameMap
++ CardEnum? fromDisplayName(String)
+}
+
+
+enum com.pandemiagame.org.data.remote.models.game.CardEnum {
++  VIRUS_HEART
++  VIRUS_INTESTINE
++  VIRUS_BRAIN
++  VIRUS_LUNGS
++  VIRUS_MAGIC
++  CURE_HEART
++  CURE_INTESTINE
++  CURE_BRAIN
++  CURE_LUNGS
++  CURE_MAGIC
++  ORGAN_HEART
++  ORGAN_INTESTINE
++  ORGAN_BRAIN
++  ORGAN_LUNGS
++  ORGAN_MAGIC
++  STEAL_ORGAN
++  INFECT_PLAYER
++  EXCHANGE_CARD
++  CHANGE_BODY
++  DISCARD_CARDS
++  BACKCARD
++ <<Create>> CardEnum(String,Int)
+}
+
+
+class com.pandemiagame.org.data.remote.models.game.Player {
++ <<Create>> Player(String,Int,Int,List<CardWrapper>,List<Organ>,User?)
+}
+
+class com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory {
++ <<Create>> NewGameViewModelFactory(TokenManager)
++ T create(Class<T>)
+}
+
+class com.pandemiagame.org.ui.viewmodels.NewGameViewModel {
+-  _isLoading
++ LiveData<Boolean> isLoading
+-  _buttonEnable
++ LiveData<Boolean> buttonEnable
+-  _game
++ LiveData<GameResponse> game
+-  _gameCreationStatus
++ LiveData<Boolean> gameCreationStatus
+-  _users
++ LiveData<List<User>> users
+-  _multiplayer
++ LiveData<Boolean> multiplayer
+-  _players
+-  _playerNames
++ List<String> players
++ List<String> playerNames
++ <<Create>> NewGameViewModel(TokenManager)
++ void getUsers(Context)
++ void createGame(Boolean,Context)
++ void notCreating()
++ void onNameChanged(String,Int,String)
++ void onButtonSelected(Context)
++ void addPlayer()
++ void removePlayer(Int)
++ void changeMultiplayer()
+}
+
+
+class com.pandemiagame.org.ui.viewmodels.GameViewModelFactory {
++ <<Create>> GameViewModelFactory(TokenManager)
++ T create(Class<T>)
+}
+
+class com.pandemiagame.org.ui.viewmodels.GameViewModel {
+-  _game
++ LiveData<GameResponse> game
+-  _changingTurn
++ LiveData<Boolean> changingTurn
+-  _moves
++ LiveData<List<MoveResponse>> moves
+-  _recommendation
++ LiveData<Int> recommendation
+-  _shouldHideOpponentCards
++ LiveData<Boolean> shouldHideOpponentCards
++ <<Create>> GameViewModel(TokenManager)
++ void clearRecommendation()
++ void onCleared()
++ void getGame(String,Context)
++ void prepareTurnChange()
++ void completeTurnChange()
+- GameResponse executeMove(Move,Int)
++ void doMove(Int,Int,String,Int?)
++ void doMoveInfect(Int,InfectData,Int)
++ void doMoveExchange(Int,String,InfectData,Int)
++ void discardCards(List<Int>,Int)
++ void surrender(Int)
++ void setChangingTurn(Boolean)
++ void setGame(GameResponse)
++ void getMoves(String)
++ void getRecommendations(Int)
+}
+
+
+class com.pandemiagame.org.data.remote.models.game.MoveResponse {
++ <<Create>> MoveResponse(String,Card?,Player,Int,String?,JsonElement?)
+}
+
+class com.pandemiagame.org.ui.viewmodels.GamesViewModelFactory {
++ <<Create>> GamesViewModelFactory(TokenManager)
++ T create(Class<T>)
+}
+
+class com.pandemiagame.org.ui.viewmodels.GamesViewModel {
+-  _isLoading
++ LiveData<Boolean> isLoading
+-  _gamesList
+-  _gamesListDisplayed
++ LiveData<List<GameResponse>> gamesListDisplayed
+-  _navegarADetalle
++ LiveData<GameResponse?> navegarADetalle
++ <<Create>> GamesViewModel(TokenManager)
++ void getMyGames(Context)
++ void seleccionarJuego(GameResponse)
++ void navegacionCompletada()
++ void setGameDisplayed(Int)
+}
+
+
+class com.pandemiagame.org.ui.screens.tutorial.Section {
++ <<Create>> Section(Int?,String,String)
+}
+
+class com.pandemiagame.org.data.remote.Constants {
++  BASE_URL
+}
+
+class com.pandemiagame.org.data.remote.models.auth.AuthResponse {
++ <<Create>> AuthResponse(Boolean,User)
+}
+
+
+
+com.pandemiagame.org.ui.navigation.Screen +.. com.pandemiagame.org.ui.navigation.Screen$Home
+com.pandemiagame.org.ui.navigation.Screen <|-- com.pandemiagame.org.ui.navigation.Screen$Home
+com.pandemiagame.org.ui.navigation.Screen +.. com.pandemiagame.org.ui.navigation.Screen$Profile
+com.pandemiagame.org.ui.navigation.Screen <|-- com.pandemiagame.org.ui.navigation.Screen$Profile
+com.pandemiagame.org.ui.navigation.Screen +.. com.pandemiagame.org.ui.navigation.Screen$Settings
+com.pandemiagame.org.ui.navigation.Screen <|-- com.pandemiagame.org.ui.navigation.Screen$Settings
+androidx.lifecycle.ViewModel <|-- com.pandemiagame.org.ui.viewmodels.EditProfileViewModel
+com.pandemiagame.org.ui.viewmodels.AuthState +.. com.pandemiagame.org.ui.viewmodels.AuthState$Loading
+com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState +.. com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Loading
+com.pandemiagame.org.ui.viewmodels.AuthState <|-- com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Loading
+com.pandemiagame.org.ui.viewmodels.AuthState +.. com.pandemiagame.org.ui.viewmodels.AuthState$Authenticated
+com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState +.. com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Authenticated
+com.pandemiagame.org.ui.viewmodels.AuthState <|-- com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Authenticated
+com.pandemiagame.org.ui.viewmodels.AuthState +.. com.pandemiagame.org.ui.viewmodels.AuthState$Unauthenticated
+com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState +.. com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Unauthenticated
+com.pandemiagame.org.ui.viewmodels.AuthState <|-- com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Unauthenticated
+com.pandemiagame.org.ui.viewmodels.AuthState +.. com.pandemiagame.org.ui.viewmodels.AuthState$Error
+com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState +.. com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Error
+com.pandemiagame.org.ui.viewmodels.AuthState <|-- com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState$Error
+com.pandemiagame.org.ui.viewmodels.LoginViewModel +.. com.pandemiagame.org.ui.viewmodels.LoginViewModel$AuthState
+androidx.lifecycle.ViewModel <|-- com.pandemiagame.org.ui.viewmodels.LoginViewModel
+com.pandemiagame.org.ui.viewmodels.RegisterState +.. com.pandemiagame.org.ui.viewmodels.RegisterState$Loading
+com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState +.. com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState$Loading
+com.pandemiagame.org.ui.viewmodels.RegisterState <|-- com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState$Loading
+com.pandemiagame.org.ui.viewmodels.RegisterState +.. com.pandemiagame.org.ui.viewmodels.RegisterState$Error
+com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState +.. com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState$Error
+com.pandemiagame.org.ui.viewmodels.RegisterState <|-- com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState$Error
+com.pandemiagame.org.ui.viewmodels.RegisterViewModel +.. com.pandemiagame.org.ui.viewmodels.RegisterViewModel$RegisterState
+androidx.lifecycle.ViewModel <|-- com.pandemiagame.org.ui.viewmodels.RegisterViewModel
+androidx.activity.ComponentActivity <|-- com.pandemiagame.org.MainActivity
+com.pandemiagame.org.data.remote.models.game.CardEnum +.. com.pandemiagame.org.data.remote.models.game.CardEnum$Companion
+com.pandemiagame.org.ui.viewmodels.Factory <|.. com.pandemiagame.org.ui.viewmodels.NewGameViewModelFactory
+androidx.lifecycle.ViewModel <|-- com.pandemiagame.org.ui.viewmodels.NewGameViewModel
+com.pandemiagame.org.ui.viewmodels.Factory <|.. com.pandemiagame.org.ui.viewmodels.GameViewModelFactory
+androidx.lifecycle.ViewModel <|-- com.pandemiagame.org.ui.viewmodels.GameViewModel
+com.pandemiagame.org.ui.viewmodels.Factory <|.. com.pandemiagame.org.ui.viewmodels.GamesViewModelFactory
+androidx.lifecycle.ViewModel <|-- com.pandemiagame.org.ui.viewmodels.GamesViewModel
+@enduml

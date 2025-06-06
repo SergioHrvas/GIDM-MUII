@@ -1,7 +1,6 @@
 package com.pandemiagame.org.ui.screens.profile
 
 import android.content.Context
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,10 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,43 +36,8 @@ import com.pandemiagame.org.R
 import com.pandemiagame.org.data.remote.Constants
 import com.pandemiagame.org.ui.navigation.BottomNavBar
 import com.pandemiagame.org.ui.navigation.CustomTopAppBar
+import com.pandemiagame.org.ui.screens.profile.components.WinRatePieChart
 import org.json.JSONObject
-
-@Composable
-fun WinRatePieChart(won: Int, total: Int) {
-    val percentage = if (total > 0) (won.toFloat() / total.toFloat()) else 0f
-    val colorWon = Color.Green
-    val colorLost = Color.LightGray
-
-    Canvas(modifier = Modifier.size(150.dp)) {
-        // Fondo (parte perdida)
-        drawArc(
-            color = colorLost,
-            startAngle = -90f,
-            sweepAngle = 360f,
-            useCenter = false,
-            style = Stroke(width = 20f, cap = StrokeCap.Round),
-            size = Size(size.width, size.height)
-        )
-        // Parte ganada
-        drawArc(
-            color = colorWon,
-            startAngle = -90f,
-            sweepAngle = 360f * percentage,
-            useCenter = false,
-            style = Stroke(width = 20f, cap = StrokeCap.Round),
-            size = Size(size.width, size.height)
-        )
-    }
-
-    // Texto del porcentaje
-    Text(
-        text = "${(percentage * 100).toInt()}%",
-        modifier = Modifier.padding(top = 8.dp),
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold
-    )
-}
 
 @Composable
 fun Profile(navController: NavController) {

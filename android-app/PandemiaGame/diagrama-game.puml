@@ -1,0 +1,101 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+top to bottom direction
+
+package "ui" {
+  class MainActivity
+}
+
+package "ui.viewmodels" {
+    class NewGameViewModel
+    class GamesViewModel
+    class GameViewModel
+}
+
+package "ui.screens" {
+    class MainScreen
+}
+
+package "ui.screens.profile" {
+}
+
+package "ui.screens.tutorial" {
+}
+
+package "ui.screens.game" {
+    class GameScreen
+    class GamesScreen
+    class NewGameScreen
+}
+
+package "ui.screens.game.components" {
+    class GameLayout
+}
+
+package "ui.screens.game.components.utils" {
+    class GameState
+    class rememberGameState
+    class GameEffects
+}
+
+package "ui.screens.game.components.dialogs" {
+    class GameDialog
+    class MovesDialog
+    class WinnerDialog
+    class TurnChangeDialog
+    class ChangeBodyDialog
+    class InfectDialog
+    class ExchangeDialog
+}
+
+package "ui.screens.game.components.cards" {
+    class DeckSection
+    class PlayerCardsRow
+    class PlayerCard
+}
+
+package "ui.screens.game.components.players" {
+    class PlayerHeader
+    class OpponentPlayerSection
+    class CurrentPlayerSection
+    class PlayerActions
+    class ActionButton
+    class Body
+    class MenuButton
+}
+
+' Relaciones principales para disposición vertical
+GameScreen --> GameViewModel
+GameScreen --> rememberGameState
+GameScreen --> GameEffects
+GameScreen --> GameLayout
+
+GameLayout --> GameDialog
+GameLayout --> OpponentPlayerSection
+GameLayout --> DeckSection
+GameLayout --> CurrentPlayerSection
+
+GameDialog --> MovesDialog
+GameDialog --> TurnChangeDialog
+GameDialog --> ChangeBodyDialog
+GameDialog --> ExchangeDialog
+GameDialog --> InfectDialog
+GameDialog --> WinnerDialog
+
+OpponentPlayerSection --> PlayerHeader
+OpponentPlayerSection --> Body
+
+CurrentPlayerSection --> PlayerHeader
+CurrentPlayerSection --> Body
+CurrentPlayerSection --> PlayerCardsRow
+CurrentPlayerSection --> PlayerActions
+
+PlayerCardsRow --> PlayerCard
+
+PlayerActions --> ActionButton
+
+PlayerHeader --> MenuButton
+
+@enduml

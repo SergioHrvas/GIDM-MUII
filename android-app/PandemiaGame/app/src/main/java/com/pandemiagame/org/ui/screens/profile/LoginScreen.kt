@@ -63,12 +63,13 @@ fun LoginComp(navController: NavController, viewModel: LoginViewModel) {
                     .padding(innerPadding),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            )  {
                 Image(
                     painter = painterResource(id = R.drawable.login),
                     contentDescription = stringResource(R.string.login_icon),
                     contentScale = ContentScale.Fit
                 )
+
                 Box(
                     modifier = Modifier
                         .padding(14.dp)

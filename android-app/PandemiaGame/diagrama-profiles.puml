@@ -1,0 +1,54 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+top to bottom direction
+
+package "ui" {
+  class MainActivity
+}
+
+package "ui.viewmodels" {
+    class EditProfileViewModel
+    class LoginViewModel
+    class RegisterViewModel
+}
+
+package "ui.screens" {
+    class MainScreen
+}
+
+package "ui.screens.tutorial" {
+}
+
+package "ui.screens.game" {
+}
+
+package "ui.screens.profile" {
+    class EditProfile
+    class LoginScreen
+    class Profile
+    class RegisterScreen
+}
+
+package "ui.screens.components" {
+    class FormTextInput
+    class LoginButton
+    class WinRatePieCharts
+}
+
+EditProfile -> FormTextInput
+RegisterScreen -> FormTextInput
+LoginScreen -> FormTextInput
+LoginScreen -> LoginButton
+RegisterScreen -> LoginButton
+Profile -> WinRatePieCharts
+
+EditProfile -> EditProfileViewModel
+LoginScreen -> LoginViewModel
+RegisterScreen -> RegisterViewModel
+
+' Relaciones principales para disposición vertical
+
+
+@enduml
