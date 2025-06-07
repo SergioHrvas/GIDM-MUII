@@ -1,0 +1,15 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+User -> App: Pulsa "Perfil"
+App --> User: Devuelve la pantalla de perfil
+User -> App: Pulsa "Modificar Perfil"
+App --> User: Devuelve la pantalla de modificar perfil
+User -> App: Rellena los datos a cambiar y pulsa "Modificar"
+App -> FastApi: Petición PUT de modificación de usuario
+FastApi --> App: Respuesta con el usuario modificado
+App --> User: Pantalla del juego con el usuario modificado
+
+@enduml

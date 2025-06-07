@@ -1,0 +1,12 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+User -> App: Rellena los datos de login
+App --> User: Actualiza la pantalla con los campos rellenos y los valida
+User -> App: Pulsa el botón de Iniciar Sesión
+App -> FastApi: Petición de Login
+FastApi --> App: Token
+App --> User: Almacena el token y devuelve la pantalla de inicio (si success)
+@enduml

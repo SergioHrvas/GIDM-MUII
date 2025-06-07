@@ -139,7 +139,7 @@ fun NewGameComp(navController: NavController) {
                             )
                     }
                     Image(
-                        painter = painterResource(id = R.drawable.login),
+                        painter = painterResource(id = R.drawable.baseline_videogame_asset_24),
                         contentDescription = stringResource(R.string.login_icon),
                         contentScale = ContentScale.Fit // Mantiene proporciones sin recortar
                     )

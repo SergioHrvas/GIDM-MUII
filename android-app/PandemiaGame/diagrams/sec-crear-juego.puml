@@ -1,0 +1,28 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+box "Jugadores" #LightBlue
+  participant User1
+  participant User2
+end box
+participant App
+participant FastApi
+
+autonumber
+
+User1 -> App: Pulsa "Nueva partida"
+App --> User1: Devuelve la pantalla de creación de parrida
+User1 -> App: Selecciona los usuarios con los\nque jugar y pulsa el botón de "Crear"
+App -> FastApi: Petición POST de creación de juego
+FastApi --> App: Respuesta con el juego creado
+App --> User1: Pantalla del juego con el estado inicial
+User1 -> App: Selecciona la carta del órgano corazón
+App -> FastApi: Petición POST de hacer movimiento
+FastApi --> App: Respuesta con el juego actualizado
+App --> User1: Pantalla del juego con el estado actualizado
+User2 -> App: Selecciona la carta de robar órgano
+App -> FastApi: Petición POST de hacer movimiento
+FastApi --> App: Respuesta con el juego actualizado
+App --> User2: Pantalla del juego con el estado actualizado
+
+
+@enduml
