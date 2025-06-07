@@ -23,6 +23,7 @@ fun GameDialog(
     // Diálogo de movimientos
     if(gameState.seeingMoves){
         val moves by viewModel.moves.observeAsState()
+        println(moves)
         MovesDialog(
             moves = moves,
             onDismiss = {

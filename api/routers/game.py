@@ -50,6 +50,7 @@ def get_moves(game_id: int, db: Session = Depends(get_db)):
     if moves is None:
         raise HTTPException(status_code=404, detail="Moves not found")
     
+    print(len(moves))
     return moves
 
 def model_to_dict(model):

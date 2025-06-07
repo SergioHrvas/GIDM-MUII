@@ -188,7 +188,10 @@ private fun RenderVirusMove(move: MoveResponse, playerNames: Map<Int, String>) {
 @Composable
 private fun RenderActionMove(move: MoveResponse, playerNames: Map<Int, String>) {
     val card = move.card ?: return
-    val jsonObject = move.data?.asJsonObject
+    var jsonObject: JsonObject? = null
+    if (move.data != null && !move.data.isJsonNull) {
+        jsonObject = move.data.asJsonObject
+    }
 
     when (card.name) {
         "Steal Organ", "Change Body", "Exchange Card" -> {
